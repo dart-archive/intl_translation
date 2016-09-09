@@ -39,7 +39,11 @@ main(List<String> args) {
   var file = new File(dartFile);
   var content = file.readAsStringSync();
   var newSource = rewriteMessages(content, '$file');
-  print('Writing new source to $outputFile');
-  var out = new File(outputFile);
-  out.writeAsStringSync(newSource);
+  if (content == newSource) {
+    print("No changes to $outputFile");
+  } else {
+    print('Writing new source to $outputFile');
+    var out = new File(outputFile);
+    out.writeAsStringSync(newSource);
+  }
 }
