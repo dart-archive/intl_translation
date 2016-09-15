@@ -19,18 +19,31 @@ import 'package:intl_translation/src/message_rewriter.dart';
 
 String outputFile = 'transformed_output.dart';
 
+bool useStringSubstitution = true;
+
 main(List<String> args) {
   var parser = new ArgParser();
   parser.addOption('output',
       defaultsTo: 'transformed_output.dart',
       callback: (x) => outputFile = x,
       help: 'Specify the output file.');
+  parser.addFlag('useStringSubstitution',
+      defaultsTo: true,
+      callback: (x) => useStringSubstitution = x,
+      help: 'If true, in rewriting, try to leave the text of the message'
+          ' as close to the original as possible. This is slightly less reliable,'
+          ' because it relies on string matching, but better for updating'
+          ' source code to move away from the transformer. If false,'
+          ' behave like the transformer, regenerating the message code'
+          ' from our internal representation. This is more reliable, but'
+          ' produces less readable code.');
   print(args);
   parser.parse(args);
   if (args.length == 0) {
     print('Accepts a single Dart file and adds "name" and "args" parameters '
         ' to Intl.message calls.');
-    print('Primarily useful for exercising the transformer logic.');
+    print('Primarily useful for exercising the transformer logic or '
+        'for rewriting programs to not require the transformer.');
     print('Usage: rewrite_intl_messages [options] [file.dart]');
     print(parser.usage);
     exit(0);
@@ -38,7 +51,8 @@ main(List<String> args) {
   var dartFile = args.where((x) => x.endsWith(".dart")).last;
   var file = new File(dartFile);
   var content = file.readAsStringSync();
-  var newSource = rewriteMessages(content, '$file');
+  var newSource = rewriteMessages(content, '$file',
+      useStringSubstitution: useStringSubstitution);
   if (content == newSource) {
     print("No changes to $outputFile");
   } else {

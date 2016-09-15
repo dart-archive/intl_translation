@@ -13,7 +13,8 @@ import 'package:intl_translation/extract_messages.dart';
 ///
 /// Return the modified source code. If there are errors parsing, list
 /// [sourceName] in the error message.
-String rewriteMessages(String source, String sourceName) {
+String rewriteMessages(String source, String sourceName,
+    {useStringSubstitution: false}) {
   var messages = findMessages(source, sourceName);
   messages.sort((a, b) => a.sourcePosition.compareTo(b.sourcePosition));
 
@@ -22,15 +23,49 @@ String rewriteMessages(String source, String sourceName) {
   for (var message in messages) {
     if (message.arguments.isNotEmpty) {
       newSource.write(source.substring(start, message.sourcePosition));
-    // TODO(alanknight): We could generate more efficient code than the
-    // original here, dispatching more directly to the MessageLookup.
-    newSource.write(message.toOriginalCode());
-    start = message.endPosition;
+      if (useStringSubstitution) {
+        rewriteWithStringSubstitution(newSource, source, start, message);
+      } else {
+        rewriteRegenerating(newSource, source, start, message);
+      }
+      start = message.endPosition;
     }
   }
   newSource.write(source.substring(start));
   return newSource.toString();
 }
+
+/// Rewrite the message by regenerating from our internal representation.
+///
+/// This may produce uglier source, but is more reliable.
+rewriteRegenerating(StringBuffer newSource, String source, int start, message) {
+  // TODO(alanknight): We could generate more efficient code than the
+  // original here, dispatching more directly to the MessageLookup.
+  newSource.write(message.toOriginalCode());
+}
+
+rewriteWithStringSubstitution(
+    StringBuffer newSource, String source, int start, message) {
+  var originalSource =
+      source.substring(message.sourcePosition, message.endPosition);
+  var closingParen = originalSource.lastIndexOf(')');
+  // This is very ugly, checking to see if name/args is already there by
+  // examining the source string. But at least the failure mode should
+  // be very direct if we end up omitting name or args.
+  var hasName = originalSource.contains(nameCheck);
+  var hasArgs = originalSource.contains(argsCheck);
+  var withName = hasName ? '' : ",\nname: '${message.name}'";
+  var withArgs = hasArgs ? '' : ",\nargs: ${message.arguments}";
+  var nameAndArgs = "$withName$withArgs)";
+  newSource.write(originalSource.substring(0, closingParen));
+  newSource.write(nameAndArgs);
+  // We normally don't have anything after the closing paren, but
+  // be safe.
+  newSource.write(originalSource.substring(closingParen + 1));
+}
+
+final RegExp nameCheck = new RegExp('[\\n,]\\s+name\:');
+final RegExp argsCheck = new RegExp('[\\n,]\\s+args\:');
 
 /// Find all the messages in the [source] text.
 ///
@@ -40,7 +75,8 @@ List findMessages(String source, String sourceName) {
   try {
     extraction.root = parseCompilationUnit(source, name: sourceName);
   } on AnalyzerErrorGroup catch (e) {
-    extraction.onMessage("Error in parsing $sourceName, no messages extracted.");
+    extraction
+        .onMessage("Error in parsing $sourceName, no messages extracted.");
     extraction.onMessage("  $e");
     return [];
   }
