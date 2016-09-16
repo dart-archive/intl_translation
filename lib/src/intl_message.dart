@@ -82,6 +82,33 @@ abstract class Message {
     }
   }
 
+  /// Verify that the args argument matches the method parameters and
+  /// isn't, e.g. passing string names instead of the argument values.
+  bool checkArgs(NamedExpression args, List<String> parameterNames) {
+    if (args == null) return true;
+    // Detect cases where args passes invalid names, either literal strings
+    // instead of identifiers, or in the wrong order, missing values, etc.
+    ListLiteral identifiers = args.childEntities.last;
+    if (!identifiers.elements.every((each) => each is SimpleIdentifier)) {
+      return false;
+    }
+    var names = identifiers.elements
+        .map((each) => (each as SimpleIdentifier).name)
+        .toList();
+    var both;
+    try {
+      both = new Map.fromIterables(names, parameterNames);
+    } catch (e) {
+      // Most likely because sizes don't match.
+      return false;
+    }
+    var everythingMatches = true;
+    both.forEach((name, parameterName) {
+      if (name != parameterName) everythingMatches = false;
+    });
+    return everythingMatches;
+  }
+
   /// Verify that this looks like a correct
   /// Intl.message/plural/gender/... invocation.
   ///
@@ -103,13 +130,20 @@ abstract class Message {
       FormalParameterList outerArgs,
       {bool nameAndArgsGenerated: false, bool examplesRequired: false}) {
     // If we have parameters, we must specify args and name.
-    var hasArgs = arguments.any(
-        (each) => each is NamedExpression && each.name.label.name == 'args');
+    NamedExpression args = arguments.firstWhere(
+        (each) => each is NamedExpression && each.name.label.name == 'args',
+        orElse: () => null);
+    var parameterNames =
+        outerArgs.parameters.map((x) => x.identifier.name).toList();
+    var hasArgs = args != null;
     var hasParameters = !outerArgs.parameters.isEmpty;
     if (!nameAndArgsGenerated && !hasArgs && hasParameters) {
       return "The 'args' argument for Intl.message must be specified";
     }
-
+    if (!checkArgs(args, parameterNames)) {
+      return "The 'args' argument must match the message arguments,"
+          " e.g. args: ${parameterNames}";
+    }
     var messageNameArgument = arguments.firstWhere(
         (eachArg) =>
             eachArg is NamedExpression && eachArg.name.label.name == 'name',
@@ -194,6 +228,7 @@ abstract class Message {
       if (n is ClassDeclaration) return n;
       return classNode(n.parent);
     }
+
     var classDeclaration = classNode(node);
     return classDeclaration == null
         ? null
