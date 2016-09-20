@@ -235,7 +235,24 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     } else {
       message = messageFromDirectPluralOrGenderCall(node);
     }
-    if (message != null) messages[message.name] = message;
+    if (message != null) {
+      var existing = messages[message.name];
+      if (existing != null) {
+        // TODO(alanknight): We may want to require the descriptions to match.
+        var existingCode =
+            existing.toOriginalCode(includeDesc: false, includeExamples: false);
+        var messageCode =
+            message.toOriginalCode(includeDesc: false, includeExamples: false);
+        if (existingCode != messageCode) {
+          var err = "WARNING: Duplicate message name:\n"
+              "'${message.name}' occurs more than once in ${extraction.origin}";
+          extraction.warnings.add(err);
+          extraction.onMessage(err);
+        }
+      } else {
+        messages[message.name] = message;
+      }
+    }
     return true;
   }
 
@@ -351,6 +368,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
         msg[fieldName] = fieldValue;
       }
     }
+
     return _messageFromNode(node, extractFromPluralOrGender, setAttribute);
   }
 }

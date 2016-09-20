@@ -500,18 +500,24 @@ class MainMessage extends ComplexMessage {
     throw new ArgumentError.value(chunk, "Unexpected value in Intl.message");
   }
 
-  String toOriginalCode() {
+  /// Create a string that will recreate this message, optionally
+  /// including the compile-time only information desc and examples.
+  String toOriginalCode({bool includeDesc: true, includeExamples: true}) {
     var out = new StringBuffer()..write("Intl.message('");
     out.write(expanded(turnInterpolationBackIntoStringForm));
     out.write("', ");
     out.write("name: '$name', ");
     out.write(locale == null ? "" : "locale: '$locale', ");
-    out.write(description == null
-        ? ""
-        : "desc: '${escapeAndValidateString(description)}', ");
-    // json is already mostly-escaped, but we need to handle interpolations.
-    var json = JSON.encode(examples).replaceAll(r"$", r"\$");
-    out.write(examples == null ? "" : "examples: const ${json}, ");
+    if (includeDesc) {
+      out.write(description == null
+          ? ""
+          : "desc: '${escapeAndValidateString(description)}', ");
+    }
+    if (includeExamples) {
+      // json is already mostly-escaped, but we need to handle interpolations.
+      var json = JSON.encode(examples).replaceAll(r"$", r"\$");
+      out.write(examples == null ? "" : "examples: const ${json}, ");
+    }
     out.write(meaning == null
         ? ""
         : "meaning: '${escapeAndValidateString(meaning)}', ");
