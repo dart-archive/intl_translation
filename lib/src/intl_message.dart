@@ -138,7 +138,8 @@ abstract class Message {
     var hasArgs = args != null;
     var hasParameters = !outerArgs.parameters.isEmpty;
     if (!nameAndArgsGenerated && !hasArgs && hasParameters) {
-      return "The 'args' argument for Intl.message must be specified";
+      return "The 'args' argument for Intl.message must be specified for "
+          "messages with parameters. Consider using rewrite_intl_messages.dart";
     }
     if (!checkArgs(args, parameterNames)) {
       return "The 'args' argument must match the message arguments,"
@@ -167,7 +168,8 @@ abstract class Message {
           messageName = givenName;
         } else {
           return "The 'name' argument for Intl.message must be supplied for "
-              "messages with parameters";
+              "messages with parameters. Consider using "
+              "rewrite_intl_messages.dart";
         }
       }
     } else {
