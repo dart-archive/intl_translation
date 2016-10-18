@@ -16,17 +16,23 @@ import 'dart:io';
 import 'package:args/args.dart';
 
 import 'package:intl_translation/src/message_rewriter.dart';
+import 'package:dart_style/dart_style.dart';
 
-String outputFile = 'transformed_output.dart';
+String outputFileOption = 'transformed_output.dart';
 
 bool useStringSubstitution = true;
+bool replace = false;
 
 main(List<String> args) {
   var parser = new ArgParser();
   parser.addOption('output',
       defaultsTo: 'transformed_output.dart',
-      callback: (x) => outputFile = x,
+      callback: (x) => outputFileOption = x,
       help: 'Specify the output file.');
+  parser.addFlag('replace',
+      defaultsTo: false,
+      callback: (x) => replace = x,
+      help: 'Overwrite the input file; ignore --output option.');
   parser.addFlag('useStringSubstitution',
       defaultsTo: true,
       callback: (x) => useStringSubstitution = x,
@@ -38,26 +44,30 @@ main(List<String> args) {
           ' from our internal representation. This is more reliable, but'
           ' produces less readable code.');
   print(args);
-  parser.parse(args);
-  if (args.length == 0) {
-    print('Accepts a single Dart file and adds "name" and "args" parameters '
+  var rest = parser.parse(args).rest;
+  if (rest.length == 0) {
+    print('Accepts Dart file paths and adds "name" and "args" parameters '
         ' to Intl.message calls.');
     print('Primarily useful for exercising the transformer logic or '
         'for rewriting programs to not require the transformer.');
-    print('Usage: rewrite_intl_messages [options] [file.dart]');
+    print('Usage: rewrite_intl_messages [options] [file.dart]...');
     print(parser.usage);
     exit(0);
   }
-  var dartFile = args.where((x) => x.endsWith(".dart")).last;
-  var file = new File(dartFile);
-  var content = file.readAsStringSync();
-  var newSource = rewriteMessages(content, '$file',
-      useStringSubstitution: useStringSubstitution);
-  if (content == newSource) {
-    print("No changes to $outputFile");
-  } else {
-    print('Writing new source to $outputFile');
-    var out = new File(outputFile);
-    out.writeAsStringSync(newSource);
+
+  var formatter = new DartFormatter();
+  for (var inputFile in rest) {
+    var outputFile = replace ? inputFile : outputFileOption;
+    var file = new File(inputFile);
+    var content = file.readAsStringSync();
+    var newSource = rewriteMessages(content, '$file',
+        useStringSubstitution: useStringSubstitution);
+    if (content == newSource) {
+      print('No changes to $outputFile');
+    } else {
+      print('Writing new source to $outputFile');
+      var out = new File(outputFile);
+      out.writeAsStringSync(formatter.format(newSource));
+    }
   }
 }
