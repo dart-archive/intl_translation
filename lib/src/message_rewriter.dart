@@ -70,8 +70,9 @@ final RegExp argsCheck = new RegExp('[\\n,]\\s+args\:');
 /// Find all the messages in the [source] text.
 ///
 /// Report errors as coming from [sourceName]
-List findMessages(String source, String sourceName) {
-  var extraction = new MessageExtraction();
+List findMessages(String source, String sourceName,
+    [MessageExtraction extraction]) {
+  extraction = extraction ?? new MessageExtraction();
   try {
     extraction.root = parseCompilationUnit(source, name: sourceName);
   } on AnalyzerErrorGroup catch (e) {

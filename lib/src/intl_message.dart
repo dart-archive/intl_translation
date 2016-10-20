@@ -203,16 +203,18 @@ abstract class Message {
       }
     }
 
-    if (hasParameters && examplesRequired) {
+    if (hasParameters) {
       var exampleArg = arguments.where((each) =>
           each is NamedExpression && each.name.label.name == "examples");
       var examples = exampleArg.map((each) => each.expression).toList();
-      if (examples.isEmpty) {
+      if (examples.isEmpty && examplesRequired) {
         return "Examples must be provided for messages with parameters";
       }
-      var map = _evaluateAsMap(examples.first);
-      if (map == null) {
-        return "Examples must be a Map literal, preferably const";
+      if (examples.isNotEmpty) {
+        var map = _evaluateAsMap(examples.first);
+        if (map == null) {
+          return "Examples must be a Map literal, preferably const";
+        }
       }
     }
 

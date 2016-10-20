@@ -166,6 +166,9 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// Returns a String describing why the node is invalid, or null if no
   /// reason is found, so it's presumed valid.
   String checkValidity(MethodInvocation node) {
+    if (parameters == null) {
+      return "Calls to Intl must be inside a method.";
+    }
     // The containing function cannot have named parameters.
     if (parameters.parameters.any((each) => each.kind == ParameterKind.NAMED)) {
       return "Named parameters on message functions are not supported.";
@@ -215,7 +218,8 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// false if we didn't, so should continue recursing.
   bool addIntlMessage(MethodInvocation node) {
     if (!looksLikeIntlMessage(node)) return false;
-    var reason = checkValidity(node);
+    var reason = checkValidity(node) ?? _extractMessage(node);
+
     if (reason != null) {
       if (!extraction.suppressWarnings) {
         var err = new StringBuffer()
@@ -226,34 +230,44 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
         extraction.warnings.add(errString);
         extraction.onMessage(errString);
       }
-      // We found one, but it's not valid. Stop recursing.
-      return true;
     }
-    var message;
-    if (node.methodName.name == "message") {
-      message = messageFromIntlMessageCall(node);
-    } else {
-      message = messageFromDirectPluralOrGenderCall(node);
-    }
-    if (message != null) {
-      var existing = messages[message.name];
-      if (existing != null) {
-        // TODO(alanknight): We may want to require the descriptions to match.
-        var existingCode =
-            existing.toOriginalCode(includeDesc: false, includeExamples: false);
-        var messageCode =
-            message.toOriginalCode(includeDesc: false, includeExamples: false);
-        if (existingCode != messageCode) {
-          var err = "WARNING: Duplicate message name:\n"
-              "'${message.name}' occurs more than once in ${extraction.origin}";
-          extraction.warnings.add(err);
-          extraction.onMessage(err);
-        }
-      } else {
-        messages[message.name] = message;
-      }
-    }
+
+    // We found a message, valid or not. Stop recursing.
     return true;
+  }
+
+  /// Try to extract a message. On failure, return a String error message.
+  String _extractMessage(MethodInvocation node) {
+    try {
+      var message;
+      if (node.methodName.name == "message") {
+        message = messageFromIntlMessageCall(node);
+      } else {
+        message = messageFromDirectPluralOrGenderCall(node);
+      }
+      if (message != null) {
+        var existing = messages[message.name];
+        if (existing != null) {
+          // TODO(alanknight): We may want to require the descriptions to match.
+          var existingCode =
+          existing.toOriginalCode(includeDesc: false, includeExamples: false);
+          var messageCode =
+          message.toOriginalCode(includeDesc: false, includeExamples: false);
+          if (existingCode != messageCode) {
+            var err = "WARNING: Duplicate message name:\n"
+                "'${message.name}' occurs more than once in ${extraction
+                .origin}";
+            extraction.warnings.add(err);
+            extraction.onMessage(err);
+          }
+        } else {
+          messages[message.name] = message;
+        }
+      }
+      return null;
+    } catch (e, s) {
+      return "Unexpected exception: $e, $s";
+    }
   }
 
   /// Create a MainMessage from [node] using the name and
@@ -481,7 +495,9 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
   }
 
   /// Return true if [node] matches the pattern for plural or gender message.
-  bool looksLikePluralOrGender(MethodInvocation node) {
+  bool looksLikePluralOrGender(Expression expression) {
+    if (expression is! MethodInvocation) return false;
+    final node = expression as MethodInvocation;
     if (!["plural", "gender", "select"].contains(node.methodName.name)) {
       return false;
     }
@@ -524,7 +540,11 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
       try {
         var interpolation = new InterpolationVisitor(message, extraction);
         value.accept(interpolation);
-        message[key] = interpolation.pieces;
+        // Might be null due to previous errors.
+        // Continue collecting errors, but don't build message.
+        if (message != null) {
+          message[key] = interpolation.pieces;
+        }
       } on IntlMessageExtractionException catch (e) {
         message = null;
         var err = new StringBuffer()
