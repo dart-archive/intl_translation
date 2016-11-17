@@ -106,6 +106,13 @@ outerSelect(currency, amount) => Intl.select(
     name: "outerSelect",
     args: [currency, amount]);
 
+// An invalid select which should never appear. Unfortunately
+// it's difficult to write an automated test for this, you
+// just should be able to note a warning for it when extracting.
+failedSelect(currency) => Intl.select(
+    currency, {"this.should.fail": "not valid", "other": "doesn't matter"},
+    name: "failedSelect", args: [currency]);
+
 // A select with a plural inside the expressions.
 nestedSelect(currency, amount) => Intl.select(
     currency,

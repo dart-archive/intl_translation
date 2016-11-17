@@ -11,7 +11,10 @@
     literal.
   * Make message extraction more robust: if parsing triggers an exception then
     report it as an error instead of exiting.
-  * Move barback to being a normal rather than a dev dependency.    
+  * Move barback to being a normal rather than a dev dependency.
+  * Add a check for invalid select keywords.
+  * Added a post-message construction validate, moved
+    IntlMessageExtractionException into intl_message.dart
 
 ## 0.14.0
   * Split message extraction and code generation out into a separate

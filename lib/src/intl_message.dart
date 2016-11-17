@@ -221,6 +221,17 @@ abstract class Message {
     return null;
   }
 
+  /// Verify that a constructed message is valid.
+  ///
+  /// This is called after the message has already been built, as opposed
+  /// to checkValidity which is called before creation. It can be used to
+  /// validate conditions that can just be checked against the result,
+  /// and/or are simpler to check there than on the AST nodes. For example,
+  /// is a required clause like "other" included, or are there examples
+  /// for all of the parameters. It should throw an
+  /// IntlMessageExtractionException for errors.
+  void validate() {}
+
   /// Return the name of the enclosing class (if any) plus method name, or null
   /// if there's no enclosing class.
   ///
@@ -808,9 +819,20 @@ class Select extends SubMessage {
   get attributeNames => cases.keys;
   get codeAttributeNames => attributeNames;
 
+  // Check for valid select keys.
+  // See http://site.icu-project.org/design/formatting/select
+  static const selectPattern = '[a-zA-Z][a-zA-Z0-9_-]*';
+  static final validSelectKey = new RegExp(selectPattern);
+
   void operator []=(String attributeName, rawValue) {
     var value = Message.from(rawValue, this);
-    cases[attributeName] = value;
+    if (validSelectKey.stringMatch(attributeName) == attributeName) {
+      cases[attributeName] = value;
+    } else {
+      throw new IntlMessageExtractionException(
+          "Invalid select keyword: '$attributeName', must "
+          "match '$selectPattern'");
+    }
   }
 
   Message operator [](String attributeName) {
@@ -825,6 +847,13 @@ class Select extends SubMessage {
     MapLiteral casesArgument = node.argumentList.arguments[1];
     return new Map.fromIterable(casesArgument.entries,
         key: (node) => node.key.value, value: (node) => node.value);
+  }
+
+  void validate() {
+    if (this["other"] == null) {
+      throw new IntlMessageExtractionException(
+          "Missing keyword other for Intl.select $this");
+    }
   }
 
   /// Write out the generated representation of this message. This differs
@@ -843,4 +872,15 @@ class Select extends SubMessage {
     out.write("})}");
     return out.toString();
   }
+}
+
+/// Exception thrown when we cannot process a message properly.
+class IntlMessageExtractionException implements Exception {
+  /// A message describing the error.
+  final String message;
+
+  /// Creates a new exception with an optional error [message].
+  const IntlMessageExtractionException([this.message = ""]);
+
+  String toString() => "IntlMessageExtractionException: $message";
 }

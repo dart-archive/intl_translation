@@ -238,36 +238,47 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
   /// Try to extract a message. On failure, return a String error message.
   String _extractMessage(MethodInvocation node) {
+    var message;
     try {
-      var message;
       if (node.methodName.name == "message") {
         message = messageFromIntlMessageCall(node);
       } else {
         message = messageFromDirectPluralOrGenderCall(node);
       }
-      if (message != null) {
-        var existing = messages[message.name];
-        if (existing != null) {
-          // TODO(alanknight): We may want to require the descriptions to match.
-          var existingCode =
-          existing.toOriginalCode(includeDesc: false, includeExamples: false);
-          var messageCode =
-          message.toOriginalCode(includeDesc: false, includeExamples: false);
-          if (existingCode != messageCode) {
-            var err = "WARNING: Duplicate message name:\n"
-                "'${message.name}' occurs more than once in ${extraction
-                .origin}";
-            extraction.warnings.add(err);
-            extraction.onMessage(err);
-          }
-        } else {
-          messages[message.name] = message;
-        }
-      }
-      return null;
     } catch (e, s) {
       return "Unexpected exception: $e, $s";
     }
+    return message == null ? null : _validateMessage(message);
+  }
+
+  /// Perform any post-construction validations on the message and
+  /// ensure that it's not a duplicate.
+  // TODO(alanknight): This is still ugly and may lead to duplicate reporting
+  // of the same error. Refactor to consistently throw
+  // IntlMessageExtractionException instead of returning strings and centralize
+  // the reporting.
+  String _validateMessage(MainMessage message) {
+    try {
+      message.validate();
+    } on IntlMessageExtractionException catch (e) {
+      return e.message;
+    }
+    var existing = messages[message.name];
+    if (existing != null) {
+      // TODO(alanknight): We may want to require the descriptions to match.
+      var existingCode =
+          existing.toOriginalCode(includeDesc: false, includeExamples: false);
+      var messageCode =
+          message.toOriginalCode(includeDesc: false, includeExamples: false);
+      if (existingCode != messageCode) {
+        return "WARNING: Duplicate message name:\n"
+            "'${message.name}' occurs more than once in ${extraction.origin}";
+      }
+    } else {
+      messages[message.name] = message;
+      return null;
+    }
+    return null; // Placate the analyzer
   }
 
   /// Create a MainMessage from [node] using the name and
@@ -573,17 +584,6 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
     }
     return message;
   }
-}
-
-/// Exception thrown when we cannot process a message properly.
-class IntlMessageExtractionException implements Exception {
-  /// A message describing the error.
-  final String message;
-
-  /// Creates a new exception with an optional error [message].
-  const IntlMessageExtractionException([this.message = ""]);
-
-  String toString() => "IntlMessageExtractionException: $message";
 }
 
 /// If a message is a string literal without interpolation, compute
