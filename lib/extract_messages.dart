@@ -22,6 +22,7 @@ library extract_messages;
 import 'dart:io';
 
 import 'package:analyzer/analyzer.dart';
+import 'package:analyzer/dart/ast/standard_ast_factory.dart';
 import 'package:intl_translation/src/intl_message.dart';
 
 /// A function that takes a message and does something useful with it.
@@ -185,7 +186,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   void visitMethodDeclaration(MethodDeclaration node) {
     parameters = node.parameters;
     if (parameters == null) {
-      parameters = new FormalParameterList(null, [], null, null, null);
+      parameters = astFactory.formalParameterList(null, [], null, null, null);
     }
     name = node.name.name;
     super.visitMethodDeclaration(node);
@@ -196,7 +197,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   void visitFunctionDeclaration(FunctionDeclaration node) {
     parameters = node.functionExpression.parameters;
     if (parameters == null) {
-      parameters = new FormalParameterList(null, [], null, null, null);
+      parameters = astFactory.formalParameterList(null, [], null, null, null);
     }
     name = node.name.name;
     super.visitFunctionDeclaration(node);
