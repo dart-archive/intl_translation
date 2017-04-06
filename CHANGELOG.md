@@ -18,6 +18,16 @@
   * Make use of analyzer's new AstFactory class (requires analyzer version
     0.29.1).
   * Fix error in transformer, pass the path instead of the asset id.
+  * Prefer an explicit =0/=1/=2 to a ZERO/ONE/TWO if both are present. We don't
+    distinguish the two as Intl.message arguments, we just have the "one"
+    parameter, which we confusingly write out as =1. Tools interpret these
+    differently, and in particular, a ONE clause is used for the zero case if
+    there's no explicit zero. Translation tools may implement this by filling in
+    both ZERO and ONE values with the OTHER clause when there's no ZERO
+    provided, resulting in a translation with both =1 and ONE clauses which are
+    different. We should prefer the explicit =1 in that case. In future we may
+    distinguish the different forms, but that would probably break existing
+    translations.
 
 ## 0.14.0
   * Split message extraction and code generation out into a separate

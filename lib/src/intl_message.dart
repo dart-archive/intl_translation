@@ -741,19 +741,25 @@ class Plural extends SubMessage {
     var value = Message.from(rawValue, this);
     switch (attributeName) {
       case "zero":
-        zero = value;
+        // We prefer an explicit "=0" clause to a "ZERO"
+        // if both are present.
+        if (zero == null) zero = value;
         return;
       case "=0":
         zero = value;
         return;
       case "one":
-        one = value;
+        // We prefer an explicit "=1" clause to a "ONE"
+        // if both are present.
+        if (one == null) one = value;
         return;
       case "=1":
         one = value;
         return;
       case "two":
-        two = value;
+        // We prefer an explicit "=2" clause to a "TWO"
+        // if both are present.
+        if (two == null) two = value;
         return;
       case "=2":
         two = value;
