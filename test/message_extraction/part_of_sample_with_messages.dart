@@ -11,38 +11,44 @@ class Person {
 }
 
 class YouveGotMessages {
-
   // A static message, rather than a standalone function.
   static staticMessage() =>
       Intl.message("This comes from a static method", name: 'staticMessage');
 
   // An instance method, rather than a standalone function.
   method() => Intl.message("This comes from a method",
-      name: 'YouveGotMessages_method', desc: 'This is a method with a '
-      'long description which spans '
-      'multiple lines.');
+      name: 'YouveGotMessages_method',
+      desc: 'This is a method with a '
+          'long description which spans '
+          'multiple lines.');
 
   // A non-lambda, i.e. not using => syntax, and with an additional statement
   // before the Intl.message call.
   nonLambda() {
     var aTrueValue = true;
     var msg = Intl.message("This method is not a lambda", name: 'nonLambda');
-    expect(aTrueValue, isTrue,
-        reason: 'Parser should not fail with additional code.');
+    if (!aTrueValue) {
+      throw new AssertionError('Parser should not fail with additional code.');
+    }
     return msg;
   }
 
-  plurals(num) => Intl.message("""${Intl.plural(num,
+  plurals(num) => Intl.message(
+      """${Intl.plural(num,
          zero : 'Is zero plural?',
          one : 'This is singular.',
          other : 'This is plural ($num).')
-        }""", name: "plurals", args: [num], desc: "Basic plurals");
+        }""",
+      name: "plurals",
+      args: [num],
+      desc: "Basic plurals");
 
   whereTheyWent(Person person, String place) =>
       whereTheyWentMessage(person.name, person.gender, place);
 
   whereTheyWentMessage(String name, String gender, String place) {
-    return Intl.message("${Intl.gender(gender,
+    return Intl.message(
+        "${Intl.gender(gender,
             male: '$name went to his $place',
             female: '$name went to her $place',
             other: '$name went to its $place')
@@ -70,7 +76,8 @@ class YouveGotMessages {
             one: "$names est allée au $place",
           other: "$names sont allées au $place")}'
         )}''',
-        name: "nestedMessage", args: [names, number, combinedGender, place]);
+        name: "nestedMessage",
+        args: [names, number, combinedGender, place]);
     return nestedMessage(names, number, combinedGender, place);
   }
 }

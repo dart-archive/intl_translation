@@ -1,7 +1,7 @@
 library verify_messages;
 
 import "print_to_list.dart";
-import "package:unittest/unittest.dart";
+import "package:test/test.dart";
 
 verifyResult(ignored) {
   test("Verify message translation output", actuallyVerifyResult);

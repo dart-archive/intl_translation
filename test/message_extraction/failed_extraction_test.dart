@@ -5,7 +5,7 @@ library failed_extraction_test;
 
 import "message_extraction_test.dart";
 import "dart:io";
-import "package:unittest/unittest.dart";
+import "package:test/test.dart";
 
 main() {
   test("Expect warnings but successful extraction", () {
@@ -18,8 +18,11 @@ const List<String> defaultFiles = const [
   "part_of_sample_with_messages.dart"
 ];
 
-void runTestWithWarnings({bool warningsAreErrors, int expectedExitCode,
-    bool embeddedPlurals: true, List<String> sourceFiles: defaultFiles}) {
+void runTestWithWarnings(
+    {bool warningsAreErrors,
+    int expectedExitCode,
+    bool embeddedPlurals: true,
+    List<String> sourceFiles: defaultFiles}) {
   verify(ProcessResult result) {
     try {
       expect(result.exitCode, expectedExitCode);
@@ -38,10 +41,8 @@ void runTestWithWarnings({bool warningsAreErrors, int expectedExitCode,
     args.add('--no-embedded-plurals');
   }
   var files = sourceFiles.map(asTempDirPath).toList();
-  List<String> allArgs = [program]
-    ..addAll(args)
-    ..addAll(files);
-  var callback = expectAsync(verify) as ThenArgument;
+  List<String> allArgs = [program]..addAll(args)..addAll(files);
+  var callback = expectAsync1(verify);
 
   run(null, allArgs).then(callback);
 }

@@ -4,7 +4,7 @@
 
 /// Test for parsing the examples argument from an Intl.message call. Very
 /// minimal so far.
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:intl_translation/extract_messages.dart';
 import '../data_directory.dart';
 import 'package:path/path.dart' as path;

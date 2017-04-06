@@ -4,7 +4,7 @@
 
 library message_extraction_test;
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
@@ -54,24 +54,22 @@ String asTempDirPath([String s]) {
 }
 
 typedef ProcessResult ThenResult(ProcessResult _);
-main(arguments) {
-  // If debugging, use --local to avoid copying everything to temporary
-  // directories to make it even harder to debug. Note that this will also
-  // not delete the generated files, so may require manual cleanup.
-  if (arguments.contains("--local")) {
-    print("Testing using local directory for generated files");
-    useLocalDirectory = true;
-  }
+main() {
   setUp(copyFilesToTempDirectory);
   tearDown(deleteGeneratedFiles);
-  test("Test round trip message extraction, translation, code generation, "
+  test(
+      "Test round trip message extraction, translation, code generation, "
       "and printing", () {
-    var makeSureWeVerify = expectAsync(runAndVerify) as ThenResult;
-    return extractMessages(null).then((result) {
-      return generateTranslationFiles(result);
-    }).then((result) {
-      return generateCodeFromTranslation(result);
-    }).then(makeSureWeVerify).then(checkResult);
+    var makeSureWeVerify = expectAsync1(runAndVerify) as ThenResult;
+    return extractMessages(null)
+        .then((result) {
+          return generateTranslationFiles(result);
+        })
+        .then((result) {
+          return generateCodeFromTranslation(result);
+        })
+        .then(makeSureWeVerify)
+        .then(checkResult);
   });
 }
 
@@ -84,11 +82,14 @@ void copyFilesToTempDirectory() {
     asTestDirPath('run_and_verify.dart'),
     asTestDirPath('embedded_plural_text_before.dart'),
     asTestDirPath('embedded_plural_text_after.dart'),
-    asTestDirPath('print_to_list.dart')
+    asTestDirPath('print_to_list.dart'),
+    '.packages' // Copy this so that package test can find the imports
   ];
   for (var filename in files) {
     var file = new File(filename);
-    file.copySync(path.join(tempDir, path.basename(filename)));
+    if (file.existsSync()) {
+      file.copySync(path.join(tempDir, path.basename(filename)));
+    }
   }
 }
 
@@ -138,30 +139,31 @@ checkResult(ProcessResult previousResult) {
   }
 }
 
-Future<ProcessResult> extractMessages(ProcessResult previousResult) => run(
-    previousResult, [
-  asTestDirPath('../../bin/extract_to_arb.dart'),
-  '--suppress-warnings',
-  'sample_with_messages.dart',
-  'part_of_sample_with_messages.dart'
-]);
+Future<ProcessResult> extractMessages(ProcessResult previousResult) =>
+    run(previousResult, [
+      asTestDirPath('../../bin/extract_to_arb.dart'),
+      '--suppress-warnings',
+      'sample_with_messages.dart',
+      'part_of_sample_with_messages.dart'
+    ]);
 
 Future<ProcessResult> generateTranslationFiles(ProcessResult previousResult) =>
     run(previousResult, [
-  asTestDirPath('make_hardcoded_translation.dart'),
-  'intl_messages.arb'
-]);
+      asTestDirPath('make_hardcoded_translation.dart'),
+      'intl_messages.arb'
+    ]);
 
 Future<ProcessResult> generateCodeFromTranslation(
-    ProcessResult previousResult) => run(previousResult, [
-  asTestDirPath('../../bin/generate_from_arb.dart'),
-  deferredLoadArg,
-  '--generated-file-prefix=foo_',
-  'sample_with_messages.dart',
-  'part_of_sample_with_messages.dart',
-  'translation_fr.arb',
-  'translation_de_DE.arb'
-]);
+        ProcessResult previousResult) =>
+    run(previousResult, [
+      asTestDirPath('../../bin/generate_from_arb.dart'),
+      deferredLoadArg,
+      '--generated-file-prefix=foo_',
+      'sample_with_messages.dart',
+      'part_of_sample_with_messages.dart',
+      'translation_fr.arb',
+      'translation_de_DE.arb'
+    ]);
 
 Future<ProcessResult> runAndVerify(ProcessResult previousResult) =>
     run(previousResult, [asTempDirPath('run_and_verify.dart')]);

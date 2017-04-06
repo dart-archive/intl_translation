@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:intl_translation/src/intl_message.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 main() {
   test("Prefer explicit =0 to ZERO in plural", () {

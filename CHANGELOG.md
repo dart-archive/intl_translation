@@ -28,6 +28,7 @@
     different. We should prefer the explicit =1 in that case. In future we may
     distinguish the different forms, but that would probably break existing
     translations.
+  * Switch to using package:test
 
 ## 0.14.0
   * Split message extraction and code generation out into a separate

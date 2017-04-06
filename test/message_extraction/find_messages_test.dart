@@ -4,7 +4,7 @@
 
 import 'package:intl_translation/extract_messages.dart';
 import 'package:intl_translation/src/message_rewriter.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 main() {
   group('findMessages', () {

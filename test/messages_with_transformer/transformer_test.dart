@@ -1,4 +1,4 @@
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 import 'package:intl/intl.dart';
 
@@ -9,8 +9,8 @@ foo() => Intl.message("foo");
 main() async {
   await initializeMessages("zz");
 
-test("Message without name/args", () {
-  Intl.defaultLocale = "zz";
-  expect(foo(), "bar");
+  test("Message without name/args", () {
+    Intl.defaultLocale = "zz";
+    expect(foo(), "bar");
   });
 }

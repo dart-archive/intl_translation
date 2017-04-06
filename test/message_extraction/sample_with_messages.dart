@@ -11,7 +11,7 @@ import "package:intl/intl.dart";
 import "foo_messages_all.dart";
 import "print_to_list.dart";
 import "dart:async";
-import "package:unittest/unittest.dart";
+import "package:test/test.dart";
 
 part 'part_of_sample_with_messages.dart';
 
@@ -254,7 +254,9 @@ main() {
 
   // Verify that a translated message isn't initially present.
   var messageInGerman = Intl.withLocale('de_DE', message1);
-  expect(messageInGerman, "This is a message");
+  if (messageInGerman != "This is a message") {
+    throw new AssertionError("Translation error");
+  }
 
   var f1 = initializeMessages(fr.locale)
       // Since English has the one message which is always translated, we
