@@ -17,6 +17,7 @@
     IntlMessageExtractionException into intl_message.dart
   * Make use of analyzer's new AstFactory class (requires analyzer version
     0.29.1).
+  * Fix error in transformer, pass the path instead of the asset id.
 
 ## 0.14.0
   * Split message extraction and code generation out into a separate

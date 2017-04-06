@@ -20,7 +20,7 @@ class IntlMessageTransformer extends Transformer {
   apply(Transform transform) async {
     var content = await transform.primaryInput.readAsString();
     var id = transform.primaryInput.id;
-    var newContent = rewriteMessages(content, '$id');
+    var newContent = rewriteMessages(content, '${id.path}');
     transform.addOutput(new Asset.fromString(id, newContent));
   }
 }
