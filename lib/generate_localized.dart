@@ -131,7 +131,8 @@ class MessageLookup extends MessageLookupByLibrary {
       output.write("as ${_libraryName(locale)};\n");
     }
     output.write("\n");
-    output.write("Map<String, Function> _deferredLibraries = {\n");
+    output.write("typedef Future<dynamic> LibraryLoader();\n");
+    output.write("Map<String, LibraryLoader> _deferredLibraries = {\n");
     for (var rawLocale in allLocales) {
       var locale = Intl.canonicalizedLocale(rawLocale);
       var loadOperation = (useDeferredLoading)

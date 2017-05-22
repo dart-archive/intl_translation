@@ -29,6 +29,9 @@
     distinguish the different forms, but that would probably break existing
     translations.
   * Switch to using package:test
+  * Give a more specific type in the generated code to keep lints happy.
+
+## 0.15.0
 
 ## 0.14.0
   * Split message extraction and code generation out into a separate
