@@ -21,7 +21,7 @@ message2(x) => Intl.message("Another message with parameter $x",
     name: 'mess' 'age2',
     desc: 'Description ' '2',
     args: [x],
-    examples: {'x': 3});
+    examples: const {'x': 3});
 
 // A string with multiple adjacent strings concatenated together, verify
 // that the parser handles this properly.
