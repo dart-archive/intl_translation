@@ -11,7 +11,6 @@ import "package:intl/intl.dart";
 import "foo_messages_all.dart";
 import "print_to_list.dart";
 import "dart:async";
-import "package:test/test.dart";
 
 part 'part_of_sample_with_messages.dart';
 
@@ -264,5 +263,5 @@ main() {
       .then((_) => printStuff(english))
       .then((_) => printStuff(fr));
   var f2 = initializeMessages('de-de').then((_) => printStuff(de));
-  return Future.wait([f1, f2]);
+  return Future.wait(<Future>[f1, f2]);
 }
