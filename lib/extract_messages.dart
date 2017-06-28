@@ -87,9 +87,9 @@ class MessageExtraction {
     var parsed;
     try {
       parsed = parseCompilationUnit(contents);
-    } on AnalyzerErrorGroup catch (e) {
+    } on AnalyzerErrorGroup {
       print("Error in parsing $origin, no messages extracted.");
-      print("  $e");
+      rethrow;
     }
     return parsed;
   }

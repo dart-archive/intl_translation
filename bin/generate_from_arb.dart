@@ -38,6 +38,7 @@ main(List<String> args) {
   var parser = new ArgParser();
   var extraction = new MessageExtraction();
   var generation = new MessageGeneration();
+  var codegenMode;
   parser.addFlag("suppress-warnings",
       defaultsTo: false,
       callback: (x) => extraction.suppressWarnings = x,
@@ -55,6 +56,11 @@ main(List<String> args) {
       callback: (x) => generation.useDeferredLoading = x,
       help: 'Generate message code that must be loaded with deferred loading. '
           'Otherwise, all messages are eagerly loaded.');
+  parser.addOption('codegen_mode',
+      allowed: ['release', 'debug'],
+      defaultsTo: 'debug',
+      callback: (x) => generation.codegenMode = x,
+      help: 'What mode to run the code generator in. Either release or debug.');
   parser.parse(args);
   var dartFiles = args.where((x) => x.endsWith("dart")).toList();
   var jsonFiles = args.where((x) => x.endsWith(".arb")).toList();

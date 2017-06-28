@@ -44,6 +44,14 @@ class MessageGeneration {
   /// Should we use deferred loading for the generated libraries.
   bool useDeferredLoading = true;
 
+  /// The mode to generate in - either 'release' or 'debug'.
+  ///
+  /// In release mode, a missing translation is an error. In debug mode, it
+  /// falls back to the original string.
+  String codegenMode;
+
+  get releaseMode => codegenMode == 'release';
+
   /// Generate a file <[generated_file_prefix]>_messages_<[locale]>.dart
   /// for the [translations] in [locale] and put it in [targetDir].
   void generateIndividualMessageFile(String basicLocale,
@@ -100,7 +108,8 @@ class MessageGeneration {
   /// This returns the mostly constant string used in
   /// [generateIndividualMessageFile] for the beginning of the file,
   /// parameterized by [locale].
-  String prologue(String locale) => """
+  String prologue(String locale) =>
+      """
 // DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
 // This is a library that provides messages for a $locale locale. All the
 // messages from the main program should be duplicated here with the same
@@ -113,8 +122,26 @@ final messages = new MessageLookup();
 
 final _keepAnalysisHappy = Intl.defaultLocale;
 
+typedef MessageIfAbsent(String message_str, List args);
+
 class MessageLookup extends MessageLookupByLibrary {
   get localeName => '$locale';
+
+""" +
+      (releaseMode ? overrideLookup : "");
+
+  String overrideLookup = """
+  String lookupMessage(
+      String message_str, String locale, String name, List args, String meaning,
+      {MessageIfAbsent ifAbsent}) {
+    String failedLookup(String message_str, List args) {
+      throw new UnsupportedError(
+          "No translation found for message '\$name',\\n"
+          "  original text '\$message_str'");
+    }
+    return super.lookupMessage(message_str, locale, name, args, meaning,
+        ifAbsent: ifAbsent ?? failedLookup);
+  }
 
 """;
 
@@ -174,13 +201,11 @@ import 'package:$intlImportPath/src/intl_helpers.dart';
 }
 
 /// User programs should call this before using [localeName] for messages.
-Future initializeMessages(String localeName) {
+Future initializeMessages(String localeName) async {
   var lib = _deferredLibraries[Intl.canonicalizedLocale(localeName)];
-  var load = lib == null ? new Future.value(false) : lib();
-  return load.then((_) {
-    initializeInternalMessageLookup(() => new CompositeMessageLookup());
-    messageLookup.addLocale(localeName, _findGeneratedMessagesFor);
-  });
+  await (lib == null ? new Future.value(false) : lib());
+  initializeInternalMessageLookup(() => new CompositeMessageLookup());
+  messageLookup.addLocale(localeName, _findGeneratedMessagesFor);
 }
 
 bool _messagesExistFor(String locale) {
