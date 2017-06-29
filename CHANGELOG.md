@@ -1,6 +1,9 @@
-## 0.15.1
-  * Added a utility to convert examples in calls to be const. This is important
-    for DDC usage, where they aren't optimized away.
+## 0.16.0
+  * BREAKING CHANGE: Require that the examples to message/plural/gender/select calls be
+    const. DDC does not optimize non-const maps well, so it's a significant
+    performance issue if these are non-const.
+  * Added a utility to convert examples in calls to be const. See
+    bin/make_examples_const.dart
   * Add a codegen_mode flag, which can be either release or debug. In release
     mode a missing translation throws an exception, in debug mode it returns the
     original text, which was the previous behavior.

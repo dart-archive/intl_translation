@@ -211,9 +211,13 @@ abstract class Message {
         return "Examples must be provided for messages with parameters";
       }
       if (examples.isNotEmpty) {
-        var map = _evaluateAsMap(examples.first);
+        var example = examples.first;
+        var map = _evaluateAsMap(example);
         if (map == null) {
-          return "Examples must be a Map literal, preferably const";
+          return "Examples must be a const Map literal.";
+        }
+        if (example.constKeyword == null) {
+          return "Examples must be const.";
         }
       }
     }

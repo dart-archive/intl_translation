@@ -30,10 +30,8 @@ String message(String string) =>
           '',
           messageExtraction);
 
-      expect(
-          messageExtraction.warnings,
-          anyElement(
-              contains('Examples must be a Map literal, preferably const')));
+      expect(messageExtraction.warnings,
+          anyElement(contains('Examples must be a const Map literal.')));
     });
 
     test('fails with message on prefixed expression in interpolation', () {
