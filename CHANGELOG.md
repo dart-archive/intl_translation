@@ -7,6 +7,7 @@
   * Add a codegen_mode flag, which can be either release or debug. In release
     mode a missing translation throws an exception, in debug mode it returns the
     original text, which was the previous behavior.
+  * Update the pubspec for Dart 2.0 dev versions
 
 ## 0.15.0
   * Change non-transformer message rewriting to preserve the original message as
