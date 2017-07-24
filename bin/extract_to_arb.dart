@@ -17,10 +17,9 @@ import 'package:path/path.dart' as path;
 import 'package:intl_translation/extract_messages.dart';
 import 'package:intl_translation/src/intl_message.dart';
 
-var outputFilename = 'intl_messages.arb';
-
 main(List<String> args) {
   var targetDir;
+  var outputFilename;
   bool transformer;
   var parser = new ArgParser();
   var extraction = new MessageExtraction();
@@ -52,6 +51,10 @@ main(List<String> args) {
       defaultsTo: '.',
       callback: (value) => targetDir = value,
       help: 'Specify the output directory.');
+  parser.addOption("output-file",
+      defaultsTo: 'intl_messages.arb',
+      callback: (value) => outputFilename = value,
+      help: 'Specify the output file.');
   parser.parse(args);
   if (args.length == 0) {
     print('Accepts Dart files and produces $outputFilename');
