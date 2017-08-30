@@ -1,13 +1,17 @@
 ## 0.16.0
-  * BREAKING CHANGE: Require that the examples to message/plural/gender/select calls be
-    const. DDC does not optimize non-const maps well, so it's a significant
-    performance issue if these are non-const.
+  * BREAKING CHANGE: Require that the examples to message/plural/gender/select
+    calls be const. DDC does not optimize non-const maps well, so it's a
+    significant performance issue if these are non-const.
   * Added a utility to convert examples in calls to be const. See
     bin/make_examples_const.dart
   * Add a codegen_mode flag, which can be either release or debug. In release
     mode a missing translation throws an exception, in debug mode it returns the
     original text, which was the previous behavior.
   * Update the pubspec for Dart 2.0 dev versions
+  * Add support for generating translated messages as JSON rather than
+    methods. This can significantly improve dart2js compile times for
+    applications with many translations. The JSON is a literal string in the
+    deferred library, so usage doesn't change at all.
 
 ## 0.15.0
   * Change non-transformer message rewriting to preserve the original message as

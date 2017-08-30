@@ -39,11 +39,16 @@ main(List<String> args) {
   var extraction = new MessageExtraction();
   var generation = new MessageGeneration();
   var codegenMode;
+  var transformer;
+  parser.addFlag('json', defaultsTo: false, callback: (useJson) {
+    generation =
+        useJson ? new JsonMessageGeneration() : new MessageGeneration();
+  }, help: 'Generate translations as a JSON string rather than as functions.');
   parser.addFlag("suppress-warnings",
       defaultsTo: false,
       callback: (x) => extraction.suppressWarnings = x,
       help: 'Suppress printing of warnings.');
-  parser.addOption("output-dir",
+  parser.addOption('output-dir',
       defaultsTo: '.',
       callback: (x) => targetDir = x,
       help: 'Specify the output directory.');
@@ -61,6 +66,12 @@ main(List<String> args) {
       defaultsTo: 'debug',
       callback: (x) => generation.codegenMode = x,
       help: 'What mode to run the code generator in. Either release or debug.');
+  parser.addFlag("transformer",
+      defaultsTo: false,
+      callback: (x) => transformer = x,
+      help: "Assume that the transformer is in use, so name and args "
+          "don't need to be specified for messages.");
+
   parser.parse(args);
   var dartFiles = args.where((x) => x.endsWith("dart")).toList();
   var jsonFiles = args.where((x) => x.endsWith(".arb")).toList();
@@ -82,8 +93,8 @@ main(List<String> args) {
   // for real projects we could provide a command-line flag to indicate which
   // sort of automated name we're using.
   extraction.suppressWarnings = true;
-  var allMessages =
-      dartFiles.map((each) => extraction.parseFile(new File(each), false));
+  var allMessages = dartFiles
+      .map((each) => extraction.parseFile(new File(each), transformer));
 
   messages = new Map();
   for (var eachMap in allMessages) {
@@ -144,7 +155,6 @@ BasicTranslatedMessage recreateIntlObjects(String id, data) {
   var parsed = pluralAndGenderParser.parse(data).value;
   if (parsed is LiteralString && parsed.string.isEmpty) {
     parsed = plainParser.parse(data).value;
-    ;
   }
   return new BasicTranslatedMessage(id, parsed);
 }

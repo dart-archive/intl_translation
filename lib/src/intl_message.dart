@@ -279,6 +279,10 @@ abstract class Message {
   /// code.
   String toCode();
 
+  /// Return a JSON-storable representation of this message which can be
+  /// interpolated at runtime.
+  Object toJson();
+
   /// Escape the string for use in generated Dart code.
   String escapeAndValidateString(String value) {
     const Map<String, String> escapes = const {
@@ -344,6 +348,7 @@ class CompositeMessage extends Message {
     pieces.forEach((x) => x.parent = this);
   }
   toCode() => pieces.map((each) => each.toCode()).join('');
+  toJson() => pieces.map((each) => each.toJson()).toList();
   toString() => "CompositeMessage(" + pieces.toString() + ")";
   String expanded([Function f = _nullTransform]) =>
       pieces.map((chunk) => f(this, chunk)).join("");
@@ -354,6 +359,7 @@ class LiteralString extends Message {
   String string;
   LiteralString(this.string, Message parent) : super(parent);
   toCode() => escapeAndValidateString(string);
+  toJson() => string;
   toString() => "Literal($string)";
   String expanded([Function f = _nullTransform]) => f(this, string);
 }
@@ -406,6 +412,7 @@ class VariableSubstitution extends Message {
   // in curly braces so that there's no possibility of ambiguity with
   // surrounding text.
   toCode() => "\${${variableName}}";
+  toJson() => index;
   toString() => "VariableSubstitution($index)";
   String expanded([Function f = _nullTransform]) => f(this, index);
 }
@@ -470,7 +477,8 @@ class MainMessage extends ComplexMessage {
 
   /// When generating code, we store translations for each locale
   /// associated with the original message.
-  Map<String, String> translations = new Map();
+  Map<String, String> translations = {};
+  Map<String, Object> jsonTranslations = {};
 
   /// If the message was not given a name, we use the entire message string as
   /// the name.
@@ -495,10 +503,13 @@ class MainMessage extends ComplexMessage {
   void addTranslation(String locale, Message translated) {
     translated.parent = this;
     translations[locale] = translated.toCode();
+    jsonTranslations[locale] = translated.toJson();
   }
 
   toCode() =>
       throw new UnsupportedError("MainMessage.toCode requires a locale");
+  toJson() =>
+      throw new UnsupportedError("MainMessage.toJson requires a locale");
 
   /// Generate code for this message, expecting it to be part of a map
   /// keyed by name with values the function that calls Intl.message.
@@ -510,6 +521,11 @@ class MainMessage extends ComplexMessage {
       ..write(translations[locale])
       ..write('";');
     return out.toString();
+  }
+
+  /// Return a JSON string representation of this message.
+  toJsonForLocale(String locale) {
+    return jsonTranslations[locale];
   }
 
   turnInterpolationBackIntoStringForm(Message message, chunk) {
@@ -662,6 +678,21 @@ abstract class SubMessage extends ComplexMessage {
         out, (buffer, arg) => buffer..write(", $arg: '${this[arg].toCode()}'"));
     out.write(")}");
     return out.toString();
+  }
+
+  /// We represent this in JSON as a list with [dartMessageName], the index in
+  /// the arguments list at which we will find the main argument (e.g. howMany
+  /// for a plural), and then the values of all the possible arguments, in the
+  /// order that they appear in codeAttributeNames. Any missing arguments are
+  /// saved as an explicit null.
+  toJson() {
+    var json = [];
+    json.add(dartMessageName);
+    json.add(arguments.indexOf(mainArgument));
+    for (var arg in codeAttributeNames) {
+      json.add(this[arg]?.toJson());
+    }
+    return json;
   }
 }
 
@@ -881,6 +912,21 @@ class Select extends SubMessage {
         (buffer, arg) => buffer..write("'$arg': '${this[arg].toCode()}', "));
     out.write("})}");
     return out.toString();
+  }
+
+  /// We represent this in JSON as a List with the name of the message
+  /// (e.g. Intl.select), the index in the arguments list of the main argument,
+  /// and then a Map from the cases to the List of strings or sub-messages.
+  toJson() {
+    var json = [];
+    json.add(dartMessageName);
+    json.add(arguments.indexOf(mainArgument));
+    var attributes = {};
+    for (var arg in codeAttributeNames) {
+      attributes[arg] = this[arg].toJson();
+    }
+    json.add(attributes);
+    return json;
   }
 }
 

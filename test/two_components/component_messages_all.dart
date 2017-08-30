@@ -25,21 +25,19 @@ MessageLookupByLibrary _findExact(localeName) {
 }
 
 /// User programs should call this before using [localeName] for messages.
-Future initializeMessages(String localeName) {
+Future initializeMessages(String localeName) async {
   var lib = _deferredLibraries[Intl.canonicalizedLocale(localeName)];
-  var load = lib == null ? new Future.value(false) : lib();
-  return load.then((_) {
-    initializeInternalMessageLookup(() => new CompositeMessageLookup());
-    messageLookup.addLocale(localeName, _findGeneratedMessagesFor);
-  });
+  await (lib == null ? new Future.value(false) : lib());
+  initializeInternalMessageLookup(() => new CompositeMessageLookup());
+  messageLookup.addLocale(localeName, _findGeneratedMessagesFor);
 }
 
 bool _messagesExistFor(String locale) {
-  var messages;
   try {
-    messages = _findExact(locale);
-  } catch (e) {}
-  return messages != null;
+    return _findExact(locale) != null;
+  } catch (e) {
+    return false;
+  }
 }
 
 MessageLookupByLibrary _findGeneratedMessagesFor(locale) {

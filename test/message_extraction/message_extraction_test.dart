@@ -16,6 +16,9 @@ final dart = Platform.executable;
 /// Should we use deferred loading.
 bool useDeferredLoading = true;
 
+/// Should we generate JSON strings rather than code for messages.
+bool useJson = false;
+
 String get _deferredLoadPrefix => useDeferredLoading ? '' : 'no-';
 
 String get deferredLoadArg => '--${_deferredLoadPrefix}use-deferred-loading';
@@ -158,6 +161,7 @@ Future<ProcessResult> generateCodeFromTranslation(
     run(previousResult, [
       asTestDirPath('../../bin/generate_from_arb.dart'),
       deferredLoadArg,
+      '--' + (useJson ? '' : 'no-') + 'json',
       '--generated-file-prefix=foo_',
       'sample_with_messages.dart',
       'part_of_sample_with_messages.dart',

@@ -10,6 +10,8 @@ final messages = new MessageLookup();
 
 final _keepAnalysisHappy = Intl.defaultLocale;
 
+typedef MessageIfAbsent(String message_str, List args);
+
 class MessageLookup extends MessageLookupByLibrary {
   get localeName => 'fr_xyz123';
 

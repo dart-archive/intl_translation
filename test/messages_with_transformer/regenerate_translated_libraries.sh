@@ -6,6 +6,6 @@
 #
 # To regenerate the code you can run the lines in this script,
 # although translation_zz.arb must be manually created.
-dart ../../bin/extract_to_arb.dart --transformer main.dart
+dart ../../bin/extract_to_arb.dart --transformer transformer_test.dart
 # manually edit to create translation_zz.arb
-dart ../../bin/generate_from_arb.dart translation_zz.arb transformer_test.dart
+dart ../../bin/generate_from_arb.dart translation_zz.arb --transformer transformer_test.dart

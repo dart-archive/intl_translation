@@ -13,6 +13,7 @@ library generate_localized;
 
 import 'package:intl/intl.dart';
 import 'src/intl_message.dart';
+import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart' as path;
 
@@ -52,14 +53,23 @@ class MessageGeneration {
 
   get releaseMode => codegenMode == 'release';
 
+  bool get jsonMode => false;
+
+  /// Holds the generated translations.
+  StringBuffer output = new StringBuffer();
+
+  void clearOutput() {
+    output = new StringBuffer();
+  }
+
   /// Generate a file <[generated_file_prefix]>_messages_<[locale]>.dart
   /// for the [translations] in [locale] and put it in [targetDir].
   void generateIndividualMessageFile(String basicLocale,
       Iterable<TranslatedMessage> translations, String targetDir) {
-    var result = new StringBuffer();
+    clearOutput();
     var locale = new MainMessage()
         .escapeAndValidateString(Intl.canonicalizedLocale(basicLocale));
-    result.write(prologue(locale));
+    output.write(prologue(locale));
     // Exclude messages with no translation and translations with no matching
     // original message (e.g. if we're using some messages from a larger catalog)
     var usableTranslations = translations
@@ -72,40 +82,56 @@ class MessageGeneration {
     }
     usableTranslations.sort((a, b) =>
         a.originalMessages.first.name.compareTo(b.originalMessages.first.name));
+
+    writeTranslations(usableTranslations, locale);
+
+    // To preserve compatibility, we don't use the canonical version of the
+    // locale in the file name.
+    var filename = path.join(
+        targetDir, "${generatedFilePrefix}messages_$basicLocale.dart");
+    new File(filename).writeAsStringSync(output.toString());
+  }
+
+  /// Write out the translated forms.
+  void writeTranslations(
+      Iterable<TranslatedMessage> usableTranslations, String locale) {
     for (var translation in usableTranslations) {
       // Some messages we generate as methods in this class. Simpler ones
       // we inline in the map from names to messages.
       var messagesThatNeedMethods =
           translation.originalMessages.where((each) => _hasArguments(each));
       for (var original in messagesThatNeedMethods) {
-        result
+        output
           ..write("  ")
           ..write(
               original.toCodeForLocale(locale, _methodNameFor(original.name)))
           ..write("\n\n");
       }
     }
-    // Some gyrations to prevent parts of the deferred libraries from being
-    // inlined into the main one, defeating the space savings. Issue 24356
-    result.write("""
-  final messages = _notInlinedMessages(_notInlinedMessages);
-  static _notInlinedMessages(_) => {
-""");
+    output.write(messagesDeclaration);
+
+    // Now write the map of names to either the direct translation or to a
+    // method.
     var entries = usableTranslations
         .expand((translation) => translation.originalMessages)
         .map((original) =>
             '    "${original.escapeAndValidateString(original.name)}" '
             ': ${_mapReference(original, locale)}');
-    result..write(entries.join(",\n"))..write("\n  };\n}\n");
-
-    // To preserve compatibility, we don't use the canonical version of the
-    // locale in the file name.
-    var filename = path.join(
-        targetDir, "${generatedFilePrefix}messages_$basicLocale.dart");
-    new File(filename).writeAsStringSync(result.toString());
+    output..write(entries.join(",\n"))..write("\n  };\n}\n");
   }
 
-  /// This returns the mostly constant string used in
+  /// Any additional imports the individual message files need.
+  String get extraImports => '';
+
+  String get messagesDeclaration =>
+      // Includes some gyrations to prevent parts of the deferred libraries from
+      // being inlined into the main one, defeating the space savings. Issue
+      // 24356
+      """
+  final messages = _notInlinedMessages(_notInlinedMessages);
+  static _notInlinedMessages(_) => {
+""";
+
   /// [generateIndividualMessageFile] for the beginning of the file,
   /// parameterized by [locale].
   String prologue(String locale) =>
@@ -117,6 +143,7 @@ class MessageGeneration {
 
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
+$extraImports
 
 final messages = new MessageLookup();
 
@@ -135,6 +162,9 @@ class MessageLookup extends MessageLookupByLibrary {
       String message_str, String locale, String name, List args, String meaning,
       {MessageIfAbsent ifAbsent}) {
     String failedLookup(String message_str, List args) {
+      // If there's no message_str, then we are an internal lookup, e.g. an
+      // embedded plural, and shouldn't fail.
+      if (message_str == null) return null;
       throw new UnsupportedError(
           "No translation found for message '\$name',\\n"
           "  original text '\$message_str'");
@@ -148,7 +178,7 @@ class MessageLookup extends MessageLookupByLibrary {
   /// This section generates the messages_all.dart file based on the list of
   /// [allLocales].
   String generateMainImportFile() {
-    var output = new StringBuffer();
+    clearOutput();
     output.write(mainPrologue);
     for (var locale in allLocales) {
       var baseFile = '${generatedFilePrefix}messages_$locale.dart';
@@ -195,7 +225,7 @@ import 'package:$intlImportPath/src/intl_helpers.dart';
 """;
 
   /// Constant string used in [generateMainImportFile] as the end of the file.
-  static const closing = """
+  get closing => """
     default:\n      return null;
   }
 }
@@ -209,11 +239,11 @@ Future initializeMessages(String localeName) async {
 }
 
 bool _messagesExistFor(String locale) {
-  var messages;
   try {
-    messages = _findExact(locale);
-  } catch (e) {}
-  return messages != null;
+    return _findExact(locale) != null;
+  } catch (e) {
+    return false;
+  }
 }
 
 MessageLookupByLibrary _findGeneratedMessagesFor(locale) {
@@ -223,6 +253,109 @@ MessageLookupByLibrary _findGeneratedMessagesFor(locale) {
   return _findExact(actualLocale);
 }
 """;
+}
+
+class JsonMessageGeneration extends MessageGeneration {
+  /// We import the main file so as to get the shared code to evaluate
+  /// the JSON data.
+  String get extraImports => '''
+import 'dart:convert';
+import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
+''';
+
+  String prologue(locale) =>
+      super.prologue(locale) +
+      '''
+  String evaluateMessage(translation, List args) {
+    return evaluateJsonTemplate(translation, args);
+  }
+''';
+
+  void writeTranslations(
+      Iterable<TranslatedMessage> usableTranslations, String locale) {
+    output.write(r"""
+  var _messages;
+  get messages =>
+      _messages == null ? _messages = JSON.decode(messageText) : _messages;
+""");
+
+    output.write("  static final messageText = ");
+    var entries = usableTranslations
+        .expand((translation) => translation.originalMessages);
+    var map = {};
+    for (var original in entries) {
+      map[original.name] = original.toJsonForLocale(locale);
+    }
+    output.write(
+        "r'''\n" + new JsonEncoder.withIndent('  ').convert(map) + "''';\n}");
+  }
+
+  get closing =>
+      super.closing +
+      '''
+/// Turn the JSON template into a string.
+///
+/// We expect one of the following forms for the template.
+/// * null -> null
+/// * String s -> s
+/// * int n -> '\${args[n]}'
+/// * List list, one of
+///   * \['Intl.plural', int howMany, (templates for zero, one, ...)\]
+///   * \['Intl.gender', String gender, (templates for female, male, other)\]
+///   * \['Intl.select', String choice, { 'case' : template, ...} \]
+///   * \['text alternating with ', 0 , ' indexes in the argument list'\]
+String evaluateJsonTemplate(Object input, List args) {
+  if (input == null) return null;
+  if (input is String) return input;
+  if (input is int) {
+    return "\${args[input]}";
+  }
+
+  List template = input;
+  var messageName = template.first;
+  if (messageName == "Intl.plural") {
+     var howMany = args[template[1]];
+     return evaluateJsonTemplate(
+         Intl.pluralLogic(
+             howMany,
+             zero: template[2],
+             one: template[3],
+             two: template[4],
+             few: template[5],
+             many: template[6],
+             other: template[7]),
+         args);
+   }
+   if (messageName == "Intl.gender") {
+     var gender = args[template[1]];
+     return evaluateJsonTemplate(
+         Intl.genderLogic(
+             gender,
+             female: template[2],
+             male: template[3],
+             other: template[4]),
+         args);
+   }
+   if (messageName == "Intl.select") {
+     var select = args[template[1]];
+     var choices = template[2];
+     return evaluateJsonTemplate(Intl.selectLogic(select, choices), args);
+   }
+
+   // If we get this far, then we are a basic interpolation, just strings and
+   // ints.
+   var output = new StringBuffer();
+   for (var entry in template) {
+     if (entry is int) {
+       output.write("\${args[entry]}");
+     } else {
+       output.write("\${entry}");
+     }
+   }
+   return output.toString();
+  }
+
+ ''';
 }
 
 /// This represents a message and its translation. We assume that the
