@@ -144,7 +144,6 @@ class MessageGeneration {
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
 $extraImports
-
 final messages = new MessageLookup();
 
 final _keepAnalysisHappy = Intl.defaultLocale;
