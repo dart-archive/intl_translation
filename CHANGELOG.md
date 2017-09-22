@@ -7,7 +7,6 @@
   * Add a codegen_mode flag, which can be either release or debug. In release
     mode a missing translation throws an exception, in debug mode it returns the
     original text, which was the previous behavior.
-  * Update the pubspec for Dart 2.0 dev versions
   * Add support for generating translated messages as JSON rather than
     methods. This can significantly improve dart2js compile times for
     applications with many translations. The JSON is a literal string in the
