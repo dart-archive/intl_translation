@@ -22,6 +22,7 @@ var outputFilename = 'intl_messages.arb';
 main(List<String> args) {
   var targetDir;
   bool transformer;
+  bool indent = false;
   var parser = new ArgParser();
   var extraction = new MessageExtraction();
   parser.addFlag("suppress-warnings",
@@ -42,6 +43,10 @@ main(List<String> args) {
       callback: (x) => transformer = x,
       help: "Assume that the transformer is in use, so name and args "
           "don't need to be specified for messages.");
+  parser.addFlag("indent",
+	  defaultsTo: false,
+	  callback: (x) => indent = x,
+	  help: "Generates arb file with indented json.");
 
   parser.addOption("output-dir",
       defaultsTo: '.',
@@ -60,7 +65,14 @@ main(List<String> args) {
     messages.forEach((k, v) => allMessages.addAll(toARB(v)));
   }
   var file = new File(path.join(targetDir, outputFilename));
-  file.writeAsStringSync(JSON.encode(allMessages));
+  JsonEncoder encoder;
+  if(indent) {
+  	encoder = new JsonEncoder.withIndent("  ");
+  }
+  else {
+  	encoder = const JsonEncoder();
+  }
+  file.writeAsStringSync(encoder.convert(allMessages));
   if (extraction.hasWarnings && extraction.warningsAreErrors) {
     exit(1);
   }
