@@ -24,6 +24,7 @@ main(List<String> args) {
   bool transformer;
   var parser = new ArgParser();
   var extraction = new MessageExtraction();
+  String locale;
   parser.addFlag("suppress-warnings",
       defaultsTo: false,
       callback: (x) => extraction.suppressWarnings = x,
@@ -43,6 +44,10 @@ main(List<String> args) {
       help: "Assume that the transformer is in use, so name and args "
           "don't need to be specified for messages.");
 
+  parser.addOption("locale",
+      defaultsTo: null,
+      callback: (value) => locale = value,
+      help: 'Specify the locale set inside the arb file.');
   parser.addOption("output-dir",
       defaultsTo: '.',
       callback: (value) => targetDir = value,
@@ -55,6 +60,9 @@ main(List<String> args) {
     exit(0);
   }
   var allMessages = {};
+  if(locale != null) {
+    allMessages["_locale"] = locale;
+  }
   for (var arg in args.where((x) => x.contains(".dart"))) {
     var messages = extraction.parseFile(new File(arg), transformer);
     messages.forEach((k, v) => allMessages.addAll(toARB(v)));
