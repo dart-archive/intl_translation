@@ -38,7 +38,6 @@ main(List<String> args) {
   var parser = new ArgParser();
   var extraction = new MessageExtraction();
   var generation = new MessageGeneration();
-  var codegenMode;
   var transformer;
   parser.addFlag('json', defaultsTo: false, callback: (useJson) {
     generation =
@@ -120,11 +119,9 @@ void generateLocaleFile(
     File file, String targetDir, MessageGeneration generation) {
   var src = file.readAsStringSync();
   var data = JSON.decode(src);
-  data.forEach((k, v) => data[k] = recreateIntlObjects(k, v));
+
   var locale = data["@@locale"] ?? data["_locale"];
-  if (locale != null) {
-    locale = locale.translated.string;
-  } else {
+  if (locale == null) {
     // Get the locale from the end of the file name. This assumes that the file
     // name doesn't contain any underscores except to begin the language tag
     // and to separate language from country. Otherwise we can't tell if
@@ -138,8 +135,9 @@ void generateLocaleFile(
 
   List<TranslatedMessage> translations = [];
   data.forEach((key, value) {
-    if (value != null) {
-      translations.add(value);
+	TranslatedMessage mess = recreateIntlObjects(key, value);
+    if (mess != null) {
+      translations.add(mess);
     }
   });
   generation.generateIndividualMessageFile(locale, translations, targetDir);
