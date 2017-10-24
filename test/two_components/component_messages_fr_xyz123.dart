@@ -17,8 +17,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => {
-        "Hello from component":
-            MessageLookupByLibrary.simpleMessage("Bonjour du composant"),
-        "_message2": MessageLookupByLibrary.simpleMessage("Locale explicite")
-      };
+    "Hello from component" : MessageLookupByLibrary.simpleMessage("Bonjour du composant"),
+    "_message2" : MessageLookupByLibrary.simpleMessage("Locale explicite")
+  };
 }
