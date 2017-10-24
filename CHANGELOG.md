@@ -1,3 +1,9 @@
+## 1.16.1
+ * Add @@last_modified to extracted ARB files.
+ * Handle @@locale in translated ARB files properly, and adds a --locale
+   parameter to specifye the locale.
+ * Adds a --output-file parameter to extract_to_arb
+
 ## 0.16.0
   * BREAKING CHANGE: Require that the examples to message/plural/gender/select
     calls be const. DDC does not optimize non-const maps well, so it's a
