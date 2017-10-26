@@ -219,6 +219,7 @@ import 'dart:async';
 
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
+// ignore: implementation_imports
 import 'package:$intlImportPath/src/intl_helpers.dart';
 
 """;
