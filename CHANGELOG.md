@@ -3,6 +3,7 @@
  * Handle @@locale in translated ARB files properly, and adds a --locale
    parameter to specifye the locale.
  * Adds a --output-file parameter to extract_to_arb
+ * Indent the output file for ARB for better readability.
 
 ## 0.16.0
   * BREAKING CHANGE: Require that the examples to message/plural/gender/select

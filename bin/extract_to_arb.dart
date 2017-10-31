@@ -72,7 +72,8 @@ main(List<String> args) {
     messages.forEach((k, v) => allMessages.addAll(toARB(v)));
   }
   var file = new File(path.join(targetDir, outputFilename));
-  file.writeAsStringSync(JSON.encode(allMessages));
+  var encoder = new JsonEncoder.withIndent("  ");
+  file.writeAsStringSync(encoder.convert(allMessages));
   if (extraction.hasWarnings && extraction.warningsAreErrors) {
     exit(1);
   }
