@@ -71,7 +71,8 @@ class MessageGeneration {
         .escapeAndValidateString(Intl.canonicalizedLocale(basicLocale));
     output.write(prologue(locale));
     // Exclude messages with no translation and translations with no matching
-    // original message (e.g. if we're using some messages from a larger catalog)
+    // original message (e.g. if we're using some messages from a larger
+    // catalog)
     var usableTranslations = translations
         .where((each) => each.originalMessages != null && each.message != null)
         .toList();
@@ -98,8 +99,10 @@ class MessageGeneration {
     for (var translation in usableTranslations) {
       // Some messages we generate as methods in this class. Simpler ones
       // we inline in the map from names to messages.
-      var messagesThatNeedMethods =
-          translation.originalMessages.where((each) => _hasArguments(each));
+      var messagesThatNeedMethods = translation.originalMessages
+          .where((each) => _hasArguments(each))
+          .toSet()
+          .toList();
       for (var original in messagesThatNeedMethods) {
         output
           ..write("  ")
@@ -112,8 +115,10 @@ class MessageGeneration {
 
     // Now write the map of names to either the direct translation or to a
     // method.
-    var entries = usableTranslations
-        .expand((translation) => translation.originalMessages)
+    var entries = (usableTranslations
+            .expand((translation) => translation.originalMessages)
+            .toSet()
+            .toList()..sort((a, b) => a.name.compareTo(b.name)))
         .map((original) =>
             '    "${original.escapeAndValidateString(original.name)}" '
             ': ${_mapReference(original, locale)}');
@@ -396,6 +401,10 @@ abstract class TranslatedMessage {
   Message get message => translated;
 
   toString() => id.toString();
+
+  operator ==(x) => x is TranslatedMessage && x.id == id;
+
+  get hashCode => id.hashCode;
 }
 
 /// We can't use a hyphen in a Dart library name, so convert the locale
