@@ -118,7 +118,8 @@ class MessageGeneration {
     var entries = (usableTranslations
             .expand((translation) => translation.originalMessages)
             .toSet()
-            .toList()..sort((a, b) => a.name.compareTo(b.name)))
+            .toList()
+              ..sort((a, b) => a.name.compareTo(b.name)))
         .map((original) =>
             '    "${original.escapeAndValidateString(original.name)}" '
             ': ${_mapReference(original, locale)}');
@@ -238,11 +239,19 @@ import 'package:$intlImportPath/src/intl_helpers.dart';
 }
 
 /// User programs should call this before using [localeName] for messages.
-Future initializeMessages(String localeName) async {
-  var lib = _deferredLibraries[Intl.canonicalizedLocale(localeName)];
+Future<bool> initializeMessages(String localeName) async {
+  var availableLocale = Intl.verifiedLocale(
+    localeName,
+    (locale) => _deferredLibraries[locale] != null,
+    onFailure: (_) => null);
+  if (availableLocale == null) {
+    return new Future.value(false);
+  }
+  var lib = _deferredLibraries[availableLocale];
   await (lib == null ? new Future.value(false) : lib());
   initializeInternalMessageLookup(() => new CompositeMessageLookup());
-  messageLookup.addLocale(localeName, _findGeneratedMessagesFor);
+  messageLookup.addLocale(availableLocale, _findGeneratedMessagesFor);
+  return new Future.value(true);
 }
 
 bool _messagesExistFor(String locale) {
