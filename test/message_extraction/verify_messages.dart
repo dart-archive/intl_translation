@@ -3,11 +3,7 @@ library verify_messages;
 import "print_to_list.dart";
 import "package:test/test.dart";
 
-verifyResult(ignored) {
-  test("Verify message translation output", actuallyVerifyResult);
-}
-
-actuallyVerifyResult() {
+verifyResult() {
   var lineIterator;
   verify(String s) {
     lineIterator.moveNext();
@@ -16,7 +12,8 @@ actuallyVerifyResult() {
   }
 
   var expanded = lines.expand((line) => line.split("\n")).toList();
-  lineIterator = expanded.iterator..moveNext();
+  lineIterator = expanded.iterator;
+  verify('-------------------------------------------');
   verify("Printing messages for en_US");
   verify("This is a message");
   verify("Another message with parameter hello");
@@ -76,10 +73,15 @@ actuallyVerifyResult() {
   verify('rent');
   verify('Five cents is US\$0.05');
   verify(r"'<>{}= +-_$()&^%$#@!~`'");
+  verify('This message should be extractable');
+  verify('This message should skip extraction');
+  verify('Extraction skipped plural one');
+  verify('Extraction skipped gender f');
+  verify('Extraction skipped select specified Bob!');
+  verify('This message should skip translation');
+  verify('-------------------------------------------');
 
-  var fr_lines =
-      expanded.skip(1).skipWhile((line) => !line.contains('----')).toList();
-  lineIterator = fr_lines.iterator..moveNext();
+  // French translations.
   verify("Printing messages for fr");
   verify("Il s'agit d'un message");
   verify("Un autre message avec un seul paramètre hello");
@@ -143,10 +145,15 @@ actuallyVerifyResult() {
   // Using a non-French format for the currency to test interpolation.
   verify('Cinq sous est US\$0.05');
   verify(r"interessant (fr): '<>{}= +-_$()&^%$#@!~`'");
+  verify('Ce message devrait être extractible');
+  verify('This message should skip extraction');
+  verify('Extraction skipped plural one');
+  verify('Extraction skipped gender f');
+  verify('Extraction skipped select specified Bob!');
+  verify('This message should skip translation');
+  verify('-------------------------------------------');
 
-  var de_lines =
-      fr_lines.skip(1).skipWhile((line) => !line.contains('----')).toList();
-  lineIterator = de_lines.iterator..moveNext();
+  // German translations.
   verify("Printing messages for de_DE");
   verify("Dies ist eine Nachricht");
   verify("Eine weitere Meldung mit dem Parameter hello");
@@ -210,4 +217,11 @@ actuallyVerifyResult() {
   verify('Miete');
   verify('Fünf Cent US \$ 0.05');
   verify(r"interessant (de): '<>{}= +-_$()&^%$#@!~`'");
+  verify('Diese Nachricht sollte extrahierbar sein');
+  verify('This message should skip extraction');
+  verify('Extraction skipped plural one');
+  verify('Extraction skipped gender f');
+  verify('Extraction skipped select specified Bob!');
+  verify('This message should skip translation');
+  expect(lineIterator.moveNext(), isFalse);
 }
