@@ -475,6 +475,12 @@ class MainMessage extends ComplexMessage {
   /// The locale argument from the Intl.message call
   String locale;
 
+  /// Whether extraction skip outputting this message.
+  ///
+  /// For example, this could be used to define messages whose purpose is known,
+  /// but whose text isn't final yet and shouldn't be sent for translation.
+  bool skip = false;
+
   /// When generating code, we store translations for each locale
   /// associated with the original message.
   Map<String, String> translations = {};
@@ -584,6 +590,9 @@ class MainMessage extends ComplexMessage {
       case "locale":
         locale = value;
         return;
+      case "skip":
+        skip = value as bool;
+        return;
       default:
         return;
     }
@@ -605,6 +614,8 @@ class MainMessage extends ComplexMessage {
         return [];
       case "meaning":
         return meaning;
+      case "skip":
+        return skip;
       default:
         return null;
     }
@@ -616,7 +627,8 @@ class MainMessage extends ComplexMessage {
   get dartMessageName => "message";
 
   /// The parameters that the Intl.message call may provide.
-  get attributeNames => const ["name", "desc", "examples", "args", "meaning"];
+  get attributeNames =>
+      const ["name", "desc", "examples", "args", "meaning", "skip"];
 
   String toString() =>
       "Intl.message(${expanded()}, $name, $description, $examples, $arguments)";
