@@ -75,7 +75,9 @@ var french = {
       "other{N'importe quoi}"
       "}}",
   "literalDollar": "Cinq sous est US\$0.05",
-  r"'<>{}= +-_$()&^%$#@!~`'": r"interessant (fr): '<>{}= +-_$()&^%$#@!~`'"
+  r"'<>{}= +-_$()&^%$#@!~`'": r"interessant (fr): '<>{}= +-_$()&^%$#@!~`'",
+  "extractable": "Ce message devrait être extractible",
+  "skipMessageExistingTranslation": "Ce message devrait ignorer la traduction"
 };
 
 /// A list of the German translations that we will produce.
@@ -138,7 +140,10 @@ var german = {
       "other{whatever}"
       "}",
   "literalDollar": "Fünf Cent US \$ 0.05",
-  r"'<>{}= +-_$()&^%$#@!~`'": r"interessant (de): '<>{}= +-_$()&^%$#@!~`'"
+  r"'<>{}= +-_$()&^%$#@!~`'": r"interessant (de): '<>{}= +-_$()&^%$#@!~`'",
+  "extractable": "Diese Nachricht sollte extrahierbar sein",
+  "skipMessageExistingTranslation":
+      "Diese Nachricht sollte die Übersetzung überspringen"
 };
 
 /// The output directory for translated files.

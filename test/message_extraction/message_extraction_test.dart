@@ -169,5 +169,6 @@ Future<ProcessResult> generateCodeFromTranslation(
       'translation_de_DE.arb'
     ]);
 
-Future<ProcessResult> runAndVerify(ProcessResult previousResult) =>
-    run(previousResult, [asTempDirPath('run_and_verify.dart')]);
+Future<ProcessResult> runAndVerify(ProcessResult previousResult) {
+  return run(previousResult, ['run_and_verify.dart', 'intl_messages.arb']);
+}
