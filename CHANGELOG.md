@@ -1,9 +1,9 @@
-## 1.16.2
+## 0.16.2
  * Handle fallback better when we provide translations for locale "xx" but
    initialize "xx_YY", initializing "xx". Previously we would do nothing.
  * Skip extracting messages that pass the 'skip' argument to Intl calls.
 
-## 1.16.1
+## 0.16.1
  * Add @@last_modified to extracted ARB files.
  * Handle @@locale in translated ARB files properly, and adds a --locale
    parameter to specify the locale.
