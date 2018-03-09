@@ -276,7 +276,9 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
             "'${message.name}' occurs more than once in ${extraction.origin}";
       }
     } else {
-      messages[message.name] = message;
+      if (!message.skip) {
+        messages[message.name] = message;
+      }
       return null;
     }
     return null; // Placate the analyzer

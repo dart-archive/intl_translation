@@ -152,6 +152,45 @@ rentAsVerb() => Intl.message("rent",
 literalDollar() => Intl.message("Five cents is US\$0.05",
     name: "literalDollar", desc: "Literal dollar sign with valid number");
 
+/// Messages for testing the skip flag.
+extractable() => Intl.message('This message should be extractable',
+    name: "extractable", skip: false);
+
+skipMessage() =>
+    Intl.message('This message should skip extraction', skip: true);
+
+skipPlural(n) => Intl.plural(n,
+    zero: 'Extraction skipped plural none',
+    one: 'Extraction skipped plural one',
+    other: 'Extraction skipped plural some',
+    name: 'skipPlural',
+    desc: 'A skipped plural',
+    args: [n],
+    skip: true);
+
+skipGender(g) => Intl.gender(g,
+    male: 'Extraction skipped gender m',
+    female: 'Extraction skipped gender f',
+    other: 'Extraction skipped gender o',
+    name: 'skipGender',
+    desc: 'A skipped gender',
+    args: [g],
+    skip: true);
+
+skipSelect(name) => Intl.select(
+    name,
+    {
+      "Bob": "Extraction skipped select specified Bob!",
+      "other": "Extraction skipped select other $name"
+    },
+    name: "skipSelect",
+    args: [name],
+    skip: true);
+
+skipMessageExistingTranslation() =>
+    Intl.message('This message should skip translation',
+        name: "skipMessageExistingTranslation", skip: true);
+
 printStuff(Intl locale) {
   // Use a name that's not a literal so this will get skipped. Then we have
   // a name that's not in the original but we include it in the French
@@ -239,6 +278,13 @@ printStuff(Intl locale) {
     printOut(rentToBePaid());
     printOut(literalDollar());
     printOut(interestingCharactersNoName);
+
+    printOut(extractable());
+    printOut(skipMessage());
+    printOut(skipPlural(1));
+    printOut(skipGender("female"));
+    printOut(skipSelect("Bob"));
+    printOut(skipMessageExistingTranslation());
   });
 }
 
