@@ -2,6 +2,7 @@
  * Handle fallback better when we provide translations for locale "xx" but
    initialize "xx_YY", initializing "xx". Previously we would do nothing.
  * Skip extracting messages that pass the 'skip' argument to Intl calls.
+ * Move analyzer dependency up to 0.32.0
 
 ## 0.16.1
  * Add @@last_modified to extracted ARB files.
