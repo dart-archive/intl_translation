@@ -1,3 +1,7 @@
+## 0.16.3
+  * Fix https://github.com/flutter/flutter/issues/15458 - specify concrete type
+    for generated map.
+
 ## 0.16.2
  * Handle fallback better when we provide translations for locale "xx" but
    initialize "xx_YY", initializing "xx". Previously we would do nothing.

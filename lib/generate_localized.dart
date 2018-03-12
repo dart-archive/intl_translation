@@ -135,7 +135,7 @@ class MessageGeneration {
       // 24356
       """
   final messages = _notInlinedMessages(_notInlinedMessages);
-  static _notInlinedMessages(_) => {
+  static _notInlinedMessages(_) => <String, Function> {
 """;
 
   /// [generateIndividualMessageFile] for the beginning of the file,
