@@ -1,3 +1,7 @@
+## 0.16.4
+  * Update Intl compatibility requirements. This requires at least 0.15.3 of
+    Intl, because the tests contain messages with the new "skip" parameter.
+
 ## 0.16.3
   * Fix https://github.com/flutter/flutter/issues/15458 - specify concrete type
     for generated map.
