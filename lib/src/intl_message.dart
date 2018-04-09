@@ -37,6 +37,8 @@ import 'package:analyzer/analyzer.dart';
 /// A default function for the [Message.expanded] method.
 _nullTransform(msg, chunk) => chunk;
 
+const jsonEncoder = const JsonCodec();
+
 /// An abstract superclass for Intl.message/plural/gender calls in the
 /// program's source text. We
 /// assemble these into objects that can be used to write out some translation
@@ -556,7 +558,7 @@ class MainMessage extends ComplexMessage {
     }
     if (includeExamples) {
       // json is already mostly-escaped, but we need to handle interpolations.
-      var json = JSON.encode(examples).replaceAll(r"$", r"\$");
+      var json = jsonEncoder.encode(examples).replaceAll(r"$", r"\$");
       out.write(examples == null ? "" : "examples: const ${json}, ");
     }
     out.write(meaning == null

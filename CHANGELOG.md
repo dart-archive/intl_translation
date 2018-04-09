@@ -1,3 +1,6 @@
+## 0.16.5
+  * Replace uses of JSON constant for Dart 2 compatibility.
+
 ## 0.16.4
   * Update Intl compatibility requirements. This requires at least 0.15.3 of
     Intl, because the tests contain messages with the new "skip" parameter.

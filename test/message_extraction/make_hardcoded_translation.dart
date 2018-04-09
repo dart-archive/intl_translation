@@ -149,6 +149,8 @@ var german = {
 /// The output directory for translated files.
 String targetDir;
 
+const jsonCodec = const JsonCodec();
+
 /// Generate a translated json version from [originals] in [locale] looking
 /// up the translations in [translations].
 void translate(Map originals, String locale, Map translations) {
@@ -157,7 +159,7 @@ void translate(Map originals, String locale, Map translations) {
     translated[name] = translations[name];
   });
   var file = new File(path.join(targetDir, 'translation_$locale.arb'));
-  file.writeAsStringSync(JSON.encode(translated));
+  file.writeAsStringSync(jsonCodec.encode(translated));
 }
 
 main(List<String> args) {
@@ -173,7 +175,7 @@ main(List<String> args) {
 
   var fileArgs = args.where((x) => x.contains('.arb'));
 
-  var messages = JSON.decode(new File(fileArgs.first).readAsStringSync());
+  var messages = jsonCodec.decode(new File(fileArgs.first).readAsStringSync());
   translate(messages, "fr", french);
   translate(messages, "de_DE", german);
 }

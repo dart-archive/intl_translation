@@ -33,6 +33,8 @@ import 'package:intl_translation/src/icu_parser.dart';
 /// name.
 Map<String, List<MainMessage>> messages;
 
+const jsonDecoder = const JsonCodec();
+
 main(List<String> args) {
   var targetDir;
   var parser = new ArgParser();
@@ -119,7 +121,7 @@ main(List<String> args) {
 void generateLocaleFile(
     File file, String targetDir, MessageGeneration generation) {
   var src = file.readAsStringSync();
-  var data = JSON.decode(src);
+  var data = jsonDecoder.decode(src);
   var locale = data["@@locale"] ?? data["_locale"];
   if (locale == null) {
     // Get the locale from the end of the file name. This assumes that the file
