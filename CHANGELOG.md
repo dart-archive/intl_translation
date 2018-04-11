@@ -1,3 +1,6 @@
+## 0.16.6
+  * More uppercase constant removal.
+
 ## 0.16.5
   * Replace uses of JSON constant for Dart 2 compatibility.
 
