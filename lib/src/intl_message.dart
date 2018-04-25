@@ -871,7 +871,7 @@ class Select extends SubMessage {
   String get icuMessageName => "select";
   String get dartMessageName => 'Intl.select';
 
-  get attributeNames => cases.keys;
+  get attributeNames => cases.keys.toList();
   get codeAttributeNames => attributeNames;
 
   // Check for valid select keys.
