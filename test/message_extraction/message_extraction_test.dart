@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@Timeout(const Duration(seconds: 60))
 library message_extraction_test;
 
 import 'package:test/test.dart';
@@ -56,14 +57,14 @@ String asTempDirPath([String s]) {
   return path.join(tempDir, s);
 }
 
-typedef ProcessResult ThenResult(ProcessResult _);
+typedef Future<ProcessResult> ThenResult(ProcessResult _);
 main() {
   setUp(copyFilesToTempDirectory);
   tearDown(deleteGeneratedFiles);
   test(
       "Test round trip message extraction, translation, code generation, "
       "and printing", () {
-    var makeSureWeVerify = expectAsync1(runAndVerify) as ThenResult;
+    var makeSureWeVerify = expectAsync1(runAndVerify);
     return extractMessages(null)
         .then((result) {
           return generateTranslationFiles(result);

@@ -5,6 +5,9 @@
 /// A test for message extraction and code generation using generated
 /// JSON rather than functions
 
+@Timeout(const Duration(seconds: 60))
+import 'package:test/test.dart';
+
 import 'message_extraction_test.dart' as main_test;
 
 main() {
