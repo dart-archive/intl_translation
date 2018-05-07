@@ -7,28 +7,16 @@ import 'package:intl_translation/src/message_rewriter.dart';
 import 'package:test/test.dart';
 
 main() {
-  group('findMessages', () {
-    test('fails with message on call to Intl outside a method', () {
-      final messageExtraction = new MessageExtraction();
-      findMessages('List<String> list = [Intl.message("message")];', '',
-          messageExtraction);
-
-      expect(messageExtraction.warnings,
-          anyElement(contains('Calls to Intl must be inside a method.')));
-    });
-
+  group('findMessages denied usages', () {
     test('fails with message on non-literal examples Map', () {
       final messageExtraction = new MessageExtraction();
-      findMessages(
-          '''
+      findMessages('''
 final variable = 'foo';
 
 String message(String string) =>
     Intl.select(string, {'foo': 'foo', 'bar': 'bar'},
         name: 'message', args: [string], examples: {'string': variable});
-      ''',
-          '',
-          messageExtraction);
+      ''', '', messageExtraction);
 
       expect(messageExtraction.warnings,
           anyElement(contains('Examples must be a const Map literal.')));
@@ -47,6 +35,104 @@ String message(String string) =>
               contains('Only simple identifiers and Intl.plural/gender/select '
                   'expressions are allowed in message interpolation '
                   'expressions')));
+    });
+
+    test('fails on call with name referencing variable name inside a function',
+        () {
+      final messageExtraction = new MessageExtraction();
+      findMessages('''
+      class MessageTest {
+        String functionName() {
+          final String variableName = Intl.message('message string',
+            name: 'variableName' );
+        }
+      }''', '', messageExtraction);
+
+      expect(
+          messageExtraction.warnings,
+          anyElement(contains('The \'name\' argument for Intl.message '
+              'must match either the name of the containing function '
+              'or <ClassName>_<methodName>')));
+    });
+
+    test('fails on referencing a name from listed fields declaration', () {
+      final messageExtraction = new MessageExtraction();
+      findMessages('''
+      class MessageTest {
+        String first, second = Intl.message('message string',
+            name: 'first' );
+      }''', '', messageExtraction);
+
+      expect(
+          messageExtraction.warnings,
+          anyElement(contains('The \'name\' argument for Intl.message '
+              'must match either the name of the containing function '
+              'or <ClassName>_<methodName>')));
+    });
+  });
+
+  group('findMessages accepted usages', () {
+    test('succeeds on Intl call from class getter', () {
+      final messageExtraction = new MessageExtraction();
+      var messages = findMessages('''
+      class MessageTest {
+        String get messageName => Intl.message("message string",
+          name: 'messageName');
+      }''', '', messageExtraction);
+
+      expect(messages.map((m) => m.name), anyElement(contains('messageName')));
+      expect(messageExtraction.warnings, isEmpty);
+    });
+
+    test('succeeds on Intl call in top variable declaration', () {
+      final messageExtraction = new MessageExtraction();
+      var messages = findMessages(
+          'List<String> list = [Intl.message("message string", name: "list")];',
+          '',
+          messageExtraction);
+
+      expect(messages.map((m) => m.name), anyElement(contains('list')));
+      expect(messageExtraction.warnings, isEmpty);
+    });
+
+    test('succeeds on Intl call in member variable declaration', () {
+      final messageExtraction = new MessageExtraction();
+      var messages = findMessages('''
+      class MessageTest {
+        final String messageName = Intl.message("message string",
+          name: 'MessageTest_messageName');
+      }''', '', messageExtraction);
+
+      expect(messages.map((m) => m.name),
+          anyElement(contains('MessageTest_messageName')));
+      expect(messageExtraction.warnings, isEmpty);
+    });
+
+    // Note: this type of usage is not recommended.
+    test('succeeds on Intl call inside a function as variable declaration', () {
+      final messageExtraction = new MessageExtraction();
+      var messages = findMessages('''
+      class MessageTest {
+        String functionName() {
+          final String variableName = Intl.message('message string',
+            name: 'functionName' );
+        }
+      }''', '', messageExtraction);
+
+      expect(messages.map((m) => m.name), anyElement(contains('functionName')));
+      expect(messageExtraction.warnings, isEmpty);
+    });
+
+    test('succeeds on list field declaration', () {
+      final messageExtraction = new MessageExtraction();
+      var messages = findMessages('''
+      class MessageTest {
+        String first, second = Intl.message('message string');
+      }''', '', messageExtraction);
+
+      expect(
+          messages.map((m) => m.name), anyElement(contains('message string')));
+      expect(messageExtraction.warnings, isEmpty);
     });
   });
 }

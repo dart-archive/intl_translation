@@ -140,6 +140,9 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   FormalParameterList parameters;
   String name;
 
+  final FormalParameterList _emptyParameterList =
+      astFactory.formalParameterList(null, [], null, null, null);
+
   /// Return true if [node] matches the pattern we expect for Intl.message()
   bool looksLikeIntlMessage(MethodInvocation node) {
     const validNames = const ["message", "plural", "gender", "select"];
@@ -168,7 +171,8 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// reason is found, so it's presumed valid.
   String checkValidity(MethodInvocation node) {
     if (parameters == null) {
-      return "Calls to Intl must be inside a method.";
+      return "Calls to Intl must be inside a method, field declaration or "
+          "top level declaration.";
     }
     // The containing function cannot have named parameters.
     if (parameters.parameters.any((each) => each.kind == ParameterKind.NAMED)) {
@@ -184,23 +188,53 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// Record the parameters of the function or method declaration we last
   /// encountered before seeing the Intl.message call.
   void visitMethodDeclaration(MethodDeclaration node) {
-    parameters = node.parameters;
-    if (parameters == null) {
-      parameters = astFactory.formalParameterList(null, [], null, null, null);
-    }
     name = node.name.name;
+    parameters = node.parameters ?? _emptyParameterList;
     super.visitMethodDeclaration(node);
+    name = null;
+    parameters = null;
   }
 
   /// Record the parameters of the function or method declaration we last
   /// encountered before seeing the Intl.message call.
   void visitFunctionDeclaration(FunctionDeclaration node) {
-    parameters = node.functionExpression.parameters;
-    if (parameters == null) {
-      parameters = astFactory.formalParameterList(null, [], null, null, null);
-    }
     name = node.name.name;
+    parameters = node.functionExpression.parameters ?? _emptyParameterList;
     super.visitFunctionDeclaration(node);
+    name = null;
+    parameters = null;
+  }
+
+  /// Record the name of field declaration we last
+  /// encountered before seeing the Intl.message call.
+  void visitFieldDeclaration(FieldDeclaration node) {
+    // We don't support names in list declarations,
+    // e.g. String first, second = Intl.message(...);
+    if (node.fields.variables.length == 1) {
+      name = node.fields.variables.first.name.name;
+    } else {
+      name = null;
+    }
+    parameters = _emptyParameterList;
+    super.visitFieldDeclaration(node);
+    name = null;
+    parameters = null;
+  }
+
+  /// Record the name of the top level variable declaration we last
+  /// encountered before seeing the Intl.message call.
+  void visitTopLevelVariableDeclaration(TopLevelVariableDeclaration node) {
+    // We don't support names in list declarations,
+    // e.g. String first, second = Intl.message(...);
+    if (node.variables.variables.length == 1) {
+      name = node.variables.variables.first.name.name;
+    } else {
+      name = null;
+    }
+    parameters = _emptyParameterList;
+    super.visitTopLevelVariableDeclaration(node);
+    name = null;
+    parameters = null;
   }
 
   /// Examine method invocations to see if they look like calls to Intl.message.
