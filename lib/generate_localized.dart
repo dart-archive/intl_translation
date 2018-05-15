@@ -291,8 +291,7 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
       Iterable<TranslatedMessage> usableTranslations, String locale) {
     output.write(r"""
   var _messages;
-  get messages =>
-      _messages == null ? _messages = JSON.decode(messageText) : _messages;
+  get messages => _messages ??= new JsonDecoder().convert(messageText);
 """);
 
     output.write("  static final messageText = ");
