@@ -1,3 +1,6 @@
+## 0.16.7
+  * More uppercase constant removal.
+
 ## 0.16.6
   * More uppercase constant removal.
 
