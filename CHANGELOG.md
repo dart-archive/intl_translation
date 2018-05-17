@@ -2,6 +2,7 @@
   * Allow message extraction to find messages in class field declarations
     and top-level declarations.
   * Fix incorrect name and parameters propagation during extraction phase.
+  * Still more uppercase constant removal.
 
 ## 0.16.6
   * More uppercase constant removal.
