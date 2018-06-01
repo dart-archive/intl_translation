@@ -152,11 +152,7 @@ import 'package:$intlImportPath/message_lookup_by_library.dart';
 $extraImports
 final messages = new MessageLookup();
 
-// ignore: unused_element
-final _keepAnalysisHappy = Intl.defaultLocale;
-
-// ignore: non_constant_identifier_names
-typedef MessageIfAbsent(String message_str, List args);
+typedef MessageIfAbsent(String messageStr, List args);
 
 class MessageLookup extends MessageLookupByLibrary {
   get localeName => '$locale';
