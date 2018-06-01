@@ -147,6 +147,8 @@ class MessageGeneration {
 // messages from the main program should be duplicated here with the same
 // function name.
 
+// ignore_for_file: unused_import
+
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
 $extraImports
