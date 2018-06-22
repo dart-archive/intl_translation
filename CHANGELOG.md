@@ -1,3 +1,6 @@
+## 0.16.8
+  * Loosen analyzer dependency to include `v0.33.0`
+
 ## 0.16.7
   * Allow message extraction to find messages in class field declarations
     and top-level declarations.

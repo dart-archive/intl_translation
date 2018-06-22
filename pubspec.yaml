@@ -1,5 +1,5 @@
 name: intl_translation
-version: 0.16.7
+version: 0.16.8
 author: Dart Team <misc@dartlang.org>
 description: Contains code to deal with internationalized/localized messages, date and number formatting and parsing, bi-directional text, and other internationalization issues.
 homepage: https://github.com/dart-lang/intl_translation
@@ -7,7 +7,7 @@ environment:
   sdk: '>=1.12.0 <2.0.0'
 documentation: http://www.dartdocs.org/documentation/intl_translation/latest
 dependencies:
-  analyzer: '>=0.29.1 <0.32.0'
+  analyzer: '>=0.29.1 <0.33.0'
   args: '>=0.12.1 <2.0.0'
   barback: ^0.15.2
   dart_style: ^1.0.0
