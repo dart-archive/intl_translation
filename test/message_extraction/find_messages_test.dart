@@ -134,5 +134,17 @@ String message(String string) =>
           messages.map((m) => m.name), anyElement(contains('message string')));
       expect(messageExtraction.warnings, isEmpty);
     });
+
+    test('succeeds on prefixed Intl call', () {
+      final messageExtraction = new MessageExtraction();
+      final messages = findMessages('''
+      class MessageTest {
+        static final String prefixedMessage = prefix.Intl.message('message');
+      }
+      ''', '', messageExtraction);
+
+      expect(messages.map((m) => m.name), anyElement(contains('message')));
+      expect(messageExtraction.warnings, isEmpty);
+    });
   });
 }
