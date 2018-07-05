@@ -147,9 +147,13 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   bool looksLikeIntlMessage(MethodInvocation node) {
     const validNames = const ["message", "plural", "gender", "select"];
     if (!validNames.contains(node.methodName.name)) return false;
-    if (!(node.target is SimpleIdentifier)) return false;
-    SimpleIdentifier target = node.target;
-    return target.token.toString() == "Intl";
+    final target = node.target;
+    if (target is SimpleIdentifier) {
+      return target.token.toString() == 'Intl';
+    } else if (target is PrefixedIdentifier) {
+      return target.identifier.token.toString() == 'Intl';
+    }
+    return false;
   }
 
   Message _expectedInstance(String type) {

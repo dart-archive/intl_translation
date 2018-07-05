@@ -1,3 +1,7 @@
+## 0.16.8
+  * Allow message extraction to find messages from prefixed uses of Intl.
+  * Move analyzer dependency up to 0.33.0
+
 ## 0.16.7
   * Allow message extraction to find messages in class field declarations
     and top-level declarations.
