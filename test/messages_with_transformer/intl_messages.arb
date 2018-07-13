@@ -1,8 +1,0 @@
-{
-  "@@last_modified": "2018-01-03T14:32:33.689038",
-  "foo": "foo",
-  "@foo": {
-    "type": "text",
-    "placeholders": {}
-  }
-}

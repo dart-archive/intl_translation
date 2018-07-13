@@ -79,12 +79,12 @@ class IcuParser {
 
   /// The primary entry point for parsing. Accepts a string and produces
   /// a parsed representation of it as a Message.
-  get message => (pluralOrGenderOrSelect | empty)
+  Parser get message => (pluralOrGenderOrSelect | empty)
       .map((chunk) => Message.from(chunk, null));
 
   /// Represents an ordinary message, i.e. not a plural/gender/select, although
   /// it may have parameters.
-  get nonIcuMessage =>
+  Parser get nonIcuMessage =>
       (simpleText | empty).map((chunk) => Message.from(chunk, null));
 
   get stuff => (pluralOrGenderOrSelect | empty)

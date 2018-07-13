@@ -179,7 +179,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
           "top level declaration.";
     }
     // The containing function cannot have named parameters.
-    if (parameters.parameters.any((each) => each.kind == ParameterKind.NAMED)) {
+    if (parameters.parameters.any((each) => each.isNamed)) {
       return "Named parameters on message functions are not supported.";
     }
     var arguments = node.argumentList.arguments;

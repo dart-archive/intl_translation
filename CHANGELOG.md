@@ -1,3 +1,9 @@
+## 0.17.0
+  * Fully move to Dart 2.0
+  * Delete the transformer and related code.
+  * Minor update to analyzer API.
+  * Update pubspec version requirements
+
 ## 0.16.8
   * Allow message extraction to find messages from prefixed uses of Intl.
   * Move analyzer dependency up to 0.33.0
