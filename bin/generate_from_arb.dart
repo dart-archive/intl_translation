@@ -40,7 +40,6 @@ main(List<String> args) {
   var parser = new ArgParser();
   var extraction = new MessageExtraction();
   var generation = new MessageGeneration();
-  var codegenMode;
   var transformer;
   parser.addFlag('json', defaultsTo: false, callback: (useJson) {
     generation =
