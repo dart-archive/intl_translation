@@ -36,6 +36,9 @@ class MessageExtraction {
   /// What to do when a message is encountered, defaults to [print].
   OnMessage onMessage = print;
 
+  /// If this is true, the @@last_modified entry is not output.
+  bool suppressLastModified = false;
+
   /// If this is true, print warnings for skipped messages. Otherwise, warnings
   /// are suppressed.
   bool suppressWarnings = false;
