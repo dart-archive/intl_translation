@@ -24,6 +24,10 @@ main(List<String> args) {
   var parser = new ArgParser();
   var extraction = new MessageExtraction();
   String locale;
+  parser.addFlag("suppress-last-modified",
+      defaultsTo: false,
+      callback: (x) => extraction.suppressLastModified = x,
+      help: 'Suppress @@last_modified entry.');
   parser.addFlag("suppress-warnings",
       defaultsTo: false,
       callback: (x) => extraction.suppressWarnings = x,
@@ -66,7 +70,9 @@ main(List<String> args) {
   if (locale != null) {
     allMessages["@@locale"] = locale;
   }
-  allMessages["@@last_modified"] = new DateTime.now().toIso8601String();
+  if (!extraction.suppressLastModified) {
+    allMessages["@@last_modified"] = new DateTime.now().toIso8601String();
+  }
   for (var arg in args.where((x) => x.contains(".dart"))) {
     var messages = extraction.parseFile(new File(arg), transformer);
     messages.forEach((k, v) => allMessages.addAll(toARB(v)));
