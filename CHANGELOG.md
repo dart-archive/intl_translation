@@ -1,3 +1,7 @@
+## 0.17.1
+  * Added --suppress-last-modified flag to suppress output of the 
+    @@last_modified entry in output file.
+
 ## 0.17.0
   * Fully move to Dart 2.0
   * Delete the transformer and related code.
