@@ -1,6 +1,9 @@
 ## 0.17.1
   * Added --suppress-last-modified flag to suppress output of the
     @@last_modified entry in output file.
+  * Add a "package" field in MessageGeneration that can be useful for emitting
+    additional information about e.g. which locales are available and which
+    package we're generating for. Also makes libraryName public.
 
 ## 0.17.0
   * Fully move to Dart 2.0

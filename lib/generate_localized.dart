@@ -51,6 +51,12 @@ class MessageGeneration {
   /// falls back to the original string.
   String codegenMode;
 
+  /// What is the path to the package for which we are generating.
+  ///
+  /// The exact format of this string depends on the generation mechanism,
+  /// so it's left undefined.
+  String package;
+
   get releaseMode => codegenMode == 'release';
 
   bool get jsonMode => false;
@@ -192,7 +198,7 @@ class MessageLookup extends MessageLookupByLibrary {
       var file = importForGeneratedFile(baseFile);
       output.write("import '$file' ");
       if (useDeferredLoading) output.write("deferred ");
-      output.write("as ${_libraryName(locale)};\n");
+      output.write("as ${libraryName(locale)};\n");
     }
     output.write("\n");
     output.write("typedef Future<dynamic> LibraryLoader();\n");
@@ -200,7 +206,7 @@ class MessageLookup extends MessageLookupByLibrary {
     for (var rawLocale in allLocales) {
       var locale = Intl.canonicalizedLocale(rawLocale);
       var loadOperation = (useDeferredLoading)
-          ? "  '$locale': () => ${_libraryName(locale)}.loadLibrary(),\n"
+          ? "  '$locale': () => ${libraryName(locale)}.loadLibrary(),\n"
           : "  '$locale': () => new Future.value(null),\n";
       output.write(loadOperation);
     }
@@ -210,7 +216,7 @@ class MessageLookup extends MessageLookupByLibrary {
     for (var rawLocale in allLocales) {
       var locale = Intl.canonicalizedLocale(rawLocale);
       output.write(
-          "    case '$locale':\n      return ${_libraryName(locale)}.messages;\n");
+          "    case '$locale':\n      return ${libraryName(locale)}.messages;\n");
     }
     output.write(closing);
     return output.toString();
@@ -417,7 +423,7 @@ abstract class TranslatedMessage {
 
 /// We can't use a hyphen in a Dart library name, so convert the locale
 /// separator to an underscore.
-String _libraryName(String x) => 'messages_' + x.replaceAll('-', '_');
+String libraryName(String x) => 'messages_' + x.replaceAll('-', '_');
 
 bool _hasArguments(MainMessage message) => message.arguments.length != 0;
 
