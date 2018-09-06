@@ -150,7 +150,7 @@ class MessageGeneration {
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
 $extraImports
-final messages = new MessageLookup();
+final messages = MessageLookup();
 
 // ignore: unused_element
 final _keepAnalysisHappy = Intl.defaultLocale;
@@ -172,7 +172,7 @@ class MessageLookup extends MessageLookupByLibrary {
       // If there's no message_str, then we are an internal lookup, e.g. an
       // embedded plural, and shouldn't fail.
       if (message_str == null) return null;
-      throw new UnsupportedError(
+      throw UnsupportedError(
           "No translation found for message '\$name',\\n"
           "  original text '\$message_str'");
     }
@@ -201,7 +201,7 @@ class MessageLookup extends MessageLookupByLibrary {
       var locale = Intl.canonicalizedLocale(rawLocale);
       var loadOperation = (useDeferredLoading)
           ? "  '$locale': () => ${_libraryName(locale)}.loadLibrary(),\n"
-          : "  '$locale': () => new Future.value(null),\n";
+          : "  '$locale': () => Future.value(null),\n";
       output.write(loadOperation);
     }
     output.write("};\n");
@@ -245,13 +245,13 @@ Future<bool> initializeMessages(String localeName) async {
     (locale) => _deferredLibraries[locale] != null,
     onFailure: (_) => null);
   if (availableLocale == null) {
-    return new Future.value(false);
+    return Future.value(false);
   }
   var lib = _deferredLibraries[availableLocale];
-  await (lib == null ? new Future.value(false) : lib());
-  initializeInternalMessageLookup(() => new CompositeMessageLookup());
+  await (lib == null ? Future.value(false) : lib());
+  initializeInternalMessageLookup(() => CompositeMessageLookup());
   messageLookup.addLocale(availableLocale, _findGeneratedMessagesFor);
-  return new Future.value(true);
+  return Future.value(true);
 }
 
 bool _messagesExistFor(String locale) {
@@ -291,7 +291,7 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
       Iterable<TranslatedMessage> usableTranslations, String locale) {
     output.write(r"""
   var _messages;
-  get messages => _messages ??= new JsonDecoder().convert(messageText);
+  get messages => _messages ??= JsonDecoder().convert(messageText);
 """);
 
     output.write("  static final messageText = ");
@@ -359,7 +359,7 @@ String evaluateJsonTemplate(Object input, List args) {
 
    // If we get this far, then we are a basic interpolation, just strings and
    // ints.
-   var output = new StringBuffer();
+   var output = StringBuffer();
    for (var entry in template) {
      if (entry is int) {
        output.write("\${args[entry]}");

@@ -1,3 +1,6 @@
+## 0.17.1
+  * Fix unnecessary_new lint warnings in generated code.
+
 ## 0.17.0
   * Fully move to Dart 2.0
   * Delete the transformer and related code.
