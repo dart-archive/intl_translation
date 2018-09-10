@@ -4,6 +4,7 @@
   * Add a "package" field in MessageGeneration that can be useful for emitting
     additional information about e.g. which locales are available and which
     package we're generating for. Also makes libraryName public.
+  * Silence unnecessary_new lint warnings in generated code.
 
 ## 0.17.0
   * Fully move to Dart 2.0

@@ -156,6 +156,7 @@ class MessageGeneration {
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
 $extraImports
+// ignore: unnecessary_new
 final messages = new MessageLookup();
 
 // ignore: unused_element
@@ -178,6 +179,7 @@ class MessageLookup extends MessageLookupByLibrary {
       // If there's no message_str, then we are an internal lookup, e.g. an
       // embedded plural, and shouldn't fail.
       if (message_str == null) return null;
+      // ignore: unnecessary_new
       throw new UnsupportedError(
           "No translation found for message '\$name',\\n"
           "  original text '\$message_str'");
@@ -207,7 +209,8 @@ class MessageLookup extends MessageLookupByLibrary {
       var locale = Intl.canonicalizedLocale(rawLocale);
       var loadOperation = (useDeferredLoading)
           ? "  '$locale': () => ${libraryName(locale)}.loadLibrary(),\n"
-          : "  '$locale': () => new Future.value(null),\n";
+          : "// ignore: unnecessary_new\n"
+              + "  '$locale': () => new Future.value(null),\n";
       output.write(loadOperation);
     }
     output.write("};\n");
@@ -251,12 +254,16 @@ Future<bool> initializeMessages(String localeName) async {
     (locale) => _deferredLibraries[locale] != null,
     onFailure: (_) => null);
   if (availableLocale == null) {
+    // ignore: unnecessary_new
     return new Future.value(false);
   }
   var lib = _deferredLibraries[availableLocale];
+  // ignore: unnecessary_new
   await (lib == null ? new Future.value(false) : lib());
+  // ignore: unnecessary_new
   initializeInternalMessageLookup(() => new CompositeMessageLookup());
   messageLookup.addLocale(availableLocale, _findGeneratedMessagesFor);
+  // ignore: unnecessary_new
   return new Future.value(true);
 }
 
@@ -297,6 +304,7 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
       Iterable<TranslatedMessage> usableTranslations, String locale) {
     output.write(r"""
   var _messages;
+  // ignore: unnecessary_new
   get messages => _messages ??= new JsonDecoder().convert(messageText);
 """);
 
@@ -365,6 +373,7 @@ String evaluateJsonTemplate(Object input, List args) {
 
    // If we get this far, then we are a basic interpolation, just strings and
    // ints.
+   // ignore: unnecessary_new
    var output = new StringBuffer();
    for (var entry in template) {
      if (entry is int) {
