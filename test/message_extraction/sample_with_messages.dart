@@ -24,49 +24,54 @@ message2(x) => Intl.message("Another message with parameter $x",
 
 // A string with multiple adjacent strings concatenated together, verify
 // that the parser handles this properly.
-multiLine() => Intl.message("This "
+multiLine() => Intl.message(
+    "This "
     "string "
     "extends "
     "across "
     "multiple "
-    "lines.");
+    "lines.",
+    desc: "multi-line");
 
 get interestingCharactersNoName =>
     Intl.message("'<>{}= +-_\$()&^%\$#@!~`'", desc: "interesting characters");
 
 // Have types on the enclosing function's arguments.
 types(int a, String b, List c) =>
-    Intl.message("$a, $b, $c", name: 'types', args: [a, b, c]);
+    Intl.message("$a, $b, $c", name: 'types', args: [a, b, c], desc: 'types');
 
 // This string will be printed with a French locale, so it will always show
 // up in the French version, regardless of the current locale.
 alwaysTranslated() => Intl.message("This string is always translated",
-    locale: 'fr', name: 'alwaysTranslated');
+    locale: 'fr', name: 'alwaysTranslated', desc: 'always translated');
 
 // Test interpolation with curly braces around the expression, but it must
 // still be just a variable reference.
 trickyInterpolation(s) =>
     Intl.message("Interpolation is tricky when it ends a sentence like ${s}.",
-        name: 'trickyInterpolation', args: [s]);
+        name: 'trickyInterpolation', args: [s], desc: 'interpolation');
 
-get leadingQuotes => Intl.message("\"So-called\"");
+get leadingQuotes => Intl.message("\"So-called\"", desc: "so-called");
 
 // A message with characters not in the basic multilingual plane.
-originalNotInBMP() => Intl.message("Ancient Greek hangman characters: 𐅆𐅇.");
+originalNotInBMP() =>
+    Intl.message("Ancient Greek hangman characters: 𐅆𐅇.", desc: "non-BMP");
 
 // A string for which we don't provide all translations.
 notAlwaysTranslated() => Intl.message("This is missing some translations",
-    name: "notAlwaysTranslated");
+    name: "notAlwaysTranslated", desc: "Not always translated");
 
 // This is invalid and should be recognized as such, because the message has
 // to be a literal. Otherwise, interpolations would be outside of the function
 // scope.
 var someString = "No, it has to be a literal string";
-noVariables() => Intl.message(someString, name: "noVariables");
+noVariables() => Intl.message(someString,
+    name: "noVariables", desc: "Invalid. Not a literal");
 
 // This is unremarkable in English, but the translated versions will contain
 // characters that ought to be escaped during code generation.
-escapable() => Intl.message("Escapable characters here: ", name: "escapable");
+escapable() => Intl.message("Escapable characters here: ",
+    name: "escapable", desc: "Escapable characters");
 
 outerPlural(n) => Intl.plural(n,
     zero: 'none',
@@ -93,7 +98,8 @@ pluralThatFailsParsing(noOfThings) => Intl.plural(noOfThings,
 
 // A standalone gender message where we don't provide name or args. This should
 // be rejected by validation code.
-invalidOuterGender(g) => Intl.gender(g, other: 'o');
+invalidOuterGender(g) =>
+    Intl.gender(g, other: 'o', desc: "Invalid outer gender");
 
 // A general select
 outerSelect(currency, amount) => Intl.select(
@@ -103,6 +109,7 @@ outerSelect(currency, amount) => Intl.select(
       "other": "$amount some currency or other."
     },
     name: "outerSelect",
+    desc: "Select",
     args: [currency, amount]);
 
 // An invalid select which should never appear. Unfortunately
@@ -110,25 +117,27 @@ outerSelect(currency, amount) => Intl.select(
 // just should be able to note a warning for it when extracting.
 failedSelect(currency) => Intl.select(
     currency, {"this.should.fail": "not valid", "other": "doesn't matter"},
-    name: "failedSelect", args: [currency]);
+    name: "failedSelect", args: [currency], desc: "Invalid select");
 
 // A select with a plural inside the expressions.
 nestedSelect(currency, amount) => Intl.select(
     currency,
     {
-      "CDN": """${Intl.plural(amount, one: '$amount Canadian dollar',
-          other: '$amount Canadian dollars')}""",
+      "CDN":
+          """${Intl.plural(amount, one: '$amount Canadian dollar', other: '$amount Canadian dollars')}""",
       "other": "Whatever",
     },
     name: "nestedSelect",
-    args: [currency, amount]);
+    args: [currency, amount],
+    desc: "Plural inside select");
 
 // A trivial nested plural/gender where both are done directly rather than
 // in interpolations.
 nestedOuter(number, gen) => Intl.plural(number,
     other: Intl.gender(gen, male: "$number male", other: "$number other"),
     name: 'nestedOuter',
-    args: [number, gen]);
+    args: [number, gen],
+    desc: "Gender inside plural");
 
 sameContentsDifferentName() => Intl.message("Hello World",
     name: "sameContentsDifferentName",
@@ -154,10 +163,10 @@ literalDollar() => Intl.message("Five cents is US\$0.05",
 
 /// Messages for testing the skip flag.
 extractable() => Intl.message('This message should be extractable',
-    name: "extractable", skip: false);
+    name: "extractable", skip: false, desc: "Not skipped message");
 
-skipMessage() =>
-    Intl.message('This message should skip extraction', skip: true);
+skipMessage() => Intl.message('This message should skip extraction',
+    skip: true, desc: "Skipped message");
 
 skipPlural(n) => Intl.plural(n,
     zero: 'Extraction skipped plural none',
@@ -184,12 +193,15 @@ skipSelect(name) => Intl.select(
       "other": "Extraction skipped select other $name"
     },
     name: "skipSelect",
+    desc: "Skipped select",
     args: [name],
     skip: true);
 
 skipMessageExistingTranslation() =>
     Intl.message('This message should skip translation',
-        name: "skipMessageExistingTranslation", skip: true);
+        name: "skipMessageExistingTranslation",
+        skip: true,
+        desc: "Skip with existing translation");
 
 printStuff(Intl locale) {
   // Use a name that's not a literal so this will get skipped. Then we have
@@ -210,6 +222,7 @@ printStuff(Intl locale) {
       "Characters that need escaping, e.g slashes \\ dollars \${ (curly braces "
       "are ok) and xml reserved characters <& and quotes \" "
       "parameters $a, $b, and $c",
+      desc: "Lots of escapes",
       name: 'message3',
       args: [a, b, c]);
   var messageVariable = message3;

@@ -66,6 +66,8 @@ class MessageExtraction {
   /// Are examples required on all messages.
   bool examplesRequired = false;
 
+  bool descriptionRequired = false;
+
   /// Parse the source of the Dart program file [file] and return a Map from
   /// message names to [IntlMessage] instances.
   ///
@@ -302,6 +304,9 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   String _validateMessage(MainMessage message) {
     try {
       message.validate();
+      if (extraction.descriptionRequired) {
+        message.validateDescription();
+      }
     } on IntlMessageExtractionException catch (e) {
       return e.message;
     }

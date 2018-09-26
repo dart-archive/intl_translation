@@ -77,7 +77,7 @@ String message(String string) =>
       var messages = findMessages('''
       class MessageTest {
         String get messageName => Intl.message("message string",
-          name: 'messageName');
+          name: 'messageName', desc: 'abc');
       }''', '', messageExtraction);
 
       expect(messages.map((m) => m.name), anyElement(contains('messageName')));
@@ -87,7 +87,8 @@ String message(String string) =>
     test('succeeds on Intl call in top variable declaration', () {
       final messageExtraction = new MessageExtraction();
       var messages = findMessages(
-          'List<String> list = [Intl.message("message string", name: "list")];',
+          'List<String> list = [Intl.message("message string", '
+          'name: "list", desc: "in list")];',
           '',
           messageExtraction);
 
@@ -100,7 +101,7 @@ String message(String string) =>
       var messages = findMessages('''
       class MessageTest {
         final String messageName = Intl.message("message string",
-          name: 'MessageTest_messageName');
+          name: 'MessageTest_messageName', desc: 'test');
       }''', '', messageExtraction);
 
       expect(messages.map((m) => m.name),
@@ -115,7 +116,7 @@ String message(String string) =>
       class MessageTest {
         String functionName() {
           final String variableName = Intl.message('message string',
-            name: 'functionName' );
+            name: 'functionName', desc: 'test' );
         }
       }''', '', messageExtraction);
 
@@ -127,7 +128,7 @@ String message(String string) =>
       final messageExtraction = new MessageExtraction();
       var messages = findMessages('''
       class MessageTest {
-        String first, second = Intl.message('message string');
+        String first, second = Intl.message('message string', desc: 'test');
       }''', '', messageExtraction);
 
       expect(
@@ -139,7 +140,8 @@ String message(String string) =>
       final messageExtraction = new MessageExtraction();
       final messages = findMessages('''
       class MessageTest {
-        static final String prefixedMessage = prefix.Intl.message('message');
+        static final String prefixedMessage =
+            prefix.Intl.message('message', desc: 'xyz');
       }
       ''', '', messageExtraction);
 

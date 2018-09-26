@@ -12,8 +12,8 @@ class Person {
 
 class YouveGotMessages {
   // A static message, rather than a standalone function.
-  static staticMessage() =>
-      Intl.message("This comes from a static method", name: 'staticMessage');
+  static staticMessage() => Intl.message("This comes from a static method",
+      name: 'staticMessage', desc: "Static");
 
   // An instance method, rather than a standalone function.
   method() => Intl.message("This comes from a method",
@@ -26,7 +26,8 @@ class YouveGotMessages {
   // before the Intl.message call.
   nonLambda() {
     var aTrueValue = true;
-    var msg = Intl.message("This method is not a lambda", name: 'nonLambda');
+    var msg = Intl.message("This method is not a lambda",
+        name: 'nonLambda', desc: "Not a lambda");
     if (!aTrueValue) {
       throw new AssertionError('Parser should not fail with additional code.');
     }
@@ -35,10 +36,9 @@ class YouveGotMessages {
 
   plurals(num) => Intl.message(
       """${Intl.plural(num,
-         zero : 'Is zero plural?',
-         one : 'This is singular.',
-         other : 'This is plural ($num).')
-        }""",
+          zero: 'Is zero plural?',
+          one: 'This is singular.',
+          other: 'This is plural ($num).')}""",
       name: "plurals",
       args: [num],
       desc: "Basic plurals");
@@ -51,8 +51,7 @@ class YouveGotMessages {
         "${Intl.gender(gender,
             male: '$name went to his $place',
             female: '$name went to her $place',
-            other: '$name went to its $place')
-        }",
+            other: '$name went to its $place')}",
         name: "whereTheyWentMessage",
         args: [name, gender, place],
         desc: 'A person went to some place that they own, e.g. their room');
@@ -68,14 +67,14 @@ class YouveGotMessages {
 
     nestedMessage(names, number, combinedGender, place) => Intl.message(
         '''${Intl.gender(combinedGender,
-          other: '${Intl.plural(number,
-            zero: "Personne n'est allé au $place",
-            one: "${names} est allé au $place",
-            other: "${names} sont allés au $place")}',
-          female: '${Intl.plural(number,
-            one: "$names est allée au $place",
-          other: "$names sont allées au $place")}'
-        )}''',
+            other: '${Intl.plural(number,
+                zero: "Personne n'est allé au $place",
+                one: "${names} est allé au $place",
+                other: "${names} sont allés au $place")}',
+            female: '${Intl.plural(number,
+                one: "$names est allée au $place",
+                other: "$names sont allées au $place")}')}''',
+        desc: "Nested message example",
         name: "nestedMessage",
         args: [names, number, combinedGender, place]);
     return nestedMessage(names, number, combinedGender, place);

@@ -46,7 +46,6 @@ main(List<String> args) {
       callback: (x) => transformer = x,
       help: "Assume that the transformer is in use, so name and args "
           "don't need to be specified for messages.");
-
   parser.addOption("locale",
       defaultsTo: null,
       callback: (value) => locale = value,
@@ -59,6 +58,11 @@ main(List<String> args) {
       defaultsTo: 'intl_messages.arb',
       callback: (value) => outputFilename = value,
       help: 'Specify the output file.');
+  parser.addFlag("require_descriptions",
+      defaultsTo: false,
+      help: "Fail for messages that don't have a description.",
+      callback: (val) => extraction.descriptionRequired = val);
+
   parser.parse(args);
   if (args.length == 0) {
     print('Accepts Dart files and produces $outputFilename');

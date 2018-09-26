@@ -452,6 +452,13 @@ class MainMessage extends ComplexMessage {
     }
   }
 
+  void validateDescription() {
+    if (description == null) {
+      throw new IntlMessageExtractionException(
+          "Missing description for message $this");
+    }
+  }
+
   /// The description provided in the Intl.message call.
   String description;
 
