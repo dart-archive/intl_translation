@@ -5,6 +5,7 @@
     additional information about e.g. which locales are available and which
     package we're generating for. Also makes libraryName public.
   * Silence unnecessary_new lint warnings in generated code.
+  * Add --require_description command line option to message extraction.
 
 ## 0.17.0
   * Fully move to Dart 2.0
