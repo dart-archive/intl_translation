@@ -244,9 +244,9 @@ abstract class Message {
   /// For a method foo in class Bar we allow either "foo" or "Bar_Foo" as the
   /// name.
   static String classPlusMethodName(MethodInvocation node, String outerName) {
-    ClassDeclaration classNode(n) {
+    ClassOrMixinDeclaration classNode(n) {
       if (n == null) return null;
-      if (n is ClassDeclaration) return n;
+      if (n is ClassOrMixinDeclaration) return n;
       return classNode(n.parent);
     }
 

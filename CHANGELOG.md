@@ -1,4 +1,5 @@
 ## 0.17.2
+  * Changes to support new mixin syntax.
 
 ## 0.17.1
   * Added --suppress-last-modified flag to suppress output of the
