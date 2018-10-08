@@ -1,3 +1,6 @@
+## 0.17.3
+  * Make require_description also fail for empty strings.
+
 ## 0.17.2
   * Changes to support new mixin syntax.
 
