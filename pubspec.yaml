@@ -1,5 +1,5 @@
 name: intl_translation
-version: 0.17.2
+version: 0.17.3-dev
 author: Dart Team <misc@dartlang.org>
 description: >-
   Contains code to deal with internationalized/localized messages,
