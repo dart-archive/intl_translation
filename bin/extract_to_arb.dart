@@ -32,6 +32,10 @@ main(List<String> args) {
       defaultsTo: false,
       callback: (x) => extraction.suppressWarnings = x,
       help: 'Suppress printing of warnings.');
+  parser.addFlag("suppress-meta-data",
+      defaultsTo: false,
+      callback: (x) => extraction.suppressMetaData = x,
+      help: 'Suppress writing meta information');
   parser.addFlag("warnings-are-errors",
       defaultsTo: false,
       callback: (x) => extraction.warningsAreErrors = x,
@@ -79,7 +83,7 @@ main(List<String> args) {
   }
   for (var arg in args.where((x) => x.contains(".dart"))) {
     var messages = extraction.parseFile(new File(arg), transformer);
-    messages.forEach((k, v) => allMessages.addAll(toARB(v)));
+    messages.forEach((k, v) => allMessages.addAll(toARB(v, extraction)));
   }
   var file = new File(path.join(targetDir, outputFilename));
   var encoder = new JsonEncoder.withIndent("  ");
@@ -100,11 +104,15 @@ String leaveTheInterpolationsInDartForm(MainMessage msg, chunk) {
 }
 
 /// Convert the [MainMessage] to a trivial JSON format.
-Map toARB(MainMessage message) {
+Map toARB(MainMessage message, MessageExtraction extraction) {
   if (message.messagePieces.isEmpty) return null;
   var out = {};
   out[message.name] = icuForm(message);
-  out["@${message.name}"] = arbMetadata(message);
+
+  if (!extraction.suppressMetaData) {
+    out["@${message.name}"] = arbMetadata(message);
+  }
+
   return out;
 }
 
