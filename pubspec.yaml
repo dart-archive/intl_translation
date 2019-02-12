@@ -11,7 +11,7 @@ environment:
   sdk: '>=2.0.0-dev.33.0 <3.0.0'
 
 dependencies:
-  analyzer: '>=0.33.0-alpha.0 <0.34.0'
+  analyzer: '>=0.33.0-alpha.0 <0.36.0'
   args: '>=0.12.1 <2.0.0'
   dart_style: ^1.0.0
   intl: '>=0.15.3 <0.16.0'
