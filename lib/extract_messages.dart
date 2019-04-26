@@ -43,6 +43,9 @@ class MessageExtraction {
   /// are suppressed.
   bool suppressWarnings = false;
 
+  /// If this is true, no translation meta data is written
+  bool suppressMetaData = false;
+
   /// If this is true, then treat all warnings as errors.
   bool warningsAreErrors = false;
 

@@ -210,7 +210,7 @@ class MessageLookup extends MessageLookupByLibrary {
       var loadOperation = (useDeferredLoading)
           ? "  '$locale': () => ${libraryName(locale)}.loadLibrary(),\n"
           : "// ignore: unnecessary_new\n"
-              + "  '$locale': () => new Future.value(null),\n";
+          "  '$locale': () => new Future.value(null),\n";
       output.write(loadOperation);
     }
     output.write("};\n");
@@ -300,6 +300,25 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
   }
 ''';
 
+  /// Embed the JSON string in a Dart raw string literal.
+  ///
+  /// In simple cases this just wraps it in a Dart raw triple-quoted
+  /// literal. However, a translated message may contain a triple quote,
+  /// which would end the Dart literal. So when we encounter this, we turn
+  /// it into three adjacent strings, one of which is just the
+  /// triple-quote.
+  String _embedInLiteral(String jsonMessages) {
+    var triple = "'''";
+    var result = jsonMessages;
+    if (jsonMessages.contains(triple)) {
+      var doubleQuote = '"';
+      var asAdjacentStrings =
+          '$triple  r$doubleQuote$triple$doubleQuote r$triple';
+      result = jsonMessages.replaceAll(triple, asAdjacentStrings);
+    }
+    return "r'''\n$result''';\n}";
+  }
+
   void writeTranslations(
       Iterable<TranslatedMessage> usableTranslations, String locale) {
     output.write(r"""
@@ -315,8 +334,8 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
     for (var original in entries) {
       map[original.name] = original.toJsonForLocale(locale);
     }
-    output.write(
-        "r'''\n" + new JsonEncoder.withIndent('  ').convert(map) + "''';\n}");
+    var jsonEncoded = new JsonEncoder.withIndent('  ').convert(map);
+    output.write(_embedInLiteral(jsonEncoded));
   }
 
   get closing =>
@@ -432,7 +451,8 @@ abstract class TranslatedMessage {
 
 /// We can't use a hyphen in a Dart library name, so convert the locale
 /// separator to an underscore.
-String libraryName(String x) => 'messages_' + x.replaceAll('-', '_');
+String libraryName(String x) =>
+    'messages_' + x.replaceAll('-', '_').toLowerCase();
 
 bool _hasArguments(MainMessage message) => message.arguments.length != 0;
 

@@ -1,3 +1,11 @@
+## 0.17.4
+  * Adds --suppress-meta-data on ARB extraction.
+  * Allow Dart enums in an Intl.select call. The map of cases
+    can either take enums directly, or the short string name
+    of the enum.
+  * Handles triple quotes in a translation properly when
+    generating messages as JSON.
+
 ## 0.17.3
   * Make require_description also fail for empty strings.
   * Update analyzer dependency.

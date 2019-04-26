@@ -91,10 +91,10 @@ abstract class Message {
     // Detect cases where args passes invalid names, either literal strings
     // instead of identifiers, or in the wrong order, missing values, etc.
     ListLiteral identifiers = args.childEntities.last;
-    if (!identifiers.elements.every((each) => each is SimpleIdentifier)) {
+    if (!identifiers.elements2.every((each) => each is SimpleIdentifier)) {
       return false;
     }
-    var names = identifiers.elements
+    var names = identifiers.elements2
         .map((each) => (each as SimpleIdentifier).name)
         .toList();
     var both;
@@ -906,9 +906,17 @@ class Select extends SubMessage {
   /// case they will all be passed in as a Map rather than as the named
   /// arguments used in Plural/Gender.
   Map argumentsOfInterestFor(MethodInvocation node) {
-    MapLiteral casesArgument = node.argumentList.arguments[1];
-    return new Map.fromIterable(casesArgument.entries,
-        key: (node) => node.key.value, value: (node) => node.value);
+    SetOrMapLiteral casesArgument = node.argumentList.arguments[1];
+    return new Map.fromIterable(casesArgument.elements2,
+        key: (node) => _keyForm(node.key), value: (node) => node.value);
+  }
+
+  // The key might already be a simple string, or it might be
+  // something else, in which case we convert it to a string
+  // and take the portion after the period, if present.
+  // This is to handle enums as select keys.
+  String _keyForm(key) {
+    return (key is SimpleStringLiteral) ? key.value : '$key'.split('.').last;
   }
 
   void validate() {
