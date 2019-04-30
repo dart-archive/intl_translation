@@ -153,6 +153,8 @@ class MessageGeneration {
 // messages from the main program should be duplicated here with the same
 // function name.
 
+// ignore_for_file: unnecessary_brace_in_string_interps
+
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
 $extraImports
@@ -210,7 +212,7 @@ class MessageLookup extends MessageLookupByLibrary {
       var loadOperation = (useDeferredLoading)
           ? "  '$locale': () => ${libraryName(locale)}.loadLibrary(),\n"
           : "// ignore: unnecessary_new\n"
-          "  '$locale': () => new Future.value(null),\n";
+              "  '$locale': () => new Future.value(null),\n";
       output.write(loadOperation);
     }
     output.write("};\n");
