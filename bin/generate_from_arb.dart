@@ -102,23 +102,27 @@ main(List<String> args) {
     eachMap.forEach(
         (key, value) => messages.putIfAbsent(key, () => []).add(value));
   }
+  var messagesByLocale = <String, List<Map>>{};
+
+  // In order to group these by locale, to support multiple input files,
+  // we're reading all the data eagerly, which could be a memory
+  // issue for very large projects.
   for (var arg in jsonFiles) {
-    var file = new File(arg);
-    generateLocaleFile(file, targetDir, generation);
+    loadData(arg, messagesByLocale, generation);
   }
+
+  messagesByLocale.forEach((locale, data) {
+    generateLocaleFile(locale, data, targetDir, generation);
+  });
 
   var mainImportFile = new File(path.join(
       targetDir, '${generation.generatedFilePrefix}messages_all.dart'));
   mainImportFile.writeAsStringSync(generation.generateMainImportFile());
 }
 
-/// Create the file of generated code for a particular locale. We read the ARB
-/// data and create [BasicTranslatedMessage] instances from everything,
-/// excluding only the special _locale attribute that we use to indicate the
-/// locale. If that attribute is missing, we try to get the locale from the last
-/// section of the file name.
-void generateLocaleFile(
-    File file, String targetDir, MessageGeneration generation) {
+loadData(String filename, Map<String, List<Map>> messagesByLocale,
+    MessageGeneration generation) {
+  var file = File(filename);
   var src = file.readAsStringSync();
   var data = jsonDecoder.decode(src);
   var locale = data["@@locale"] ?? data["_locale"];
@@ -132,15 +136,29 @@ void generateLocaleFile(
     print("No @@locale or _locale field found in $name, "
         "assuming '$locale' based on the file name.");
   }
+  messagesByLocale.putIfAbsent(locale, () => []).add(data);
   generation.allLocales.add(locale);
+}
 
+/// Create the file of generated code for a particular locale.
+///
+/// We read the ARB
+/// data and create [BasicTranslatedMessage] instances from everything,
+/// excluding only the special _locale attribute that we use to indicate the
+/// locale. If that attribute is missing, we try to get the locale from the
+/// last section of the file name. Each ARB file produces a Map of message
+/// translations, and there can be multiple such maps in [localeData].
+void generateLocaleFile(String locale, List<Map> localeData, String targetDir,
+    MessageGeneration generation) {
   List<TranslatedMessage> translations = [];
-  data.forEach((id, messageData) {
-    TranslatedMessage message = recreateIntlObjects(id, messageData);
-    if (message != null) {
-      translations.add(message);
-    }
-  });
+  for (var jsonTranslations in localeData) {
+    jsonTranslations.forEach((id, messageData) {
+      TranslatedMessage message = recreateIntlObjects(id, messageData);
+      if (message != null) {
+        translations.add(message);
+      }
+    });
+  }
   generation.generateIndividualMessageFile(locale, translations, targetDir);
 }
 

@@ -167,6 +167,7 @@ Future<ProcessResult> generateCodeFromTranslation(
       'sample_with_messages.dart',
       'part_of_sample_with_messages.dart',
       'translation_fr.arb',
+      'french2.arb',
       'translation_de_DE.arb'
     ]);
 

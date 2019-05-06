@@ -28,9 +28,6 @@ var french = {
       "dollars \${ (les accolades sont ok), et xml/html réservés <& et "
       "des citations \" "
       "avec quelques paramètres ainsi {a}, {b}, et {c}",
-  "YouveGotMessages_method": "Cela vient d'une méthode",
-  "nonLambda": "Cette méthode n'est pas un lambda",
-  "staticMessage": "Cela vient d'une méthode statique",
   "notAlwaysTranslated": "Ce manque certaines traductions",
   "thisNameIsNotInTheOriginal": "Could this lead to something malicious?",
   "Ancient Greek hangman characters: 𐅆𐅇.":
@@ -78,6 +75,13 @@ var french = {
   r"'<>{}= +-_$()&^%$#@!~`'": r"interessant (fr): '<>{}= +-_$()&^%$#@!~`'",
   "extractable": "Ce message devrait être extractible",
   "skipMessageExistingTranslation": "Ce message devrait ignorer la traduction"
+};
+
+// Used to test having translations in multiple files.
+var frenchExtra = {
+  "YouveGotMessages_method": "Cela vient d'une méthode",
+  "nonLambda": "Cette méthode n'est pas un lambda",
+  "staticMessage": "Cela vient d'une méthode statique",
 };
 
 /// A list of the German translations that we will produce.
@@ -153,12 +157,16 @@ const jsonCodec = const JsonCodec();
 
 /// Generate a translated json version from [originals] in [locale] looking
 /// up the translations in [translations].
-void translate(Map originals, String locale, Map translations) {
+void translate(Map originals, String locale, Map translations,
+    [String filename]) {
   var translated = {"_locale": locale};
   originals.forEach((name, text) {
-    translated[name] = translations[name];
+    if (translations[name] != null) {
+      translated[name] = translations[name];
+    }
   });
-  var file = new File(path.join(targetDir, 'translation_$locale.arb'));
+  var file =
+      new File(path.join(targetDir, filename ?? 'translation_$locale.arb'));
   file.writeAsStringSync(jsonCodec.encode(translated));
 }
 
@@ -177,5 +185,6 @@ main(List<String> args) {
 
   var messages = jsonCodec.decode(new File(fileArgs.first).readAsStringSync());
   translate(messages, "fr", french);
+  translate(messages, "fr", frenchExtra, 'french2.arb');
   translate(messages, "de_DE", german);
 }
