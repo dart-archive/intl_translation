@@ -210,7 +210,7 @@ class MessageLookup extends MessageLookupByLibrary {
     for (var rawLocale in allLocales) {
       var locale = Intl.canonicalizedLocale(rawLocale);
       var loadOperation = (useDeferredLoading)
-          ? "  '$locale': () => ${libraryName(locale)}.loadLibrary(),\n"
+          ? "  '$locale': ${libraryName(locale)}.loadLibrary,\n"
           : "// ignore: unnecessary_new\n"
               "  '$locale': () => new Future.value(null),\n";
       output.write(loadOperation);
