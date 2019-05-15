@@ -17,12 +17,11 @@ To extract messages, run the `extract_to_arb.dart` program.
           my_program.dart more_of_my_program.dart
 
 This will produce a file `intl_messages.arb` with the messages from
-all of these programs. an [ARB]
-(https://code.google.com/p/arb/wiki/ApplicationResourceBundleSpecification)
-format file which can be used for input to translation tools like
-[Google Translator Toolkit](https://translate.google.com/toolkit/)
-The resulting translations can be used to generate a set of libraries
-using the `generate_from_arb.dart` program.
+all of these programs. an [ARB][ARB] format file which can be used for
+input to translation tools like
+[Google Translator Toolkit](https://translate.google.com/toolkit/). The
+resulting translations can be used to generate a set of libraries using
+the `generate_from_arb.dart` program.
 
 This expects to receive a series of files, one per
 locale.
@@ -40,12 +39,13 @@ for a specific locale. Once that's done, any
 will automatically print the translated version instead of the
 original.
 
-      import "my_prefix_messages_all.dart";
-      ...
-      initializeMessages("dk").then(printSomeMessages);
+    import "my_prefix_messages_all.dart";
+    ...
+    initializeMessages("dk").then(printSomeMessages);
 
-Once the future returned from the initialization call returns, the
+Once the Future returned from the initialization call completes, the
 message data is available.
 
 [Intl]: https://www.dartdocs.org/documentation/intl/latest
 [Intl.message]: https://www.dartdocs.org/documentation/intl/latest/intl/Intl/message.html
+[ARB]: https://code.google.com/p/arb/wiki/ApplicationResourceBundleSpecification
