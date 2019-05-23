@@ -91,10 +91,10 @@ abstract class Message {
     // Detect cases where args passes invalid names, either literal strings
     // instead of identifiers, or in the wrong order, missing values, etc.
     ListLiteral identifiers = args.childEntities.last;
-    if (!identifiers.elements2.every((each) => each is SimpleIdentifier)) {
+    if (!identifiers.elements.every((each) => each is SimpleIdentifier)) {
       return false;
     }
-    var names = identifiers.elements2
+    var names = identifiers.elements
         .map((each) => (each as SimpleIdentifier).name)
         .toList();
     var both;
@@ -907,7 +907,7 @@ class Select extends SubMessage {
   /// arguments used in Plural/Gender.
   Map argumentsOfInterestFor(MethodInvocation node) {
     SetOrMapLiteral casesArgument = node.argumentList.arguments[1];
-    return new Map.fromIterable(casesArgument.elements2,
+    return new Map.fromIterable(casesArgument.elements,
         key: (node) => _keyForm(node.key), value: (node) => node.value);
   }
 
