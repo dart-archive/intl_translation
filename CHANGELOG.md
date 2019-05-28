@@ -1,6 +1,7 @@
 ## 0.17.5
   * Allow multiple ARB files with the same locale and combine
     their translations.
+  * Update analyzer constraints and stop using deprecated elements2 API.
 
 ## 0.17.4
   * Adds --suppress-meta-data on ARB extraction.
