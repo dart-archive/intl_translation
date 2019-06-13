@@ -336,7 +336,7 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
     for (var original in entries) {
       map[original.name] = original.toJsonForLocale(locale);
     }
-    var jsonEncoded = new JsonEncoder.withIndent('  ').convert(map);
+    var jsonEncoded = new JsonEncoder().convert(map);
     output.write(_embedInLiteral(jsonEncoded));
   }
 

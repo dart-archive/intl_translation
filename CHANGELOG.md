@@ -1,3 +1,6 @@
+## 0.17.6
+  * Strip indentation from generated JSON output to improve codesize.
+
 ## 0.17.5
   * Allow multiple ARB files with the same locale and combine
     their translations.
