@@ -20,6 +20,7 @@ import 'package:intl_translation/src/intl_message.dart';
 main(List<String> args) {
   var targetDir;
   var outputFilename;
+  var dartFileList = null;
   bool transformer;
   var parser = new ArgParser();
   var extraction = new MessageExtraction();
@@ -62,6 +63,10 @@ main(List<String> args) {
       defaultsTo: 'intl_messages.arb',
       callback: (value) => outputFilename = value,
       help: 'Specify the output file.');
+  parser.addOption("dart-list",
+    defaultsTo: null,
+    callback: (value) => dartFileList = value,
+    help: 'Specify a file that contains the dart-files to read, one per line.');
   parser.addFlag("require_descriptions",
       defaultsTo: false,
       help: "Fail for messages that don't have a description.",
@@ -81,7 +86,19 @@ main(List<String> args) {
   if (!extraction.suppressLastModified) {
     allMessages["@@last_modified"] = new DateTime.now().toIso8601String();
   }
-  for (var arg in args.where((x) => x.contains(".dart"))) {
+
+  var dartFiles = args.where((x) => x.contains(".dart")).toList();
+  if(dartFileList != null)
+  {
+    File file = File(dartFileList);
+    if(file != null)
+    {
+      String content = file.readAsStringSync();
+      List<String> list = content.split("\r\n");
+      dartFiles.addAll(list.where((e) => e.isNotEmpty));
+    }
+  }
+  for (var arg in dartFiles) {
     var messages = extraction.parseFile(new File(arg), transformer);
     messages.forEach((k, v) => allMessages.addAll(toARB(v, extraction)));
   }
@@ -92,6 +109,11 @@ main(List<String> args) {
     exit(1);
   }
 }
+
+processLines(List<String> lines, var extraction)
+{
+}
+
 
 /// This is a placeholder for transforming a parameter substitution from
 /// the translation file format into a Dart interpolation. In our case we

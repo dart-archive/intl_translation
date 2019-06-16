@@ -40,6 +40,8 @@ main(List<String> args) {
   var parser = new ArgParser();
   var extraction = new MessageExtraction();
   var generation = new MessageGeneration();
+  var dartFileList = null;
+  var arbFileList = null;
   var transformer;
   parser.addFlag('json', defaultsTo: false, callback: (useJson) {
     generation =
@@ -67,6 +69,14 @@ main(List<String> args) {
       defaultsTo: 'debug',
       callback: (x) => generation.codegenMode = x,
       help: 'What mode to run the code generator in. Either release or debug.');
+  parser.addOption("dart-list",
+    defaultsTo: null,
+    callback: (value) => dartFileList = value,
+    help: 'Specify a file that contains the dart-files to read, one per line.');
+  parser.addOption("arb-list",
+    defaultsTo: null,
+    callback: (value) => arbFileList = value,
+    help: 'Specify a file that contains the arb-files to process, one per line.');
   parser.addFlag("transformer",
       defaultsTo: false,
       callback: (x) => transformer = x,
@@ -76,6 +86,26 @@ main(List<String> args) {
   parser.parse(args);
   var dartFiles = args.where((x) => x.endsWith("dart")).toList();
   var jsonFiles = args.where((x) => x.endsWith(".arb")).toList();
+  if(dartFileList != null)
+  {
+    File file = File(dartFileList);
+    if(file != null)
+    {
+      String content = file.readAsStringSync();
+      List<String> list = content.split("\r\n");
+      dartFiles.addAll(list.where((e) => e.isNotEmpty));
+    }
+  }
+  if(arbFileList != null)
+  {
+    File file = File(arbFileList);
+    if(file != null)
+    {
+      String content = file.readAsStringSync();
+      List<String> list = content.split("\r\n");
+      jsonFiles.addAll(list.where((e) => e.isNotEmpty));
+    }
+  }
   if (dartFiles.length == 0 || jsonFiles.length == 0) {
     print('Usage: generate_from_arb [options]'
         ' file1.dart file2.dart ...'
