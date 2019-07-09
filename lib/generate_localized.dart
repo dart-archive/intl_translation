@@ -165,7 +165,7 @@ final messages = new MessageLookup();
 final _keepAnalysisHappy = Intl.defaultLocale;
 
 // ignore: non_constant_identifier_names
-typedef MessageIfAbsent(String message_str, List args);
+typedef MessageIfAbsent(String message_str, List<dynamic> args);
 
 class MessageLookup extends MessageLookupByLibrary {
   get localeName => '$locale';
@@ -175,9 +175,13 @@ class MessageLookup extends MessageLookupByLibrary {
 
   String overrideLookup = """
   String lookupMessage(
-      String message_str, String locale, String name, List args, String meaning,
+      String message_str,
+      String locale,
+      String name,
+      List<dynamic> args,
+      String meaning,
       {MessageIfAbsent ifAbsent}) {
-    String failedLookup(String message_str, List args) {
+    String failedLookup(String message_str, List<dynamic> args) {
       // If there's no message_str, then we are an internal lookup, e.g. an
       // embedded plural, and shouldn't fail.
       if (message_str == null) return null;
@@ -297,7 +301,7 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
   String prologue(locale) =>
       super.prologue(locale) +
       '''
-  String evaluateMessage(translation, List args) {
+  String evaluateMessage(translation, List<dynamic> args) {
     return evaluateJsonTemplate(translation, args);
   }
 ''';
@@ -354,14 +358,14 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
 ///   * \['Intl.gender', String gender, (templates for female, male, other)\]
 ///   * \['Intl.select', String choice, { 'case' : template, ...} \]
 ///   * \['text alternating with ', 0 , ' indexes in the argument list'\]
-String evaluateJsonTemplate(Object input, List args) {
+String evaluateJsonTemplate(Object input, List<dynamic> args) {
   if (input == null) return null;
   if (input is String) return input;
   if (input is int) {
     return "\${args[input]}";
   }
 
-  List template = input;
+  List<dynamic> template = input;
   var messageName = template.first;
   if (messageName == "Intl.plural") {
      var howMany = args[template[1]];
