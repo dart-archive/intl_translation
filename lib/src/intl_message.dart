@@ -878,7 +878,7 @@ class Select extends SubMessage {
   String get icuMessageName => "select";
   String get dartMessageName => 'Intl.select';
 
-  get attributeNames => cases.keys.toList();
+  get attributeNames => cases.keys.map((key) => key.toLowerCase()).toList();
   get codeAttributeNames => attributeNames;
 
   // Check for valid select keys.
@@ -889,7 +889,7 @@ class Select extends SubMessage {
   void operator []=(String attributeName, rawValue) {
     var value = Message.from(rawValue, this);
     if (validSelectKey.stringMatch(attributeName) == attributeName) {
-      cases[attributeName] = value;
+      cases[attributeName.toLowerCase()] = value;
     } else {
       throw new IntlMessageExtractionException(
           "Invalid select keyword: '$attributeName', must "
