@@ -71,6 +71,9 @@ class MessageExtraction {
 
   bool descriptionRequired = false;
 
+  // Include source_text in messages
+  bool includeSourceText = false;
+
   /// Parse the source of the Dart program file [file] and return a Map from
   /// message names to [IntlMessage] instances.
   ///
