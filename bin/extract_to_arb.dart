@@ -56,7 +56,7 @@ main(List<String> args) {
   parser.addFlag("with-source-text",
       defaultsTo: false,
       callback: (x) => extraction.includeSourceText = x,
-      help: 'Include source_text in meta information');
+      help: 'Include source_text in meta information.');
   parser.addOption("output-dir",
       defaultsTo: '.',
       callback: (value) => targetDir = value,
