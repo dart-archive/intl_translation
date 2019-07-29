@@ -1,3 +1,7 @@
+## 0.17.6
+  * Added --with-source-text option to include the source text in the extracted
+    ARB metadata.
+
 ## 0.17.5
   * Allow multiple ARB files with the same locale and combine
     their translations.
