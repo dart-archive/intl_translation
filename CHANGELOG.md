@@ -1,7 +1,5 @@
 ## 0.17.6
   * Strip indentation from generated JSON output to improve codesize.
-  * Make generated code not trigger most lints, either by fixing issues
-    or by using lots of ignore_for_file directives.
 
 ## 0.17.5
   * Allow multiple ARB files with the same locale and combine
