@@ -12,10 +12,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:path/path.dart' as path;
-
 import 'package:intl_translation/extract_messages.dart';
 import 'package:intl_translation/src/intl_message.dart';
+import 'package:path/path.dart' as path;
 
 main(List<String> args) {
   var targetDir;
@@ -54,6 +53,10 @@ main(List<String> args) {
       defaultsTo: null,
       callback: (value) => locale = value,
       help: 'Specify the locale set inside the arb file.');
+  parser.addFlag("with-source-text",
+      defaultsTo: false,
+      callback: (x) => extraction.includeSourceText = x,
+      help: 'Include source_text in meta information.');
   parser.addOption("output-dir",
       defaultsTo: '.',
       callback: (value) => targetDir = value,
@@ -111,6 +114,10 @@ Map toARB(MainMessage message, MessageExtraction extraction) {
 
   if (!extraction.suppressMetaData) {
     out["@${message.name}"] = arbMetadata(message);
+
+    if (extraction.includeSourceText) {
+      out["@${message.name}"]["source_text"] = out[message.name];
+    }
   }
 
   return out;

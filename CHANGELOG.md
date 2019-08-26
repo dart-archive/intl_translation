@@ -2,6 +2,8 @@
   * Strip indentation from generated JSON output to improve codesize.
   * Make generated code not trigger most lints, either by fixing issues
     or by using lots of ignore_for_file directives.
+  * Added --with-source-text option to include the source text in the extracted
+    ARB metadata.
 
 ## 0.17.5
   * Allow multiple ARB files with the same locale and combine
