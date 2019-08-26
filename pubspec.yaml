@@ -1,5 +1,5 @@
 name: intl_translation
-version: 0.17.6-dev
+version: 0.17.6
 author: Dart Team <misc@dartlang.org>
 description: >-
   Contains code to deal with internationalized/localized messages,
@@ -8,10 +8,10 @@ description: >-
 
 homepage: https://github.com/dart-lang/intl_translation
 environment:
-  sdk: '>=2.0.0-dev.33.0 <3.0.0'
+  sdk: '>=2.0.0 <3.0.0'
 
 dependencies:
-  analyzer: '>=0.36.0 <0.37.0'
+  analyzer: '>=0.36.0 <0.39.0'
   args: '>=0.12.1 <2.0.0'
   dart_style: ^1.0.0
   intl: '>=0.15.3 <0.16.0'
