@@ -1,3 +1,6 @@
+## 0.17.7
+  * Fixed the pubspec to allow intl version 0.16.*
+
 ## 0.17.6
   * Strip indentation from generated JSON output to improve codesize.
   * Make generated code not trigger most lints, either by fixing issues
