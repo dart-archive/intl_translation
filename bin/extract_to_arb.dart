@@ -20,6 +20,7 @@ main(List<String> args) {
   var targetDir;
   var outputFilename;
   bool transformer;
+  bool forceGenerateName;
   var parser = new ArgParser();
   var extraction = new MessageExtraction();
   String locale;
@@ -49,6 +50,10 @@ main(List<String> args) {
       callback: (x) => transformer = x,
       help: "Assume that the transformer is in use, so name and args "
           "don't need to be specified for messages.");
+  parser.addFlag("force-generate-name",
+      defaultsTo: false,
+      callback: (x) => forceGenerateName = x,
+      help: 'Set the name based on the class and method name in case its not set manually');
   parser.addOption("locale",
       defaultsTo: null,
       callback: (value) => locale = value,
@@ -85,7 +90,7 @@ main(List<String> args) {
     allMessages["@@last_modified"] = new DateTime.now().toIso8601String();
   }
   for (var arg in args.where((x) => x.contains(".dart"))) {
-    var messages = extraction.parseFile(new File(arg), transformer);
+    var messages = extraction.parseFile(new File(arg), transformer, forceGenerateName);
     messages.forEach((k, v) => allMessages.addAll(toARB(v, extraction)));
   }
   var file = new File(path.join(targetDir, outputFilename));

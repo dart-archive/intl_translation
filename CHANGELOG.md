@@ -1,3 +1,7 @@
+## 0.17.8
+  * Added --force-generate-name to force extract_to_arb to generate
+    a class_method name in case the message does not provide one
+
 ## 0.17.7
   * Fixed the pubspec to allow intl version 0.16.*
 

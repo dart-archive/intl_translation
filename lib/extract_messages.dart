@@ -79,7 +79,7 @@ class MessageExtraction {
   ///
   /// If [transformer] is true, assume the transformer will supply any "name"
   /// and "args" parameters required in Intl.message calls.
-  Map<String, MainMessage> parseFile(File file, [bool transformer = false]) {
+  Map<String, MainMessage> parseFile(File file, [bool transformer = false, bool forceGenerateName = false]) {
     // Optimization to avoid parsing files we're sure don't contain any messages.
     String contents = file.readAsStringSync();
     origin = file.path;
@@ -90,6 +90,7 @@ class MessageExtraction {
     }
     var visitor = new MessageFindingVisitor(this);
     visitor.generateNameAndArgs = transformer;
+    visitor.forceGenerateName = forceGenerateName;
     root.accept(visitor);
     return visitor.messages;
   }
@@ -144,6 +145,9 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// Should we generate the name and arguments from the function definition,
   /// meaning we're running in the transformer.
   bool generateNameAndArgs = false;
+
+  /// We generate the name from the function definition if it's not manually set
+  bool forceGenerateName = false;
 
   /// We keep track of the data from the last MethodDeclaration,
   /// FunctionDeclaration or FunctionExpression that we saw on the way down,
@@ -369,7 +373,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     // We only rewrite messages with parameters, otherwise we use the literal
     // string as the name and no arguments are necessary.
     if (!message.hasName) {
-      if (generateNameAndArgs && message.arguments.isNotEmpty) {
+      if (forceGenerateName || (generateNameAndArgs && message.arguments.isNotEmpty)) {
         // Always try for class_method if this is a class method and
         // generating names/args.
         message.name = Message.classPlusMethodName(node, name) ?? name;
