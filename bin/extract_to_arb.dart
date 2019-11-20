@@ -16,9 +16,12 @@ import 'package:intl_translation/extract_messages.dart';
 import 'package:intl_translation/src/intl_message.dart';
 import 'package:path/path.dart' as path;
 
+import 'directory_utils.dart';
+
 main(List<String> args) {
   var targetDir;
   var outputFilename;
+  String sourcesListFile;
   bool transformer;
   var parser = new ArgParser();
   var extraction = new MessageExtraction();
@@ -65,6 +68,11 @@ main(List<String> args) {
       defaultsTo: 'intl_messages.arb',
       callback: (value) => outputFilename = value,
       help: 'Specify the output file.');
+  parser.addOption("sources-list-file",
+      callback: (value) => sourcesListFile = value,
+      help: 'A file that lists the Dart files to read, one per line.'
+          'The paths in the file can be absolute or relative to the '
+          'location of this file.');
   parser.addFlag("require_descriptions",
       defaultsTo: false,
       help: "Fail for messages that don't have a description.",
@@ -84,7 +92,10 @@ main(List<String> args) {
   if (!extraction.suppressLastModified) {
     allMessages["@@last_modified"] = new DateTime.now().toIso8601String();
   }
-  for (var arg in args.where((x) => x.contains(".dart"))) {
+
+  var dartFiles = args.where((x) => x.endsWith(".dart")).toList();
+  dartFiles.addAll(linesFromFile(sourcesListFile));
+  for (var arg in dartFiles) {
     var messages = extraction.parseFile(new File(arg), transformer);
     messages.forEach((k, v) => allMessages.addAll(toARB(v, extraction)));
   }

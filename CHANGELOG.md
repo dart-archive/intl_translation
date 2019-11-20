@@ -1,3 +1,8 @@
+## 0.17.8
+  * Add --sources-list-files and --translations-list-file to ARB handling
+    utilities to read the input names from files. This is useful for large
+    numbers of inputs.
+
 ## 0.17.7
   * Fixed the pubspec to allow intl version 0.16.*
 

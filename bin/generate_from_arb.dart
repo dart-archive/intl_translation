@@ -29,6 +29,8 @@ import 'package:intl_translation/generate_localized.dart';
 import 'package:intl_translation/src/intl_message.dart';
 import 'package:intl_translation/src/icu_parser.dart';
 
+import 'directory_utils.dart';
+
 /// Keeps track of all the messages we have processed so far, keyed by message
 /// name.
 Map<String, List<MainMessage>> messages;
@@ -40,6 +42,8 @@ main(List<String> args) {
   var parser = new ArgParser();
   var extraction = new MessageExtraction();
   var generation = new MessageGeneration();
+  String sourcesListFile;
+  String translationsListFile;
   var transformer;
   parser.addFlag('json', defaultsTo: false, callback: (useJson) {
     generation =
@@ -67,6 +71,16 @@ main(List<String> args) {
       defaultsTo: 'debug',
       callback: (x) => generation.codegenMode = x,
       help: 'What mode to run the code generator in. Either release or debug.');
+  parser.addOption("sources-list-file",
+      callback: (value) => sourcesListFile = value,
+      help: 'A file that lists the Dart files to read, one per line.'
+          'The paths in the file can be absolute or relative to the '
+          'location of this file.');
+  parser.addOption("translations-list-file",
+      callback: (value) => translationsListFile = value,
+      help: 'A file that lists the translation files to process, one per line.'
+          'The paths in the file can be absolute or relative to the '
+          'location of this file.');
   parser.addFlag("transformer",
       defaultsTo: false,
       callback: (x) => transformer = x,
@@ -76,6 +90,8 @@ main(List<String> args) {
   parser.parse(args);
   var dartFiles = args.where((x) => x.endsWith("dart")).toList();
   var jsonFiles = args.where((x) => x.endsWith(".arb")).toList();
+  dartFiles.addAll(linesFromFile(sourcesListFile));
+  jsonFiles.addAll(linesFromFile(translationsListFile));
   if (dartFiles.length == 0 || jsonFiles.length == 0) {
     print('Usage: generate_from_arb [options]'
         ' file1.dart file2.dart ...'
