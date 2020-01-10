@@ -1,3 +1,6 @@
+## 0.17.9
+  * Fix pub complaint trying to precompile a library file in bin by moving that file to lib/src.
+
 ## 0.17.8
   * Add --sources-list-files and --translations-list-file to ARB handling
     utilities to read the input names from files. This is useful for large

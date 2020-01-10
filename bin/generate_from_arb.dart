@@ -26,10 +26,9 @@ import 'package:path/path.dart' as path;
 
 import 'package:intl_translation/extract_messages.dart';
 import 'package:intl_translation/generate_localized.dart';
+import 'package:intl_translation/src/directory_utils.dart';
 import 'package:intl_translation/src/intl_message.dart';
 import 'package:intl_translation/src/icu_parser.dart';
-
-import 'directory_utils.dart';
 
 /// Keeps track of all the messages we have processed so far, keyed by message
 /// name.
