@@ -71,12 +71,15 @@ class MessageExtraction {
 
   bool descriptionRequired = false;
 
+  /// Whether to include source_text in messages
+  bool includeSourceText = false;
+
   /// Parse the source of the Dart program file [file] and return a Map from
   /// message names to [IntlMessage] instances.
   ///
   /// If [transformer] is true, assume the transformer will supply any "name"
   /// and "args" parameters required in Intl.message calls.
-  Map<String, MainMessage> parseFile(File file, [transformer = false]) {
+  Map<String, MainMessage> parseFile(File file, [bool transformer = false]) {
     // Optimization to avoid parsing files we're sure don't contain any messages.
     String contents = file.readAsStringSync();
     origin = file.path;
@@ -92,7 +95,7 @@ class MessageExtraction {
   }
 
   CompilationUnit _parseCompilationUnit(String contents, String origin) {
-    var parsed;
+    CompilationUnit parsed;
     try {
       parsed = parseCompilationUnit(contents);
     } on AnalyzerErrorGroup {
@@ -285,7 +288,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
   /// Try to extract a message. On failure, return a String error message.
   String _extractMessage(MethodInvocation node) {
-    var message;
+    MainMessage message;
     try {
       if (node.methodName.name == "message") {
         message = messageFromIntlMessageCall(node);
@@ -352,8 +355,8 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     var extractionResult = extract(message, arguments);
     if (extractionResult == null) return null;
 
-    for (NamedExpression namedArgument
-        in arguments.where((x) => x is NamedExpression)) {
+    for (var namedArgument
+        in arguments.whereType<NamedExpression>()) {
       var name = namedArgument.name.label.name;
       var exp = namedArgument.expression;
       var evaluator = new ConstantEvaluator();
@@ -491,14 +494,14 @@ class InterpolationVisitor extends SimpleAstVisitor {
 
   void visitInterpolationExpression(InterpolationExpression node) {
     if (node.expression is SimpleIdentifier) {
-      return handleSimpleInterpolation(node);
+      handleSimpleInterpolation(node);
     } else {
-      return lookForPluralOrGender(node);
+      lookForPluralOrGender(node);
     }
     // Note that we never end up calling super.
   }
 
-  lookForPluralOrGender(InterpolationExpression node) {
+  void lookForPluralOrGender(InterpolationExpression node) {
     var visitor = new PluralAndGenderVisitor(pieces, message, extraction);
     node.accept(visitor);
     if (!visitor.foundPluralOrGender) {

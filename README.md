@@ -16,12 +16,12 @@ To extract messages, run the `extract_to_arb.dart` program.
       pub run intl_translation:extract_to_arb --output-dir=target/directory
           my_program.dart more_of_my_program.dart
 
-This will produce a file `intl_messages.arb` with the messages from
-all of these programs. an [ARB][ARB] format file which can be used for
-input to translation tools like
-[Google Translator Toolkit](https://translate.google.com/toolkit/). The
-resulting translations can be used to generate a set of libraries using
-the `generate_from_arb.dart` program.
+This will produce a file `intl_messages.arb` with the messages from all of these
+programs. This is an [ARB][ARB] format file which can be used for input to
+translation tools like [Localizely][Localizely] or (the deprecated) [Google
+Translator Toolkit](https://translate.google.com/toolkit/). The resulting
+translations can be used to generate a set of libraries using the
+`generate_from_arb.dart` program.
 
 This expects to receive a series of files, one per
 locale.
@@ -49,3 +49,4 @@ message data is available.
 [Intl]: https://www.dartdocs.org/documentation/intl/latest
 [Intl.message]: https://www.dartdocs.org/documentation/intl/latest/intl/Intl/message.html
 [ARB]: https://code.google.com/p/arb/wiki/ApplicationResourceBundleSpecification
+[Localizely]: https://localizely.com/

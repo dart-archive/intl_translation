@@ -12,14 +12,15 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:path/path.dart' as path;
-
 import 'package:intl_translation/extract_messages.dart';
+import 'package:intl_translation/src/directory_utils.dart';
 import 'package:intl_translation/src/intl_message.dart';
+import 'package:path/path.dart' as path;
 
 main(List<String> args) {
   var targetDir;
   var outputFilename;
+  String sourcesListFile;
   bool transformer;
   var parser = new ArgParser();
   var extraction = new MessageExtraction();
@@ -54,6 +55,10 @@ main(List<String> args) {
       defaultsTo: null,
       callback: (value) => locale = value,
       help: 'Specify the locale set inside the arb file.');
+  parser.addFlag("with-source-text",
+      defaultsTo: false,
+      callback: (x) => extraction.includeSourceText = x,
+      help: 'Include source_text in meta information.');
   parser.addOption("output-dir",
       defaultsTo: '.',
       callback: (value) => targetDir = value,
@@ -62,6 +67,11 @@ main(List<String> args) {
       defaultsTo: 'intl_messages.arb',
       callback: (value) => outputFilename = value,
       help: 'Specify the output file.');
+  parser.addOption("sources-list-file",
+      callback: (value) => sourcesListFile = value,
+      help: 'A file that lists the Dart files to read, one per line.'
+          'The paths in the file can be absolute or relative to the '
+          'location of this file.');
   parser.addFlag("require_descriptions",
       defaultsTo: false,
       help: "Fail for messages that don't have a description.",
@@ -81,7 +91,10 @@ main(List<String> args) {
   if (!extraction.suppressLastModified) {
     allMessages["@@last_modified"] = new DateTime.now().toIso8601String();
   }
-  for (var arg in args.where((x) => x.contains(".dart"))) {
+
+  var dartFiles = args.where((x) => x.endsWith(".dart")).toList();
+  dartFiles.addAll(linesFromFile(sourcesListFile));
+  for (var arg in dartFiles) {
     var messages = extraction.parseFile(new File(arg), transformer);
     messages.forEach((k, v) => allMessages.addAll(toARB(v, extraction)));
   }
@@ -111,6 +124,10 @@ Map toARB(MainMessage message, MessageExtraction extraction) {
 
   if (!extraction.suppressMetaData) {
     out["@${message.name}"] = arbMetadata(message);
+
+    if (extraction.includeSourceText) {
+      out["@${message.name}"]["source_text"] = out[message.name];
+    }
   }
 
   return out;

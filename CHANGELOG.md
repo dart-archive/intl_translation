@@ -1,3 +1,21 @@
+## 0.17.9
+  * Fix pub complaint trying to precompile a library file in bin by moving that file to lib/src.
+
+## 0.17.8
+  * Add --sources-list-files and --translations-list-file to ARB handling
+    utilities to read the input names from files. This is useful for large
+    numbers of inputs.
+
+## 0.17.7
+  * Fixed the pubspec to allow intl version 0.16.*
+
+## 0.17.6
+  * Strip indentation from generated JSON output to improve codesize.
+  * Make generated code not trigger most lints, either by fixing issues
+    or by using lots of ignore_for_file directives.
+  * Added --with-source-text option to include the source text in the extracted
+    ARB metadata.
+
 ## 0.17.5
   * Allow multiple ARB files with the same locale and combine
     their translations.
