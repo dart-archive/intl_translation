@@ -125,8 +125,8 @@ class MessageGeneration {
             .toList()
               ..sort((a, b) => a.name.compareTo(b.name)))
         .map((original) =>
-            '    "${original.escapeAndValidateString(original.name)}" '
-            ': ${_mapReference(original, locale)}');
+            '    \'${original.escapeAndValidateString(original.name)}\' '
+            ': ${_mapReference(original, locale)} as Function');
     output..write(entries.join(",\n"))..write("\n  };\n}\n");
   }
 
@@ -138,8 +138,10 @@ class MessageGeneration {
       // being inlined into the main one, defeating the space savings. Issue
       // 24356
       """
-  final messages = _notInlinedMessages(_notInlinedMessages);
-  static _notInlinedMessages(_) => <String, Function> {
+  final Map<String, Function> messages =
+      _notInlinedMessages(_notInlinedMessages);
+  static Map<String, Function> _notInlinedMessages(dynamic _) =>
+      <String, Function> {
 """;
 
   /// [generateIndividualMessageFile] for the beginning of the file,
@@ -160,7 +162,7 @@ class MessageGeneration {
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
 $extraImports
-final messages = new MessageLookup();
+final MessageLookup messages = new MessageLookup();
 
 typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 
@@ -211,7 +213,7 @@ class MessageLookup extends MessageLookupByLibrary {
       var locale = Intl.canonicalizedLocale(rawLocale);
       var loadOperation = (useDeferredLoading)
           ? "  '$locale': ${libraryName(locale)}.loadLibrary,\n"
-          : "  '$locale': () => new Future.value(null),\n";
+          : "  '$locale': () => new Future<dynamic>.value(null),\n";
       output.write(loadOperation);
     }
     output.write("};\n");
@@ -256,14 +258,14 @@ import 'package:$intlImportPath/src/intl_helpers.dart';
 
 /// User programs should call this before using [localeName] for messages.
 Future<bool> initializeMessages(String localeName) async {
-  var availableLocale = Intl.verifiedLocale(
+  final availableLocale = Intl.verifiedLocale(
     localeName,
     (locale) => _deferredLibraries[locale] != null,
     onFailure: (_) => null);
   if (availableLocale == null) {
     return new Future.value(false);
   }
-  var lib = _deferredLibraries[availableLocale];
+  final lib = _deferredLibraries[availableLocale];
   await (lib == null ? new Future.value(false) : lib());
   initializeInternalMessageLookup(() => new CompositeMessageLookup());
   messageLookup.addLocale(availableLocale, _findGeneratedMessagesFor);
@@ -273,15 +275,17 @@ Future<bool> initializeMessages(String localeName) async {
 bool _messagesExistFor(String locale) {
   try {
     return _findExact(locale) != null;
-  } catch (e) {
+  } on Exception catch (_) {
     return false;
   }
 }
 
 MessageLookupByLibrary _findGeneratedMessagesFor(String locale) {
-  var actualLocale = Intl.verifiedLocale(locale, _messagesExistFor,
+  final actualLocale = Intl.verifiedLocale(locale, _messagesExistFor,
       onFailure: (_) => null);
-  if (actualLocale == null) return null;
+  if (actualLocale == null) {
+    return null;
+  }
   return _findExact(actualLocale);
 }
 """;
@@ -314,9 +318,9 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
     var triple = "'''";
     var result = jsonMessages;
     if (jsonMessages.contains(triple)) {
-      var doubleQuote = '"';
+      var singleQuote = '\'';
       var asAdjacentStrings =
-          '$triple  r$doubleQuote$triple$doubleQuote r$triple';
+          '$triple  r$singleQuote$triple$singleQuote r$triple';
       result = jsonMessages.replaceAll(triple, asAdjacentStrings);
     }
     return "r'''\n$result''';\n}";
@@ -468,8 +472,8 @@ bool _hasArguments(MainMessage message) => message.arguments.length != 0;
 String _mapReference(MainMessage original, String locale) {
   if (!_hasArguments(original)) {
     // No parameters, can be printed simply.
-    return 'MessageLookupByLibrary.simpleMessage("'
-        '${original.translations[locale]}")';
+    return 'MessageLookupByLibrary.simpleMessage('
+        '''\'\'\'${original.translations[locale]}\'\'\')''';
   } else {
     return _methodNameFor(original.name);
   }
