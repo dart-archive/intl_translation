@@ -22,6 +22,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:glob/glob.dart';
 import 'package:path/path.dart' as path;
 
 import 'package:intl_translation/extract_messages.dart';
@@ -87,10 +88,27 @@ main(List<String> args) {
           "don't need to be specified for messages.");
 
   parser.parse(args);
-  var dartFiles = args.where((x) => x.endsWith("dart")).toList();
-  var jsonFiles = args.where((x) => x.endsWith(".arb")).toList();
+
+  // parse args as globed pattern
+  var dartFiles = args
+      .map((x) => Glob(x).listSync().map((file) => file.path))
+      .expand((i) => i)
+      .where((x) => x.endsWith(".dart"))
+      .toList();
+  var jsonFiles = args
+      .map((x) => Glob(x).listSync().map((file) => file.path))
+      .expand((i) => i)
+      .where((x) => x.endsWith(".arb"))
+      .toList();
   dartFiles.addAll(linesFromFile(sourcesListFile));
   jsonFiles.addAll(linesFromFile(translationsListFile));
+  // remove duplicates
+  dartFiles = [
+    ...{...dartFiles}
+  ];
+  jsonFiles = [
+    ...{...jsonFiles}
+  ];
   if (dartFiles.length == 0 || jsonFiles.length == 0) {
     print('Usage: generate_from_arb [options]'
         ' file1.dart file2.dart ...'

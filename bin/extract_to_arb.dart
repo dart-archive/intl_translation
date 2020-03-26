@@ -12,6 +12,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:glob/glob.dart';
 import 'package:intl_translation/extract_messages.dart';
 import 'package:intl_translation/src/directory_utils.dart';
 import 'package:intl_translation/src/intl_message.dart';
@@ -92,8 +93,17 @@ main(List<String> args) {
     allMessages["@@last_modified"] = new DateTime.now().toIso8601String();
   }
 
-  var dartFiles = args.where((x) => x.endsWith(".dart")).toList();
+  // parse args as globed pattern
+  var dartFiles = args
+      .map((x) => Glob(x).listSync().map((file) => file.path))
+      .expand((i) => i)
+      .where((x) => x.endsWith(".dart"))
+      .toList();
   dartFiles.addAll(linesFromFile(sourcesListFile));
+  // remove duplicates
+  dartFiles = [
+    ...{...dartFiles}
+  ];
   for (var arg in dartFiles) {
     var messages = extraction.parseFile(new File(arg), transformer);
     messages.forEach((k, v) => allMessages.addAll(toARB(v, extraction)));
