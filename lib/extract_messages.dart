@@ -74,6 +74,9 @@ class MessageExtraction {
   /// Whether to include source_text in messages
   bool includeSourceText = false;
 
+  /// the class to search for when creating messages
+  String intlClassWrapper = 'Intl';
+
   /// Parse the source of the Dart program file [file] and return a Map from
   /// message names to [IntlMessage] instances.
   ///
@@ -83,7 +86,7 @@ class MessageExtraction {
     // Optimization to avoid parsing files we're sure don't contain any messages.
     String contents = file.readAsStringSync();
     origin = file.path;
-    if (contents.contains("Intl.")) {
+    if (contents.contains("$intlClassWrapper.")) {
       root = _parseCompilationUnit(contents, origin);
     } else {
       return {};
@@ -160,9 +163,9 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     if (!validNames.contains(node.methodName.name)) return false;
     final target = node.target;
     if (target is SimpleIdentifier) {
-      return target.token.toString() == 'Intl';
+      return target.token.toString() == extraction.intlClassWrapper;
     } else if (target is PrefixedIdentifier) {
-      return target.identifier.token.toString() == 'Intl';
+      return target.identifier.token.toString() == extraction.intlClassWrapper;
     }
     return false;
   }

@@ -76,6 +76,10 @@ main(List<String> args) {
       defaultsTo: false,
       help: "Fail for messages that don't have a description.",
       callback: (val) => extraction.descriptionRequired = val);
+  parser.addOption("intl-class-wrapper",
+      defaultsTo: 'Intl',
+      callback: (value) => extraction.intlClassWrapper = value,
+      help: 'Search for this class instead of the default "Intl" class');
 
   parser.parse(args);
   if (args.length == 0) {
