@@ -572,7 +572,7 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
     }
     if (!(node.target is SimpleIdentifier)) return false;
     SimpleIdentifier target = node.target;
-    return target.token.toString() == "Intl";
+    return target.token.toString() == extraction.intlClassWrapper;
   }
 
   /// Returns a String describing why the node is invalid, or null if no

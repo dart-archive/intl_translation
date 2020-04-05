@@ -85,6 +85,10 @@ main(List<String> args) {
       callback: (x) => transformer = x,
       help: "Assume that the transformer is in use, so name and args "
           "don't need to be specified for messages.");
+  parser.addOption("intl-class-wrapper",
+      defaultsTo: 'Intl',
+      callback: (value) => extraction.intlClassWrapper = value,
+      help: 'Search for this class instead of the default "Intl" class');
 
   parser.parse(args);
   var dartFiles = args.where((x) => x.endsWith("dart")).toList();
