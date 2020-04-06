@@ -1,3 +1,6 @@
+## 0.17.10
+   * Update petitparser dependency.
+
 ## 0.17.9
   * Fix pub complaint trying to precompile a library file in bin by moving that file to lib/src.
 
