@@ -21,11 +21,8 @@ library extract_messages;
 
 import 'dart:io';
 
-import 'package:analyzer/dart/analysis/utilities.dart';
-import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/analyzer.dart';
 import 'package:analyzer/dart/ast/standard_ast_factory.dart';
-import 'package:analyzer/dart/ast/visitor.dart';
-import 'package:analyzer/src/dart/ast/constant_evaluator.dart';
 import 'package:intl_translation/src/intl_message.dart';
 
 /// A function that takes a message and does something useful with it.
@@ -83,22 +80,10 @@ class MessageExtraction {
   /// If [transformer] is true, assume the transformer will supply any "name"
   /// and "args" parameters required in Intl.message calls.
   Map<String, MainMessage> parseFile(File file, [bool transformer = false]) {
-    String contents = file.readAsStringSync();
-    return parseContent(contents, file.path, transformer);
-  }
-
-  /// Parse the source of the Dart program from a file with content
-  /// [fileContent] and path [path] and return a Map from message
-  /// names to [IntlMessage] instances.
-  ///
-  /// If [transformer] is true, assume the transformer will supply any "name"
-  /// and "args" parameters required in Intl.message calls.
-  Map<String, MainMessage> parseContent(String fileContent, String filepath,
-      [bool transformer = false]) {
-    String contents = fileContent;
-    origin = filepath;
     // Optimization to avoid parsing files we're sure don't contain any messages.
-    if (contents.contains('Intl.')) {
+    String contents = file.readAsStringSync();
+    origin = file.path;
+    if (contents.contains("Intl.")) {
       root = _parseCompilationUnit(contents, origin);
     } else {
       return {};
@@ -110,14 +95,14 @@ class MessageExtraction {
   }
 
   CompilationUnit _parseCompilationUnit(String contents, String origin) {
-    var result = parseString(content: contents, throwIfDiagnostics: false);
-
-    if (result.errors.isNotEmpty) {
+    CompilationUnit parsed;
+    try {
+      parsed = parseCompilationUnit(contents);
+    } on AnalyzerErrorGroup {
       print("Error in parsing $origin, no messages extracted.");
-      throw ArgumentError('Parsing errors in $origin');
+      rethrow;
     }
-
-    return result.unit;
+    return parsed;
   }
 
   /// The root of the compilation unit, and the first node we visit. We hold
@@ -370,7 +355,8 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     var extractionResult = extract(message, arguments);
     if (extractionResult == null) return null;
 
-    for (var namedArgument in arguments.whereType<NamedExpression>()) {
+    for (var namedArgument
+        in arguments.whereType<NamedExpression>()) {
       var name = namedArgument.name.label.name;
       var exp = namedArgument.expression;
       var evaluator = new ConstantEvaluator();

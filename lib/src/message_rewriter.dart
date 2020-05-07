@@ -4,7 +4,7 @@
 
 /// Code to rewrite Intl.message calls adding the name and args parameters
 /// automatically, primarily used by the transformer.
-import 'package:analyzer/dart/analysis/utilities.dart';
+import 'package:analyzer/analyzer.dart';
 
 import 'package:intl_translation/extract_messages.dart';
 
@@ -74,13 +74,8 @@ List findMessages(String source, String sourceName,
     [MessageExtraction extraction]) {
   extraction = extraction ?? new MessageExtraction();
   try {
-    var result = parseString(content: source);
-    if (result.errors.isNotEmpty) {
-      var errorsStr = result.errors.map((e) => e.message).join('\n');
-      throw ArgumentError('Parsing errors in $sourceName: $errorsStr');
-    }
-    extraction.root = result.unit;
-  } on ArgumentError catch (e) {
+    extraction.root = parseCompilationUnit(source, name: sourceName);
+  } on AnalyzerErrorGroup catch (e) {
     extraction
         .onMessage("Error in parsing $sourceName, no messages extracted.");
     extraction.onMessage("  $e");

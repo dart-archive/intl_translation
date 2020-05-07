@@ -1,8 +1,5 @@
-## 0.17.10+1
+## 0.17.11-dev
   * Generate code that passes analysis with `implicit-casts: false`.
-  * Allow use of `MessageExtraction` and `MessageGeneration` without `File`.
-  * Move arb generation from bin to lib so it's available to external packages.
-  * Update analyzer dependency.
 
 ## 0.17.10
   * Update petitparser dependency.
