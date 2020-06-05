@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@Timeout(const Duration(seconds: 180))
+
 import 'package:intl_translation/extract_messages.dart';
 import 'package:intl_translation/src/message_rewriter.dart';
 import 'package:test/test.dart';
