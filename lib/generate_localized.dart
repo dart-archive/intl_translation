@@ -153,9 +153,10 @@ class MessageGeneration {
 
 // Ignore issues from commonly used lints in this file.
 // ignore_for_file:unnecessary_brace_in_string_interps, unnecessary_new
-// ignore_for_file:prefer_single_quotes,comment_references, directives_ordering
-// ignore_for_file:annotate_overrides,prefer_generic_function_type_aliases
-// ignore_for_file:unused_import, file_names
+// ignore_for_file:prefer_single_quotes, comment_references, directives_ordering
+// ignore_for_file:annotate_overrides, prefer_generic_function_type_aliases
+// ignore_for_file:unused_import, file_names, public_member_api_docs
+// ignore_for_file:type_annotate_public_apis, non_constant_identifier_names
 
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
@@ -238,7 +239,8 @@ class MessageLookup extends MessageLookupByLibrary {
 // ignore_for_file:unnecessary_brace_in_string_interps, directives_ordering
 // ignore_for_file:argument_type_not_assignable, invalid_assignment
 // ignore_for_file:prefer_single_quotes, prefer_generic_function_type_aliases
-// ignore_for_file:comment_references
+// ignore_for_file:comment_references, public_member_api_docs
+// ignore_for_file:avoid_catches_without_on_clauses, non_constant_identifier_names
 
 import 'dart:async';
 
