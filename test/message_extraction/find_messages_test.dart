@@ -2,16 +2,16 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@Timeout(const Duration(seconds: 180))
+@Timeout(Duration(seconds: 180))
 
 import 'package:intl_translation/extract_messages.dart';
 import 'package:intl_translation/src/message_rewriter.dart';
 import 'package:test/test.dart';
 
-main() {
+void main() {
   group('findMessages denied usages', () {
     test('fails with message on non-literal examples Map', () {
-      final messageExtraction = new MessageExtraction();
+      final messageExtraction = MessageExtraction();
       findMessages('''
 final variable = 'foo';
 
@@ -25,7 +25,7 @@ String message(String string) =>
     });
 
     test('fails with message on prefixed expression in interpolation', () {
-      final messageExtraction = new MessageExtraction();
+      final messageExtraction = MessageExtraction();
       findMessages(
           'String message(object) => Intl.message("\${object.property}");',
           '',
@@ -41,7 +41,7 @@ String message(String string) =>
 
     test('fails on call with name referencing variable name inside a function',
         () {
-      final messageExtraction = new MessageExtraction();
+      final messageExtraction = MessageExtraction();
       findMessages('''
       class MessageTest {
         String functionName() {
@@ -58,7 +58,7 @@ String message(String string) =>
     });
 
     test('fails on referencing a name from listed fields declaration', () {
-      final messageExtraction = new MessageExtraction();
+      final messageExtraction = MessageExtraction();
       findMessages('''
       class MessageTest {
         String first, second = Intl.message('message string',
@@ -75,7 +75,7 @@ String message(String string) =>
 
   group('findMessages accepted usages', () {
     test('succeeds on Intl call from class getter', () {
-      final messageExtraction = new MessageExtraction();
+      final messageExtraction = MessageExtraction();
       var messages = findMessages('''
       class MessageTest {
         String get messageName => Intl.message("message string",
@@ -87,7 +87,7 @@ String message(String string) =>
     });
 
     test('succeeds on Intl call in top variable declaration', () {
-      final messageExtraction = new MessageExtraction();
+      final messageExtraction = MessageExtraction();
       var messages = findMessages(
           'List<String> list = [Intl.message("message string", '
           'name: "list", desc: "in list")];',
@@ -99,7 +99,7 @@ String message(String string) =>
     });
 
     test('succeeds on Intl call in member variable declaration', () {
-      final messageExtraction = new MessageExtraction();
+      final messageExtraction = MessageExtraction();
       var messages = findMessages('''
       class MessageTest {
         final String messageName = Intl.message("message string",
@@ -113,7 +113,7 @@ String message(String string) =>
 
     // Note: this type of usage is not recommended.
     test('succeeds on Intl call inside a function as variable declaration', () {
-      final messageExtraction = new MessageExtraction();
+      final messageExtraction = MessageExtraction();
       var messages = findMessages('''
       class MessageTest {
         String functionName() {
@@ -127,7 +127,7 @@ String message(String string) =>
     });
 
     test('succeeds on list field declaration', () {
-      final messageExtraction = new MessageExtraction();
+      final messageExtraction = MessageExtraction();
       var messages = findMessages('''
       class MessageTest {
         String first, second = Intl.message('message string', desc: 'test');
@@ -139,7 +139,7 @@ String message(String string) =>
     });
 
     test('succeeds on prefixed Intl call', () {
-      final messageExtraction = new MessageExtraction();
+      final messageExtraction = MessageExtraction();
       final messages = findMessages('''
       class MessageTest {
         static final String prefixedMessage =

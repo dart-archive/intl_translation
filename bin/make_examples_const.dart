@@ -10,10 +10,10 @@ import 'package:args/args.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:intl_translation/src/message_rewriter.dart';
 
-main(List<String> args) {
-  var parser = new ArgParser();
+void main(List<String> args) {
+  var parser = ArgParser();
   var rest = parser.parse(args).rest;
-  if (rest.length == 0) {
+  if (rest.isEmpty) {
     print('Accepts Dart file paths and rewrites the examples to be const '
         'in Intl.message calls.');
     print('Usage: make_examples_const [options] [file.dart]...');
@@ -21,17 +21,17 @@ main(List<String> args) {
     exit(0);
   }
 
-  var formatter = new DartFormatter();
+  var formatter = DartFormatter();
   for (var inputFile in rest) {
     var outputFile = inputFile;
-    var file = new File(inputFile);
+    var file = File(inputFile);
     var content = file.readAsStringSync();
     var newSource = rewriteMessages(content, '$file');
     if (content == newSource) {
       print('No changes to $outputFile');
     } else {
       print('Writing new source to $outputFile');
-      var out = new File(outputFile);
+      var out = File(outputFile);
       out.writeAsStringSync(formatter.format(newSource));
     }
   }
@@ -46,7 +46,7 @@ String rewriteMessages(String source, String sourceName) {
   var messages = findMessages(source, sourceName);
   messages.sort((a, b) => a.sourcePosition.compareTo(b.sourcePosition));
   var start = 0;
-  var newSource = new StringBuffer();
+  var newSource = StringBuffer();
   for (var message in messages) {
     if (message.examples != null) {
       newSource.write(source.substring(start, message.sourcePosition));
@@ -71,4 +71,4 @@ void rewrite(StringBuffer newSource, String source, int start, message) {
   }
 }
 
-final RegExp nonConstExamples = new RegExp('([\\n,]\\s+examples\: ){');
+final RegExp nonConstExamples = RegExp('([\\n,]\\s+examples\: ){');

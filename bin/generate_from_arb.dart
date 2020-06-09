@@ -34,21 +34,20 @@ import 'package:intl_translation/src/icu_parser.dart';
 /// name.
 Map<String, List<MainMessage>> messages;
 
-const jsonDecoder = const JsonCodec();
+const jsonDecoder = JsonCodec();
 
-main(List<String> args) {
+void main(List<String> args) {
   var targetDir;
-  var parser = new ArgParser();
-  var extraction = new MessageExtraction();
-  var generation = new MessageGeneration();
+  var parser = ArgParser();
+  var extraction = MessageExtraction();
+  var generation = MessageGeneration();
   String sourcesListFile;
   String translationsListFile;
   var transformer;
   parser.addFlag('json', defaultsTo: false, callback: (useJson) {
-    generation =
-        useJson ? new JsonMessageGeneration() : new MessageGeneration();
+    generation = useJson ? JsonMessageGeneration() : MessageGeneration();
   }, help: 'Generate translations as a JSON string rather than as functions.');
-  parser.addFlag("suppress-warnings",
+  parser.addFlag('suppress-warnings',
       defaultsTo: false,
       callback: (x) => extraction.suppressWarnings = x,
       help: 'Suppress printing of warnings.');
@@ -56,11 +55,11 @@ main(List<String> args) {
       defaultsTo: '.',
       callback: (x) => targetDir = x,
       help: 'Specify the output directory.');
-  parser.addOption("generated-file-prefix",
+  parser.addOption('generated-file-prefix',
       defaultsTo: '',
       callback: (x) => generation.generatedFilePrefix = x,
       help: 'Specify a prefix to be used for the generated file names.');
-  parser.addFlag("use-deferred-loading",
+  parser.addFlag('use-deferred-loading',
       defaultsTo: true,
       callback: (x) => generation.useDeferredLoading = x,
       help: 'Generate message code that must be loaded with deferred loading. '
@@ -70,28 +69,28 @@ main(List<String> args) {
       defaultsTo: 'debug',
       callback: (x) => generation.codegenMode = x,
       help: 'What mode to run the code generator in. Either release or debug.');
-  parser.addOption("sources-list-file",
+  parser.addOption('sources-list-file',
       callback: (value) => sourcesListFile = value,
       help: 'A file that lists the Dart files to read, one per line.'
           'The paths in the file can be absolute or relative to the '
           'location of this file.');
-  parser.addOption("translations-list-file",
+  parser.addOption('translations-list-file',
       callback: (value) => translationsListFile = value,
       help: 'A file that lists the translation files to process, one per line.'
           'The paths in the file can be absolute or relative to the '
           'location of this file.');
-  parser.addFlag("transformer",
+  parser.addFlag('transformer',
       defaultsTo: false,
       callback: (x) => transformer = x,
-      help: "Assume that the transformer is in use, so name and args "
+      help: 'Assume that the transformer is in use, so name and args '
           "don't need to be specified for messages.");
 
   parser.parse(args);
-  var dartFiles = args.where((x) => x.endsWith("dart")).toList();
-  var jsonFiles = args.where((x) => x.endsWith(".arb")).toList();
+  var dartFiles = args.where((x) => x.endsWith('dart')).toList();
+  var jsonFiles = args.where((x) => x.endsWith('.arb')).toList();
   dartFiles.addAll(linesFromFile(sourcesListFile));
   jsonFiles.addAll(linesFromFile(translationsListFile));
-  if (dartFiles.length == 0 || jsonFiles.length == 0) {
+  if (dartFiles.isEmpty || jsonFiles.isEmpty) {
     print('Usage: generate_from_arb [options]'
         ' file1.dart file2.dart ...'
         ' translation1_<languageTag>.arb translation2.arb ...');
@@ -109,10 +108,10 @@ main(List<String> args) {
   // for real projects we could provide a command-line flag to indicate which
   // sort of automated name we're using.
   extraction.suppressWarnings = true;
-  var allMessages = dartFiles
-      .map((each) => extraction.parseFile(new File(each), transformer));
+  var allMessages =
+      dartFiles.map((each) => extraction.parseFile(File(each), transformer));
 
-  messages = new Map();
+  messages = {};
   for (var eachMap in allMessages) {
     eachMap.forEach(
         (key, value) => messages.putIfAbsent(key, () => []).add(value));
@@ -130,25 +129,25 @@ main(List<String> args) {
     generateLocaleFile(locale, data, targetDir, generation);
   });
 
-  var mainImportFile = new File(path.join(
+  var mainImportFile = File(path.join(
       targetDir, '${generation.generatedFilePrefix}messages_all.dart'));
   mainImportFile.writeAsStringSync(generation.generateMainImportFile());
 }
 
-loadData(String filename, Map<String, List<Map>> messagesByLocale,
+void loadData(String filename, Map<String, List<Map>> messagesByLocale,
     MessageGeneration generation) {
   var file = File(filename);
   var src = file.readAsStringSync();
   var data = jsonDecoder.decode(src);
-  var locale = data["@@locale"] ?? data["_locale"];
+  var locale = data['@@locale'] ?? data['_locale'];
   if (locale == null) {
     // Get the locale from the end of the file name. This assumes that the file
     // name doesn't contain any underscores except to begin the language tag
     // and to separate language from country. Otherwise we can't tell if
     // my_file_fr.arb is locale "fr" or "file_fr".
     var name = path.basenameWithoutExtension(file.path);
-    locale = name.split("_").skip(1).join("_");
-    print("No @@locale or _locale field found in $name, "
+    locale = name.split('_').skip(1).join('_');
+    print('No @@locale or _locale field found in $name, '
         "assuming '$locale' based on the file name.");
   }
   messagesByLocale.putIfAbsent(locale, () => []).add(data);
@@ -165,7 +164,7 @@ loadData(String filename, Map<String, List<Map>> messagesByLocale,
 /// translations, and there can be multiple such maps in [localeData].
 void generateLocaleFile(String locale, List<Map> localeData, String targetDir,
     MessageGeneration generation) {
-  List<TranslatedMessage> translations = [];
+  var translations = <TranslatedMessage>[];
   for (var jsonTranslations in localeData) {
     jsonTranslations.forEach((id, messageData) {
       TranslatedMessage message = recreateIntlObjects(id, messageData);
@@ -182,13 +181,13 @@ void generateLocaleFile(String locale, List<Map> localeData, String targetDir,
 /// [data] to be a String. For metadata we expect [id] to start with "@"
 /// and [data] to be a Map or null. For metadata we return null.
 BasicTranslatedMessage recreateIntlObjects(String id, data) {
-  if (id.startsWith("@")) return null;
+  if (id.startsWith('@')) return null;
   if (data == null) return null;
   var parsed = pluralAndGenderParser.parse(data).value;
   if (parsed is LiteralString && parsed.string.isEmpty) {
     parsed = plainParser.parse(data).value;
   }
-  return new BasicTranslatedMessage(id, parsed);
+  return BasicTranslatedMessage(id, parsed);
 }
 
 /// A TranslatedMessage that just uses the name as the id and knows how to look
@@ -196,6 +195,7 @@ BasicTranslatedMessage recreateIntlObjects(String id, data) {
 class BasicTranslatedMessage extends TranslatedMessage {
   BasicTranslatedMessage(String name, translated) : super(name, translated);
 
+  @override
   List<MainMessage> get originalMessages => (super.originalMessages == null)
       ? _findOriginals()
       : super.originalMessages;
@@ -205,5 +205,5 @@ class BasicTranslatedMessage extends TranslatedMessage {
   List<MainMessage> _findOriginals() => originalMessages = messages[id];
 }
 
-final pluralAndGenderParser = new IcuParser().message;
-final plainParser = new IcuParser().nonIcuMessage;
+final pluralAndGenderParser = IcuParser().message;
+final plainParser = IcuParser().nonIcuMessage;

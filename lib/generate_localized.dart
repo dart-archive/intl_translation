@@ -36,7 +36,7 @@ class MessageGeneration {
 
   /// A list of all the locales for which we have translations. Code that does
   /// the reading of translations should add to this.
-  Set<String> allLocales = Set();
+  Set<String> allLocales = {};
 
   /// If we have more than one set of messages to generate in a particular
   /// directory we may want to prefix some to distinguish them.
@@ -112,7 +112,7 @@ class MessageGeneration {
           ..write("  ")
           ..write(
               original.toCodeForLocale(locale, _methodNameFor(original.name)))
-          ..write("\n\n");
+          ..write('\n\n');
       }
     }
     output.write(messagesDeclaration);
@@ -127,7 +127,7 @@ class MessageGeneration {
         .map((original) =>
             '    "${original.escapeAndValidateString(original.name)}" '
             ': ${_mapReference(original, locale)}');
-    output..write(entries.join(",\n"))..write("\n  };\n}\n");
+    output..write(entries.join(',\n'))..write("\n  };\n}\n");
   }
 
   /// Any additional imports the individual message files need.
@@ -205,7 +205,7 @@ class MessageLookup extends MessageLookupByLibrary {
       if (useDeferredLoading) output.write("deferred ");
       output.write("as ${libraryName(locale)};\n");
     }
-    output.write("\n");
+    output.write('\n');
     output.write("typedef Future<dynamic> LibraryLoader();\n");
     output.write("Map<String, LibraryLoader> _deferredLibraries = {\n");
     for (var rawLocale in allLocales) {
@@ -215,7 +215,7 @@ class MessageLookup extends MessageLookupByLibrary {
           : "  '$locale': () => new Future.value(null),\n";
       output.write(loadOperation);
     }
-    output.write("};\n");
+    output.write('};\n');
     output.write("\nMessageLookupByLibrary _findExact(String localeName) {\n"
         "  switch (localeName) {\n");
     for (var rawLocale in allLocales) {
@@ -229,7 +229,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   /// Constant string used in [generateMainImportFile] for the beginning of the
   /// file.
-  get mainPrologue => """
+  String get mainPrologue => """
 // DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
 // This is a library that looks up messages for specific locales by
 // delegating to the appropriate library.
@@ -251,7 +251,7 @@ import 'package:$intlImportPath/src/intl_helpers.dart';
 """;
 
   /// Constant string used in [generateMainImportFile] as the end of the file.
-  get closing => """
+  String get closing => """
     default:\n      return null;
   }
 }
@@ -343,7 +343,7 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
     output.write(_embedInLiteral(jsonEncoded));
   }
 
-  get closing =>
+  String get closing =>
       super.closing +
       '''
 /// Turn the JSON template into a string.
@@ -400,9 +400,9 @@ String evaluateJsonTemplate(dynamic input, List<dynamic> args) {
    var output = new StringBuffer();
    for (var entry in template) {
      if (entry is int) {
-       output.write("\${args[entry]}");
+       output.write('\${args[entry]}');
      } else {
-       output.write("\$entry");
+       output.write('\$entry');
      }
    }
    return output.toString();
@@ -418,6 +418,8 @@ String evaluateJsonTemplate(dynamic input, List<dynamic> args) {
 /// variables into a Dart string interpolation. Specific translation mechanisms
 /// are expected to subclass this.
 abstract class TranslatedMessage {
+  TranslatedMessage(this.id, this.translated);
+
   /// The identifier for this message. In the simplest case, this is the name
   /// parameter from the Intl.message call,
   /// but it can be any identifier that this program and the output of the
@@ -442,15 +444,13 @@ abstract class TranslatedMessage {
     originalMessages = [m];
   }
 
-  TranslatedMessage(this.id, this.translated);
-
   Message get message => translated;
 
-  toString() => id.toString();
+  String toString() => id.toString();
 
-  operator ==(x) => x is TranslatedMessage && x.id == id;
+  bool operator ==(x) => x is TranslatedMessage && x.id == id;
 
-  get hashCode => id.hashCode;
+  int get hashCode => id.hashCode;
 }
 
 /// We can't use a hyphen in a Dart library name, so convert the locale
@@ -458,7 +458,7 @@ abstract class TranslatedMessage {
 String libraryName(String x) =>
     'messages_' + x.replaceAll('-', '_').toLowerCase();
 
-bool _hasArguments(MainMessage message) => message.arguments.length != 0;
+bool _hasArguments(MainMessage message) => message.arguments.isNotEmpty;
 
 ///  Simple messages are printed directly in the map of message names to
 ///  functions as a call that returns a lambda. e.g.

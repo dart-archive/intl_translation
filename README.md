@@ -41,7 +41,7 @@ original.
 
     import "my_prefix_messages_all.dart";
     ...
-    initializeMessages("dk").then(printSomeMessages);
+    initializeMessages('dk').then(printSomeMessages);
 
 Once the Future returned from the initialization call completes, the
 message data is available.

@@ -7,16 +7,16 @@
 /// This is not actually related to the two components testing, but it's
 /// convenient to put it here because there's already a hard-coded
 /// message here.
-import "app_messages_all.dart";
-import "main_app_test.dart";
+import 'app_messages_all.dart';
+import 'main_app_test.dart';
 
-import "package:intl/intl.dart";
-import "package:test/test.dart";
+import 'package:intl/intl.dart';
+import 'package:test/test.dart';
 
-main() {
-  test("Initialize sub-locale", () async {
-    await initializeMessages("fr_FR");
+void main() {
+  test('Initialize sub-locale', () async {
+    await initializeMessages('fr_FR');
     Intl.withLocale(
-        "fr_FR", () => expect(appMessage(), "Bonjour de l\'application"));
+        'fr_FR', () => expect(appMessage(), "Bonjour de l\'application"));
   });
 }

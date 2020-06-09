@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@Timeout(const Duration(seconds: 180))
+@Timeout(Duration(seconds: 180))
 
 library message_extraction_test;
 
@@ -32,9 +32,10 @@ final vmArgs = Platform.executableArguments;
 /// generated files around after a failed test. For debugging, we omit that
 /// step if [useLocalDirectory] is true. The place we move them to is saved as
 /// [tempDir].
-String get tempDir => _tempDir == null ? _tempDir = _createTempDir() : _tempDir;
-var _tempDir;
-_createTempDir() => useLocalDirectory
+String get tempDir =>
+    _tempDir?.isNotEmpty ?? false ? _tempDir : _tempDir = _createTempDir();
+String _tempDir;
+String _createTempDir() => useLocalDirectory
     ? '.'
     : Directory.systemTemp.createTempSync('message_extraction_test').path;
 
@@ -45,7 +46,7 @@ var useLocalDirectory = false;
 /// is an absolute path or begins with "--", because some of the arguments
 /// might be command-line options.
 String asTestDirPath([String s]) {
-  if (s == null || s.startsWith("--") || path.isAbsolute(s)) return s;
+  if (s == null || s.startsWith('--') || path.isAbsolute(s)) return s;
   return path.join(packageDirectory, 'test', 'message_extraction', s);
 }
 
@@ -54,17 +55,17 @@ String asTestDirPath([String s]) {
 /// is an absolute path or begins with "--", because some of the arguments
 /// might be command-line options.
 String asTempDirPath([String s]) {
-  if (s == null || s.startsWith("--") || path.isAbsolute(s)) return s;
+  if (s == null || s.startsWith('--') || path.isAbsolute(s)) return s;
   return path.join(tempDir, s);
 }
 
-typedef Future<ProcessResult> ThenResult(ProcessResult _);
-main() {
+typedef ThenResult = Future<ProcessResult> Function(ProcessResult _);
+void main() {
   setUp(copyFilesToTempDirectory);
   tearDown(deleteGeneratedFiles);
   test(
-      "Test round trip message extraction, translation, code generation, "
-      "and printing", () {
+      'Test round trip message extraction, translation, code generation, '
+      'and printing', () {
     var makeSureWeVerify = expectAsync1(runAndVerify);
     return extractMessages(null)
         .then((result) {
@@ -93,7 +94,7 @@ void copyFilesToTempDirectory() {
     '.packages' // Copy this so that package test can find the imports
   ];
   for (var filename in files) {
-    var file = new File(filename);
+    var file = File(filename);
     if (file.existsSync()) {
       file.copySync(path.join(tempDir, path.basename(filename)));
     }
@@ -103,10 +104,10 @@ void copyFilesToTempDirectory() {
 void deleteGeneratedFiles() {
   if (useLocalDirectory) return;
   try {
-    new Directory(tempDir).deleteSync(recursive: true);
+    Directory(tempDir).deleteSync(recursive: true);
   } on Error catch (e) {
-    print("Failed to delete $tempDir");
-    print("Exception:\n$e");
+    print('Failed to delete $tempDir');
+    print('Exception:\n$e');
   }
 }
 
@@ -123,24 +124,23 @@ Future<ProcessResult> run(
       .toList();
   // Inject the script argument --output-dir in between the script and its
   // arguments.
-  List<String> args = []
-    ..addAll(vmArgs)
+  var args = <String>[...vmArgs]
     ..add(filesInTheRightDirectory.first)
-    ..addAll(["--output-dir=$tempDir"])
+    ..addAll(['--output-dir=$tempDir'])
     ..addAll(filesInTheRightDirectory.skip(1));
   var result = Process.run(dart, args,
-      stdoutEncoding: new Utf8Codec(), stderrEncoding: new Utf8Codec());
+      stdoutEncoding: Utf8Codec(), stderrEncoding: Utf8Codec());
   return result;
 }
 
-checkResult(ProcessResult previousResult) {
+void checkResult(ProcessResult previousResult) {
   if (previousResult != null) {
     if (previousResult.exitCode != 0) {
-      print("Error running sub-program:");
+      print('Error running sub-program:');
     }
     print(previousResult.stdout);
     print(previousResult.stderr);
-    print("exitCode=${previousResult.exitCode}");
+    print('exitCode=${previousResult.exitCode}');
     // Fail the test.
     expect(previousResult.exitCode, 0);
   }

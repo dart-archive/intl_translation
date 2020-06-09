@@ -1,36 +1,36 @@
 library verify_messages;
 
-import "print_to_list.dart";
-import "package:test/test.dart";
+import 'print_to_list.dart';
+import 'package:test/test.dart';
 
-verifyResult() {
+void verifyResult() {
   var lineIterator;
-  verify(String s) {
+  void verify(String s) {
     lineIterator.moveNext();
     var value = lineIterator.current;
     expect(value, s);
   }
 
-  var expanded = lines.expand((line) => line.split("\n")).toList();
+  var expanded = lines.expand((line) => line.split('\n')).toList();
   lineIterator = expanded.iterator;
   verify('-------------------------------------------');
-  verify("Printing messages for en_US");
-  verify("This is a message");
-  verify("Another message with parameter hello");
-  verify("Characters that need escaping, e.g slashes \\ dollars \${ "
-      "(curly braces are ok) and xml reserved characters <& and "
-      "quotes \" parameters 1, 2, and 3");
-  verify("This string extends across multiple lines.");
-  verify("1, b, [c, d]");
+  verify('Printing messages for en_US');
+  verify('This is a message');
+  verify('Another message with parameter hello');
+  verify('Characters that need escaping, e.g slashes \\ dollars \${ '
+      '(curly braces are ok) and xml reserved characters <& and '
+      'quotes " parameters 1, 2, and 3');
+  verify('This string extends across multiple lines.');
+  verify('1, b, [c, d]');
   verify('"So-called"');
-  verify("Cette chaîne est toujours traduit");
-  verify("Interpolation is tricky when it ends a sentence like this.");
-  verify("This comes from a method");
-  verify("This method is not a lambda");
-  verify("This comes from a static method");
-  verify("This is missing some translations");
-  verify("Ancient Greek hangman characters: 𐅆𐅇.");
-  verify("Escapable characters here: ");
+  verify('Cette chaîne est toujours traduit');
+  verify('Interpolation is tricky when it ends a sentence like this.');
+  verify('This comes from a method');
+  verify('This method is not a lambda');
+  verify('This comes from a static method');
+  verify('This is missing some translations');
+  verify('Ancient Greek hangman characters: 𐅆𐅇.');
+  verify('Escapable characters here: ');
 
   verify('Is zero plural?');
   verify('This is singular.');
@@ -82,26 +82,26 @@ verifyResult() {
   verify('-------------------------------------------');
 
   // French translations.
-  verify("Printing messages for fr");
+  verify('Printing messages for fr');
   verify("Il s'agit d'un message");
-  verify("Un autre message avec un seul paramètre hello");
-  verify("Caractères qui doivent être échapper, par exemple barres \\ "
-      "dollars \${ (les accolades sont ok), et xml/html réservés <& et "
-      "des citations \" "
-      "avec quelques paramètres ainsi 1, 2, et 3");
-  verify("Cette message prend plusiers lignes.");
-  verify("1, b, [c, d]");
+  verify('Un autre message avec un seul paramètre hello');
+  verify('Caractères qui doivent être échapper, par exemple barres \\ '
+      'dollars \${ (les accolades sont ok), et xml/html réservés <& et '
+      'des citations " '
+      'avec quelques paramètres ainsi 1, 2, et 3');
+  verify('Cette message prend plusiers lignes.');
+  verify('1, b, [c, d]');
   verify('"Soi-disant"');
-  verify("Cette chaîne est toujours traduit");
+  verify('Cette chaîne est toujours traduit');
   verify("L'interpolation est délicate quand elle se termine une "
-      "phrase comme this.");
+      'phrase comme this.');
   verify("Cela vient d'une méthode");
   verify("Cette méthode n'est pas un lambda");
   verify("Cela vient d'une méthode statique");
-  verify("Ce manque certaines traductions");
-  verify("Anciens caractères grecs jeux du pendu: 𐅆𐅇.");
-  verify("Escapes: ");
-  verify("\r\f\b\t\v.");
+  verify('Ce manque certaines traductions');
+  verify('Anciens caractères grecs jeux du pendu: 𐅆𐅇.');
+  verify('Escapes: ');
+  verify('\r\f\b\t\v.');
 
   verify('Est-ce que nulle est pluriel?');
   verify('C\'est singulier');
@@ -154,27 +154,27 @@ verifyResult() {
   verify('-------------------------------------------');
 
   // German translations.
-  verify("Printing messages for de_DE");
-  verify("Dies ist eine Nachricht");
-  verify("Eine weitere Meldung mit dem Parameter hello");
-  verify("Zeichen, die Flucht benötigen, zB Schrägstriche \\ Dollar "
-      "\${ (geschweiften Klammern sind ok) und xml reservierte Zeichen <& und "
-      "Zitate \" Parameter 1, 2 und 3");
-  verify("Dieser String erstreckt sich über mehrere "
-      "Zeilen erstrecken.");
-  verify("1, b, [c, d]");
+  verify('Printing messages for de_DE');
+  verify('Dies ist eine Nachricht');
+  verify('Eine weitere Meldung mit dem Parameter hello');
+  verify('Zeichen, die Flucht benötigen, zB Schrägstriche \\ Dollar '
+      '\${ (geschweiften Klammern sind ok) und xml reservierte Zeichen <& und '
+      'Zitate \" Parameter 1, 2 und 3');
+  verify('Dieser String erstreckt sich über mehrere '
+      'Zeilen erstrecken.');
+  verify('1, b, [c, d]');
   verify('"Sogenannt"');
   // This is correct, the message is forced to French, even in a German locale.
-  verify("Cette chaîne est toujours traduit");
+  verify('Cette chaîne est toujours traduit');
   verify(
-      "Interpolation ist schwierig, wenn es einen Satz wie dieser endet this.");
-  verify("Dies ergibt sich aus einer Methode");
-  verify("Diese Methode ist nicht eine Lambda");
-  verify("Dies ergibt sich aus einer statischen Methode");
-  verify("This is missing some translations");
-  verify("Antike griechische Galgenmännchen Zeichen: 𐅆𐅇");
-  verify("Escapes: ");
-  verify("\r\f\b\t\v.");
+      'Interpolation ist schwierig, wenn es einen Satz wie dieser endet this.');
+  verify('Dies ergibt sich aus einer Methode');
+  verify('Diese Methode ist nicht eine Lambda');
+  verify('Dies ergibt sich aus einer statischen Methode');
+  verify('This is missing some translations');
+  verify('Antike griechische Galgenmännchen Zeichen: 𐅆𐅇');
+  verify('Escapes: ');
+  verify('\r\f\b\t\v.');
 
   verify('Ist Null Plural?');
   verify('Dies ist einmalig');

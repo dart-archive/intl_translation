@@ -23,8 +23,8 @@ String outputFileOption = 'transformed_output.dart';
 bool useStringSubstitution = true;
 bool replace = false;
 
-main(List<String> args) {
-  var parser = new ArgParser();
+void main(List<String> args) {
+  var parser = ArgParser();
   parser.addOption('output',
       defaultsTo: 'transformed_output.dart',
       callback: (x) => outputFileOption = x,
@@ -45,7 +45,7 @@ main(List<String> args) {
           ' produces less readable code.');
   print(args);
   var rest = parser.parse(args).rest;
-  if (rest.length == 0) {
+  if (rest.isEmpty) {
     print('Accepts Dart file paths and adds "name" and "args" parameters '
         ' to Intl.message calls.');
     print('Primarily useful for exercising the transformer logic or '
@@ -55,10 +55,10 @@ main(List<String> args) {
     exit(0);
   }
 
-  var formatter = new DartFormatter();
+  var formatter = DartFormatter();
   for (var inputFile in rest) {
     var outputFile = replace ? inputFile : outputFileOption;
-    var file = new File(inputFile);
+    var file = File(inputFile);
     var content = file.readAsStringSync();
     var newSource = rewriteMessages(content, '$file',
         useStringSubstitution: useStringSubstitution);
@@ -66,7 +66,7 @@ main(List<String> args) {
       print('No changes to $outputFile');
     } else {
       print('Writing new source to $outputFile');
-      var out = new File(outputFile);
+      var out = File(outputFile);
       out.writeAsStringSync(formatter.format(newSource));
     }
   }

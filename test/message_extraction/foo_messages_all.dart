@@ -4,6 +4,6 @@
 
 library keep_the_static_analysis_from_complaining;
 
-initializeMessages(_) => throw new UnimplementedError(
-    "This entire file is only here to make the static"
-    " analysis happy. It will be generated during actual tests.");
+dynamic initializeMessages(_) =>
+    throw UnimplementedError('This entire file is only here to make the static'
+        ' analysis happy. It will be generated during actual tests.');
