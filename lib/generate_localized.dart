@@ -72,6 +72,7 @@ class MessageGeneration {
   /// for the [translations] in [locale] and put it in [targetDir].
   void generateIndividualMessageFile(String basicLocale,
       Iterable<TranslatedMessage> translations, String targetDir) {
+
     final content = contentForLocale(basicLocale, translations);
 
     // To preserve compatibility, we don't use the canonical version of the
@@ -85,6 +86,7 @@ class MessageGeneration {
   /// with the [translations] in [locale].
   String contentForLocale(
       String basicLocale, Iterable<TranslatedMessage> translations) {
+    
     clearOutput();
     var locale = new MainMessage()
         .escapeAndValidateString(Intl.canonicalizedLocale(basicLocale));
