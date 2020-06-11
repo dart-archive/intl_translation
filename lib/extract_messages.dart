@@ -85,7 +85,7 @@ class MessageExtraction {
   Map<String, MainMessage> parseFile(File file, [bool transformer = false]) {
     // Optimization to avoid parsing files we're sure don't contain any messages.
     String contents = file.readAsStringSync();
-    parseFileContent(contents, file.path, transformer);
+    return parseFileContent(contents, file.path, transformer);
   }
 
   /// Parse the source of the Dart program from a file with content [fileContent] and path [path]
