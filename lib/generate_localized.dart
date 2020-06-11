@@ -73,7 +73,7 @@ class MessageGeneration {
   void generateIndividualMessageFile(String basicLocale,
       Iterable<TranslatedMessage> translations, String targetDir) {
     final content = generateIndividualMessageFileContent(
-        basicLocale, translations, targetDir);
+        basicLocale, translations);
 
     // To preserve compatibility, we don't use the canonical version of the
     // locale in the file name.
@@ -85,7 +85,7 @@ class MessageGeneration {
   /// Generate a string that containts the dart code
   /// with the [tranlsations] in [locale].
   String generateIndividualMessageFileContent(String basicLocale,
-      Iterable<TranslatedMessage> translations, String targetDir) {
+      Iterable<TranslatedMessage> translations) {
     clearOutput();
     var locale = new MainMessage()
         .escapeAndValidateString(Intl.canonicalizedLocale(basicLocale));
