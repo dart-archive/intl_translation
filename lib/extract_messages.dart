@@ -83,22 +83,23 @@ class MessageExtraction {
   /// If [transformer] is true, assume the transformer will supply any "name"
   /// and "args" parameters required in Intl.message calls.
   Map<String, MainMessage> parseFile(File file, [bool transformer = false]) {
-    // Optimization to avoid parsing files we're sure don't contain any messages.
     String contents = file.readAsStringSync();
-    return parseFileContent(contents, file.path, transformer);
+    return parseContent(contents, file.path, transformer);
   }
 
-  /// Parse the source of the Dart program from a file with content [fileContent] and path [path]
-  /// and return a Map from message names to [IntlMessage] instances.
+  /// Parse the source of the Dart program from a file with content 
+  /// [fileContent] and path [path] and return a Map from message 
+  /// names to [IntlMessage] instances.
   ///
   /// If [transformer] is true, assume the transformer will supply any "name"
   /// and "args" parameters required in Intl.message calls.
-  Map<String, MainMessage> parseFileContent(String fileContent, String filepath,
+  Map<String, MainMessage> parseContent(String fileContent, String filepath,
       [bool transformer = false]) {
-    // Optimization to avoid parsing files we're sure don't contain any messages.
+   
     String contents = fileContent;
     origin = filepath;
-    if (contents.contains("Intl.")) {
+     // Optimization to avoid parsing files we're sure don't contain any messages.
+    if (contents.contains('Intl.')) {
       root = _parseCompilationUnit(contents, origin);
     } else {
       return {};

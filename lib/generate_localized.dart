@@ -72,20 +72,19 @@ class MessageGeneration {
   /// for the [translations] in [locale] and put it in [targetDir].
   void generateIndividualMessageFile(String basicLocale,
       Iterable<TranslatedMessage> translations, String targetDir) {
-    final content = generateIndividualMessageFileContent(
-        basicLocale, translations);
+    final content = contentForLocale(basicLocale, translations);
 
     // To preserve compatibility, we don't use the canonical version of the
     // locale in the file name.
-    var filename = path.join(
-        targetDir, "${generatedFilePrefix}messages_$basicLocale.dart");
-    new File(filename).writeAsStringSync(content);
+    final filename = path.join(
+        targetDir, '${generatedFilePrefix}messages_$basicLocale.dart');
+    File(filename).writeAsStringSync(content);
   }
 
   /// Generate a string that containts the dart code
-  /// with the [tranlsations] in [locale].
-  String generateIndividualMessageFileContent(String basicLocale,
-      Iterable<TranslatedMessage> translations) {
+  /// with the [translations] in [locale].
+  String contentForLocale(
+      String basicLocale, Iterable<TranslatedMessage> translations) {
     clearOutput();
     var locale = new MainMessage()
         .escapeAndValidateString(Intl.canonicalizedLocale(basicLocale));
@@ -106,7 +105,7 @@ class MessageGeneration {
 
     writeTranslations(usableTranslations, locale);
 
-    return output.toString();
+    return '$output';
   }
 
   /// Write out the translated forms.
