@@ -21,8 +21,11 @@ library extract_messages;
 
 import 'dart:io';
 
-import 'package:analyzer/analyzer.dart';
+import 'package:analyzer/dart/analysis/utilities.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/standard_ast_factory.dart';
+import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:analyzer/src/dart/ast/constant_evaluator.dart';
 import 'package:intl_translation/src/intl_message.dart';
 
 /// A function that takes a message and does something useful with it.
@@ -95,14 +98,14 @@ class MessageExtraction {
   }
 
   CompilationUnit _parseCompilationUnit(String contents, String origin) {
-    CompilationUnit parsed;
-    try {
-      parsed = parseCompilationUnit(contents);
-    } on AnalyzerErrorGroup {
+    var result = parseString(content: contents, throwIfDiagnostics: false);
+
+    if (result.errors.isNotEmpty) {
       print("Error in parsing $origin, no messages extracted.");
-      rethrow;
+      throw ArgumentError('Parsing errors in $origin');
     }
-    return parsed;
+
+    return result.unit;
   }
 
   /// The root of the compilation unit, and the first node we visit. We hold
@@ -355,8 +358,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     var extractionResult = extract(message, arguments);
     if (extractionResult == null) return null;
 
-    for (var namedArgument
-        in arguments.whereType<NamedExpression>()) {
+    for (var namedArgument in arguments.whereType<NamedExpression>()) {
       var name = namedArgument.name.label.name;
       var exp = namedArgument.expression;
       var evaluator = new ConstantEvaluator();
