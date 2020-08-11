@@ -32,7 +32,9 @@
 library intl_message;
 
 import 'dart:convert';
-import 'package:analyzer/analyzer.dart';
+
+import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/src/dart/ast/constant_evaluator.dart';
 
 /// A default function for the [Message.expanded] method.
 _nullTransform(msg, chunk) => chunk;
