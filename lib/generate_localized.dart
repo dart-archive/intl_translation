@@ -85,7 +85,6 @@ class MessageGeneration {
   /// with the [translations] in [locale].
   String contentForLocale(
       String basicLocale, Iterable<TranslatedMessage> translations) {
-    
     clearOutput();
     var locale = new MainMessage()
         .escapeAndValidateString(Intl.canonicalizedLocale(basicLocale));
