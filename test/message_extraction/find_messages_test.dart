@@ -90,7 +90,7 @@ String message(String string) =>
       final messageExtraction = new MessageExtraction();
       var messages = findMessages(
           'List<String> list = [Intl.message("message string", '
-              'name: "list", desc: "in list")];',
+          'name: "list", desc: "in list")];',
           '',
           messageExtraction);
 
@@ -149,64 +149,6 @@ String message(String string) =>
 
       expect(messages.map((m) => m.name), anyElement(contains('message')));
       expect(messageExtraction.warnings, isEmpty);
-    });
-  });
-
-  group('messages with the same name', () {
-    test('are resolved in favour of the earlier one by default', () {
-      final messageExtraction = new MessageExtraction();
-      final messages = findMessages('''
-      final msg1 = Intl.message('hello there', desc: 'abc');
-      final msg2 = Intl.message('hello there', desc: 'def');
-      ''', '', messageExtraction);
-
-      expect(messages.map((m) => m.description), equals(['abc']));
-    });
-
-    test('are resolved with custom merger', () {
-      final messageExtraction = new MessageExtraction();
-      messageExtraction.mergeMessages =
-          (m1, m2) => m1..description = '${m1.description}/${m2.description}';
-      final messages = findMessages('''
-      final msg1 = Intl.message('hello there', desc: 'abc');
-      final msg2 = Intl.message('hello there', desc: 'def');
-      ''', '', messageExtraction);
-
-      expect(messages.map((m) => m.description), equals(['abc/def']));
-    });
-  });
-
-  group('documentation', () {
-    test('is populated from dartdoc', () {
-      final messageExtraction = new MessageExtraction();
-      final messages = findMessages('''
-      class MessageTest {
-        /// Dartdoc.
-        static final fieldMsg = Intl.message('field msg', desc: 'xyz');
-
-        /// A long dartdoc.
-        ///
-        /// With a paragraph.
-        String methodMsg(String arg) => Intl.message('method msg', desc: 'xyz');
-      }
-
-      /// Hi.
-      String variable = Intl.message('variable msg', desc: 'xyz');
-
-      /// Bye.
-      function() {
-        return Intl.message('function msg', desc: 'xyz');
-      }
-      ''', '', messageExtraction);
-
-      expect(
-          messages.map((m) => m.documentation),
-          unorderedEquals([
-            ['/// Dartdoc.'],
-            ['/// A long dartdoc.', '///', '/// With a paragraph.'],
-            ['/// Hi.'],
-            ['/// Bye.'],
-          ]));
     });
   });
 }

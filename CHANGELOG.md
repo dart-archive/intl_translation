@@ -1,14 +1,5 @@
 ## 0.17.11-dev
-  * Add support for Flutter locale split.
-
-## 0.17.10+2
-  * Allow null safe code when parsing.
-
-## 0.17.10+1
   * Generate code that passes analysis with `implicit-casts: false`.
-  * Allow use of `MessageExtraction` and `MessageGeneration` without `File`.
-  * Move arb generation from bin to lib so it's available to external packages.
-  * Update analyzer dependency.
 
 ## 0.17.10
   * Update petitparser dependency.

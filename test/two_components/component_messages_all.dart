@@ -2,6 +2,8 @@
 // This is a library that looks up messages for specific locales by
 // delegating to the appropriate library.
 
+import 'dart:async';
+
 import 'package:intl/intl.dart';
 import 'package:intl/message_lookup_by_library.dart';
 // ignore: implementation_imports

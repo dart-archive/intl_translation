@@ -8,6 +8,7 @@ library message_extraction_test;
 
 import 'package:test/test.dart';
 import 'dart:io';
+import 'dart:async';
 import 'dart:convert';
 import 'package:path/path.dart' as path;
 import '../data_directory.dart';
@@ -19,11 +20,6 @@ bool useDeferredLoading = true;
 
 /// Should we generate JSON strings rather than code for messages.
 bool useJson = false;
-
-/// Should we generate the code for Flutter locale split.
-///
-/// Note that this is only supported in JSON mode.
-bool useFlutterLocaleSplit = false;
 
 String get _deferredLoadPrefix => useDeferredLoading ? '' : 'no-';
 
@@ -94,7 +90,6 @@ void copyFilesToTempDirectory() {
     asTestDirPath('print_to_list.dart'),
     asTestDirPath('dart_list.txt'),
     asTestDirPath('arb_list.txt'),
-    asTestDirPath('mock_flutter/services.dart'),
     '.packages' // Copy this so that package test can find the imports
   ];
   for (var filename in files) {
@@ -171,8 +166,6 @@ Future<ProcessResult> generateCodeFromTranslation(
       asTestDirPath('../../bin/generate_from_arb.dart'),
       deferredLoadArg,
       '--' + (useJson ? '' : 'no-') + 'json',
-      '--' + (useFlutterLocaleSplit ? '' : 'no-') + 'flutter',
-      '--flutter-import-path=.', // Mocks package:flutter/services.dart
       '--generated-file-prefix=foo_',
       '--sources-list-file',
       'dart_list.txt',

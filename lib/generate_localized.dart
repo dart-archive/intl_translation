@@ -23,12 +23,6 @@ class MessageGeneration {
   /// code.
   var intlImportPath = 'intl';
 
-  /// If the import path for flutter is not package:flutter, modify the
-  /// [flutterImportPath] variable to change the import directives in the
-  /// generated code. This is useful to mock out Flutter during tests since
-  /// package:flutter cannot be imported from Dart VM.
-  var flutterImportPath = 'package:flutter';
-
   /// If the path to the generated files is something other than the current
   /// directory, update the [generatedImportPath] variable to change the import
   /// directives in the generated code.
@@ -51,9 +45,6 @@ class MessageGeneration {
   /// Should we use deferred loading for the generated libraries.
   bool useDeferredLoading = true;
 
-  /// Whether to generate null safe code instead of legacy code.
-  bool nullSafety = false;
-
   /// The mode to generate in - either 'release' or 'debug'.
   ///
   /// In release mode, a missing translation is an error. In debug mode, it
@@ -68,10 +59,10 @@ class MessageGeneration {
 
   bool get releaseMode => codegenMode == 'release';
 
+  bool get jsonMode => false;
+
   /// Holds the generated translations.
   StringBuffer output = new StringBuffer();
-
-  String get orNull => nullSafety ? '?' : '';
 
   void clearOutput() {
     output = new StringBuffer();
@@ -81,19 +72,6 @@ class MessageGeneration {
   /// for the [translations] in [locale] and put it in [targetDir].
   void generateIndividualMessageFile(String basicLocale,
       Iterable<TranslatedMessage> translations, String targetDir) {
-    final content = contentForLocale(basicLocale, translations);
-
-    // To preserve compatibility, we don't use the canonical version of the
-    // locale in the file name.
-    final filename = path.join(
-        targetDir, '${generatedFilePrefix}messages_$basicLocale.dart');
-    File(filename).writeAsStringSync(content);
-  }
-
-  /// Generate a string that containts the dart code
-  /// with the [translations] in [locale].
-  String contentForLocale(
-      String basicLocale, Iterable<TranslatedMessage> translations) {
     clearOutput();
     var locale = new MainMessage()
         .escapeAndValidateString(Intl.canonicalizedLocale(basicLocale));
@@ -114,7 +92,11 @@ class MessageGeneration {
 
     writeTranslations(usableTranslations, locale);
 
-    return '$output';
+    // To preserve compatibility, we don't use the canonical version of the
+    // locale in the file name.
+    var filename = path.join(
+        targetDir, "${generatedFilePrefix}messages_$basicLocale.dart");
+    new File(filename).writeAsStringSync(output.toString());
   }
 
   /// Write out the translated forms.
@@ -141,13 +123,11 @@ class MessageGeneration {
             .expand((translation) => translation.originalMessages)
             .toSet()
             .toList()
-          ..sort((a, b) => a.name.compareTo(b.name)))
+              ..sort((a, b) => a.name.compareTo(b.name)))
         .map((original) =>
             '    "${original.escapeAndValidateString(original.name)}" '
             ': ${_mapReference(original, locale)}');
-    output
-      ..write(entries.join(",\n"))
-      ..write("\n  };\n}\n");
+    output..write(entries.join(",\n"))..write("\n  };\n}\n");
   }
 
   /// Any additional imports the individual message files need.
@@ -212,11 +192,11 @@ class MessageLookup extends MessageLookupByLibrary {
 
 """;
 
-  /// This section generates the messages_all_locales.dart file based on the
-  /// list of [allLocales].
-  String generateLocalesImportFile() {
+  /// This section generates the messages_all.dart file based on the list of
+  /// [allLocales].
+  String generateMainImportFile() {
     clearOutput();
-    output.write(localesPrologue);
+    output.write(mainPrologue);
     for (var locale in allLocales) {
       var baseFile = '${generatedFilePrefix}messages_$locale.dart';
       var file = importForGeneratedFile(baseFile);
@@ -235,21 +215,20 @@ class MessageLookup extends MessageLookupByLibrary {
       output.write(loadOperation);
     }
     output.write("};\n");
-    output.write(
-        "\nMessageLookupByLibrary$orNull _findExact(String localeName) {\n"
+    output.write("\nMessageLookupByLibrary _findExact(String localeName) {\n"
         "  switch (localeName) {\n");
     for (var rawLocale in allLocales) {
       var locale = Intl.canonicalizedLocale(rawLocale);
       output.write(
           "    case '$locale':\n      return ${libraryName(locale)}.messages;\n");
     }
-    output.write(localesClosing);
+    output.write(closing);
     return output.toString();
   }
 
-  /// Constant string used in [generateLocalesImportFile] for the beginning of
-  /// the file.
-  get localesPrologue => """
+  /// Constant string used in [generateMainImportFile] for the beginning of the
+  /// file.
+  get mainPrologue => """
 // DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
 // This is a library that looks up messages for specific locales by
 // delegating to the appropriate library.
@@ -261,15 +240,16 @@ class MessageLookup extends MessageLookupByLibrary {
 // ignore_for_file:prefer_single_quotes, prefer_generic_function_type_aliases
 // ignore_for_file:comment_references
 
+import 'dart:async';
+
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
 import 'package:$intlImportPath/src/intl_helpers.dart';
 
 """;
 
-  /// Constant string used in [generateLocalesImportFile] as the end of the
-  /// file.
-  get localesClosing => """
+  /// Constant string used in [generateMainImportFile] as the end of the file.
+  get closing => """
     default:\n      return null;
   }
 }
@@ -298,50 +278,16 @@ bool _messagesExistFor(String locale) {
   }
 }
 
-MessageLookupByLibrary$orNull _findGeneratedMessagesFor(String locale) {
+MessageLookupByLibrary _findGeneratedMessagesFor(String locale) {
   var actualLocale = Intl.verifiedLocale(locale, _messagesExistFor,
       onFailure: (_) => null);
   if (actualLocale == null) return null;
   return _findExact(actualLocale);
 }
 """;
-
-  String generateFlutterImportFile() => throw UnimplementedError();
-
-  /// This section generates the messages_all.dart file.
-  String generateMainImportFile({bool flutter = false}) {
-    clearOutput();
-    output.write(mainPrologue);
-    if (flutter) {
-      output.write("export '${generatedFilePrefix}messages_flutter.dart'\n"
-          "  if (dart.library.js) '${generatedFilePrefix}messages_all_locales.dart'\n"
-          '  show initializeMessages;\n\n');
-    } else {
-      output.write("export '${generatedFilePrefix}messages_all_locales.dart'\n"
-          '  show initializeMessages;\n\n');
-    }
-    output.write(closing);
-    return output.toString();
-  }
-
-  /// Constant string used in [generateMainImportFile] for the beginning of the
-  /// file.
-  get mainPrologue => """
-// DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
-// This is a library that looks up messages for specific locales by
-// delegating to the appropriate library.
-
-""";
-
-  /// Constant string used in [generateMainImportFile] as the end of the file.
-  get closing => '';
 }
 
-/// Message generator that parses translations from a `Map<String, dynamic>`.
-///
-/// [JsonMessageGeneration] and [CodeMapMessageGeneration] extend this
-/// class.
-abstract class DataMapMessageGeneration extends MessageGeneration {
+class JsonMessageGeneration extends MessageGeneration {
   /// We import the main file so as to get the shared code to evaluate
   /// the JSON data.
   String get extraImports => '''
@@ -352,19 +298,48 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
   String prologue(locale) =>
       super.prologue(locale) +
       '''
-  String$orNull evaluateMessage(translation, List<dynamic> args) {
+  String evaluateMessage(translation, List<dynamic> args) {
     return evaluateJsonTemplate(translation, args);
   }
 ''';
 
-  void writeTranslations(
-      Iterable<TranslatedMessage> usableTranslations, String locale);
+  /// Embed the JSON string in a Dart raw string literal.
+  ///
+  /// In simple cases this just wraps it in a Dart raw triple-quoted
+  /// literal. However, a translated message may contain a triple quote,
+  /// which would end the Dart literal. So when we encounter this, we turn
+  /// it into three adjacent strings, one of which is just the
+  /// triple-quote.
+  String _embedInLiteral(String jsonMessages) {
+    var triple = "'''";
+    var result = jsonMessages;
+    if (jsonMessages.contains(triple)) {
+      var doubleQuote = '"';
+      var asAdjacentStrings =
+          '$triple  r$doubleQuote$triple$doubleQuote r$triple';
+      result = jsonMessages.replaceAll(triple, asAdjacentStrings);
+    }
+    return "r'''\n$result''';\n}";
+  }
 
-  get mainPrologue =>
-      super.mainPrologue +
-      """
-import 'package:$intlImportPath/intl.dart';
-""";
+  void writeTranslations(
+      Iterable<TranslatedMessage> usableTranslations, String locale) {
+    output.write(r"""
+  Map<String, dynamic> _messages;
+  Map<String, dynamic> get messages => _messages ??=
+      const JsonDecoder().convert(messageText) as Map<String, dynamic>;
+""");
+
+    output.write("  static final messageText = ");
+    var entries = usableTranslations
+        .expand((translation) => translation.originalMessages);
+    var map = {};
+    for (var original in entries) {
+      map[original.name] = original.toJsonForLocale(locale);
+    }
+    var jsonEncoded = new JsonEncoder().convert(map);
+    output.write(_embedInLiteral(jsonEncoded));
+  }
 
   get closing =>
       super.closing +
@@ -380,7 +355,7 @@ import 'package:$intlImportPath/intl.dart';
 ///   * \['Intl.gender', String gender, (templates for female, male, other)\]
 ///   * \['Intl.select', String choice, { 'case' : template, ...} \]
 ///   * \['text alternating with ', 0 , ' indexes in the argument list'\]
-String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
+String evaluateJsonTemplate(dynamic input, List<dynamic> args) {
   if (input == null) return null;
   if (input is String) return input;
   if (input is int) {
@@ -413,7 +388,7 @@ String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
          args);
    }
    if (messageName == "Intl.select") {
-     var select = args[template[1] as int] as Object;
+     var select = args[template[1] as int];
      var choices = template[2] as Map<Object, Object>;
      return evaluateJsonTemplate(Intl.selectLogic(select, choices), args);
    }
@@ -432,241 +407,6 @@ String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
   }
 
  ''';
-
-  String generateFlutterImportFile() {
-    clearOutput();
-    output.write(flutterPrologue);
-    return output.toString();
-  }
-
-  /// Constant string used in [generateFlutterImportFile] for the beginning of
-  /// the file.
-  get flutterPrologue => """
-// DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
-// This is a library that looks up messages for specific locales by
-// delegating to the appropriate library.
-
-import 'dart:convert';
-import 'package:$intlImportPath/intl.dart';
-import 'package:$intlImportPath/message_lookup_by_library.dart';
-import 'package:$intlImportPath/src/intl_helpers.dart';
-import '$flutterImportPath/services.dart';
-
-import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
-
-class ResourceMessageLookup extends MessageLookupByLibrary {
-  ResourceMessageLookup(this.localeName, String messageText) {
-    this.messages =
-        const JsonDecoder().convert(messageText) as Map<String, dynamic>;
-  }
-  final String localeName;
-
-  String evaluateMessage(translation, List<dynamic> args) {
-    return evaluateJsonTemplate(translation, args);
-  }
-
-  Map<String, dynamic> messages;
-}
-
-/// User programs should call this before using [localeName] for messages.
-Future<bool> initializeMessages(String localeName) async {
-  if (localeName == null) {
-    return false;
-  }
-
-  localeName = Intl.canonicalizedLocale(localeName);
-
-  final localeParts = localeName.split('_');
-  initializeInternalMessageLookup(() => new CompositeMessageLookup());
-  var message = await SystemChannels.localization
-      .invokeMethod('Localization.getStringResource', {
-    'key': 'flutter_localization_string',
-    'locale': localeName,
-  });
-
-  if (message == null) {
-    try {
-      // Normalize the locale name
-      localeName = localeName.replaceAll('_', '-');
-      message = await rootBundle
-          .loadString('__flutter_localization/\${localeName}.json');
-    } catch (_) {
-      // Locale is not found, return false here to use the default locale.
-      return false;
-    }
-  }
-
-  if (message == null || message.isEmpty) {
-    // On Android we include an empty string in the default locale resource,
-    // otherwise loading all the other locales would fail. When we encounter an
-    // empty string here, we treat it as locale not found. The intl package will
-    // fallback to using the default locale.
-    return false;
-  }
-
-  messageLookup.addLocale(
-      localeName, (_) => ResourceMessageLookup(localeName, message));
-  return true;
-}
-
-""";
-}
-
-class JsonMessageGeneration extends DataMapMessageGeneration {
-  /// Embed the JSON string in a Dart raw string literal.
-  ///
-  /// In simple cases this just wraps it in a Dart raw triple-quoted
-  /// literal. However, a translated message may contain a triple quote,
-  /// which would end the Dart literal. So when we encounter this, we turn
-  /// it into three adjacent strings, one of which is just the
-  /// triple-quote.
-  String _embedInLiteral(String jsonMessages) {
-    var triple = "'''";
-    var result = jsonMessages;
-    if (jsonMessages.contains(triple)) {
-      var doubleQuote = '"';
-      var asAdjacentStrings =
-          '$triple  r$doubleQuote$triple$doubleQuote r$triple';
-      result = jsonMessages.replaceAll(triple, asAdjacentStrings);
-    }
-    return "r'''\n$result''';\n}";
-  }
-
-  @override
-  void writeTranslations(
-      Iterable<TranslatedMessage> usableTranslations, String locale) {
-    output.write("""
-  Map<String, dynamic>$orNull _messages;
-  Map<String, dynamic> get messages => _messages ??=
-      const JsonDecoder().convert(messageText) as Map<String, dynamic>;
-""");
-
-    output.write("  static final messageText = ");
-    var entries = usableTranslations
-        .expand((translation) => translation.originalMessages);
-    var map = {};
-    for (var original in entries) {
-      map[original.name] = original.toJsonForLocale(locale);
-    }
-    var jsonEncoded = new JsonEncoder().convert(map);
-    output.write(_embedInLiteral(jsonEncoded));
-  }
-}
-
-/// Message generator that stores translations in a constant map.
-class CodeMapMessageGeneration extends JsonMessageGeneration {
-  @override
-  String get extraImports => '''
-${super.extraImports}
-import 'dart:collection';
-''';
-
-  @override
-  void writeTranslations(
-      Iterable<TranslatedMessage> usableTranslations, String locale) {
-    output.write("""
-  Map<String, dynamic> get messages => _constMessages;
-""");
-
-    var entries = usableTranslations
-        .expand((translation) => translation.originalMessages);
-    var map = <String, Object>{};
-    for (var original in entries) {
-      map[original.name] = original.toJsonForLocale(locale);
-    }
-
-    output.write("  static const _constMessages = ");
-    _writeValue(map);
-
-    output.write(";\n\n");
-    output.write("}");
-  }
-
-  void _writeValue(Object value) {
-    if (value == null) {
-      output.write('null');
-      return;
-    }
-    if (value is num) {
-      output.write(value);
-      return;
-    }
-    if (value is String) {
-      _writeString(value);
-      return;
-    }
-    if (value is List) {
-      output.write('<Object$orNull>[');
-      var isFirst = true;
-      for (final v in value) {
-        if (isFirst) {
-          isFirst = false;
-        } else {
-          output.write(',');
-        }
-        _writeValue(v);
-      }
-      output.write(']');
-      return;
-    }
-    if (value is Map) {
-      output.write('<String, Object$orNull>{');
-      var isFirst = true;
-      value.forEach((k, v) {
-        if (isFirst) {
-          isFirst = false;
-        } else {
-          output.write(',');
-        }
-        _writeValue(k);
-        output.write(':');
-        _writeValue(v);
-      });
-      output.write('}');
-      return;
-    }
-
-    throw 'Unhandled type ${value.runtimeType}';
-  }
-
-  void _writeString(String s) {
-    final length = s.length;
-    output.write('"');
-    for (var i = 0; i < length; ++i) {
-      final c = s.codeUnitAt(i);
-      switch (c) {
-        case 0xa:
-          output.write(r'\n');
-          break;
-
-        case 0xd:
-          output.write(r'\r');
-          break;
-
-        case 0x22:
-          output.write(r'\"');
-          break;
-
-        case 0x24:
-          output.write(r'\$');
-          break;
-
-        case 0x5c:
-          output.write(r'\\');
-          break;
-
-        default:
-          if (c >= 128) {
-            final hex = c.toRadixString(16).padLeft(4, '0');
-            output.write('\\u$hex');
-          } else {
-            output.writeCharCode(c);
-          }
-          break;
-      }
-    }
-    output.write('"');
-  }
 }
 
 /// This represents a message and its translation. We assume that the
