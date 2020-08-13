@@ -9,12 +9,11 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:intl_translation/src/message_rewriter.dart';
-import 'package:intl_translation/src/messages/main_message.dart';
 
-void main(List<String> args) {
-  var parser = ArgParser();
+main(List<String> args) {
+  var parser = new ArgParser();
   var rest = parser.parse(args).rest;
-  if (rest.isEmpty) {
+  if (rest.length == 0) {
     print('Accepts Dart file paths and rewrites the examples to be const '
         'in Intl.message calls.');
     print('Usage: make_examples_const [options] [file.dart]...');
@@ -22,17 +21,17 @@ void main(List<String> args) {
     exit(0);
   }
 
-  var formatter = DartFormatter();
+  var formatter = new DartFormatter();
   for (var inputFile in rest) {
     var outputFile = inputFile;
-    var file = File(inputFile);
+    var file = new File(inputFile);
     var content = file.readAsStringSync();
     var newSource = rewriteMessages(content, '$file');
     if (content == newSource) {
       print('No changes to $outputFile');
     } else {
       print('Writing new source to $outputFile');
-      var out = File(outputFile);
+      var out = new File(outputFile);
       out.writeAsStringSync(formatter.format(newSource));
     }
   }
@@ -46,21 +45,20 @@ void main(List<String> args) {
 String rewriteMessages(String source, String sourceName) {
   var messages = findMessages(source, sourceName);
   messages.sort((a, b) => a.sourcePosition.compareTo(b.sourcePosition));
-  int? start = 0;
-  var newSource = StringBuffer();
+  var start = 0;
+  var newSource = new StringBuffer();
   for (var message in messages) {
-    if (message.examples.isNotEmpty) {
-      newSource.write(source.substring(start!, message.sourcePosition));
+    if (message.examples != null) {
+      newSource.write(source.substring(start, message.sourcePosition));
       rewrite(newSource, source, start, message);
       start = message.endPosition;
     }
   }
-  newSource.write(source.substring(start!));
+  newSource.write(source.substring(start));
   return newSource.toString();
 }
 
-void rewrite(
-    StringBuffer newSource, String source, int? start, MainMessage message) {
+void rewrite(StringBuffer newSource, String source, int start, message) {
   var originalSource =
       source.substring(message.sourcePosition, message.endPosition);
   var examples = nonConstExamples.firstMatch(originalSource);
@@ -68,9 +66,9 @@ void rewrite(
     newSource.write(originalSource);
   } else {
     var modifiedSource = originalSource.replaceFirst(
-        examples.group(1)!, '${examples.group(1)}const');
+        examples.group(1), examples.group(1) + 'const');
     newSource.write(modifiedSource);
   }
 }
 
-final RegExp nonConstExamples = RegExp('([\\n,]\\s+examples: ){');
+final RegExp nonConstExamples = new RegExp('([\\n,]\\s+examples\: ){');

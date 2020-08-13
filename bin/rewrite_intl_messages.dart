@@ -10,19 +10,21 @@
 /// It takes as input a single source Dart file and rewrites any
 /// Intl.message or related calls to automatically include the name and args
 /// parameters and writes the result to stdout.
+///
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:dart_style/dart_style.dart';
-import 'package:intl_translation/src/message_rewriter.dart';
 
-String? outputFileOption = 'transformed_output.dart';
+import 'package:intl_translation/src/message_rewriter.dart';
+import 'package:dart_style/dart_style.dart';
+
+String outputFileOption = 'transformed_output.dart';
 
 bool useStringSubstitution = true;
 bool replace = false;
 
-void main(List<String> args) {
-  var parser = ArgParser();
+main(List<String> args) {
+  var parser = new ArgParser();
   parser.addOption('output',
       defaultsTo: 'transformed_output.dart',
       callback: (x) => outputFileOption = x,
@@ -43,7 +45,7 @@ void main(List<String> args) {
           ' produces less readable code.');
   print(args);
   var rest = parser.parse(args).rest;
-  if (rest.isEmpty) {
+  if (rest.length == 0) {
     print('Accepts Dart file paths and adds "name" and "args" parameters '
         ' to Intl.message calls.');
     print('Primarily useful for exercising the transformer logic or '
@@ -53,10 +55,10 @@ void main(List<String> args) {
     exit(0);
   }
 
-  var formatter = DartFormatter();
+  var formatter = new DartFormatter();
   for (var inputFile in rest) {
     var outputFile = replace ? inputFile : outputFileOption;
-    var file = File(inputFile);
+    var file = new File(inputFile);
     var content = file.readAsStringSync();
     var newSource = rewriteMessages(content, '$file',
         useStringSubstitution: useStringSubstitution);
@@ -64,7 +66,7 @@ void main(List<String> args) {
       print('No changes to $outputFile');
     } else {
       print('Writing new source to $outputFile');
-      var out = File(outputFile!);
+      var out = new File(outputFile);
       out.writeAsStringSync(formatter.format(newSource));
     }
   }

@@ -6,9 +6,7 @@
 /// automatically, primarily used by the transformer.
 import 'package:analyzer/dart/analysis/utilities.dart';
 
-import '../extract_messages.dart';
-import '../visitors/message_finding_visitor.dart';
-import 'messages/main_message.dart';
+import 'package:intl_translation/extract_messages.dart';
 
 /// Rewrite all Intl.message/plural/etc. calls in [source], adding "name"
 /// and "args" parameters if they are not provided.
@@ -16,15 +14,15 @@ import 'messages/main_message.dart';
 /// Return the modified source code. If there are errors parsing, list
 /// [sourceName] in the error message.
 String rewriteMessages(String source, String sourceName,
-    {bool useStringSubstitution = false}) {
+    {useStringSubstitution: false}) {
   var messages = findMessages(source, sourceName);
   messages.sort((a, b) => a.sourcePosition.compareTo(b.sourcePosition));
 
-  int? start = 0;
-  var newSource = StringBuffer();
+  var start = 0;
+  var newSource = new StringBuffer();
   for (var message in messages) {
     if (message.arguments.isNotEmpty) {
-      newSource.write(source.substring(start!, message.sourcePosition));
+      newSource.write(source.substring(start, message.sourcePosition));
       if (useStringSubstitution) {
         rewriteWithStringSubstitution(newSource, source, start, message);
       } else {
@@ -33,22 +31,21 @@ String rewriteMessages(String source, String sourceName,
       start = message.endPosition;
     }
   }
-  newSource.write(source.substring(start!));
+  newSource.write(source.substring(start));
   return newSource.toString();
 }
 
 /// Rewrite the message by regenerating from our internal representation.
 ///
 /// This may produce uglier source, but is more reliable.
-void rewriteRegenerating(
-    StringBuffer newSource, String source, int? start, MainMessage message) {
+rewriteRegenerating(StringBuffer newSource, String source, int start, message) {
   // TODO(alanknight): We could generate more efficient code than the
   // original here, dispatching more directly to the MessageLookup.
   newSource.write(message.toOriginalCode());
 }
 
-void rewriteWithStringSubstitution(
-    StringBuffer newSource, String source, int? start, MainMessage message) {
+rewriteWithStringSubstitution(
+    StringBuffer newSource, String source, int start, message) {
   var originalSource =
       source.substring(message.sourcePosition, message.endPosition);
   var closingParen = originalSource.lastIndexOf(')');
@@ -58,8 +55,8 @@ void rewriteWithStringSubstitution(
   var hasName = originalSource.contains(nameCheck);
   var hasArgs = originalSource.contains(argsCheck);
   var withName = hasName ? '' : ",\nname: '${message.name}'";
-  var withArgs = hasArgs ? '' : ',\nargs: ${message.arguments}';
-  var nameAndArgs = '$withName$withArgs)';
+  var withArgs = hasArgs ? '' : ",\nargs: ${message.arguments}";
+  var nameAndArgs = "$withName$withArgs)";
   newSource.write(originalSource.substring(0, closingParen));
   newSource.write(nameAndArgs);
   // We normally don't have anything after the closing paren, but
@@ -67,15 +64,15 @@ void rewriteWithStringSubstitution(
   newSource.write(originalSource.substring(closingParen + 1));
 }
 
-final RegExp nameCheck = RegExp('[\\n,]\\s+name:');
-final RegExp argsCheck = RegExp('[\\n,]\\s+args:');
+final RegExp nameCheck = new RegExp('[\\n,]\\s+name\:');
+final RegExp argsCheck = new RegExp('[\\n,]\\s+args\:');
 
 /// Find all the messages in the [source] text.
 ///
 /// Report errors as coming from [sourceName]
-List<MainMessage> findMessages(String source, String sourceName,
-    [MessageExtraction? extraction]) {
-  extraction = extraction ?? MessageExtraction();
+List findMessages(String source, String sourceName,
+    [MessageExtraction extraction]) {
+  extraction = extraction ?? new MessageExtraction();
   try {
     var result = parseString(content: source);
     if (result.errors.isNotEmpty) {
@@ -85,15 +82,13 @@ List<MainMessage> findMessages(String source, String sourceName,
     extraction.root = result.unit;
   } on ArgumentError catch (e) {
     extraction
-        .onMessage('Error in parsing $sourceName, no messages extracted.');
-    extraction.onMessage('  $e');
+        .onMessage("Error in parsing $sourceName, no messages extracted.");
+    extraction.onMessage("  $e");
     return [];
   }
   extraction.origin = sourceName;
-  var visitor = MessageFindingVisitor(
-    extraction,
-    generateNameAndArgs: true,
-  );
+  var visitor = new MessageFindingVisitor(extraction);
+  visitor.generateNameAndArgs = true;
   extraction.root.accept(visitor);
   return visitor.messages.values.toList();
 }

@@ -6,10 +6,8 @@
 /// before the plural expression.
 library embedded_plural_text_before;
 
-import 'package:intl/intl.dart';
+import "package:intl/intl.dart";
 
-String embeddedPlural(num n) => Intl.message(
+embeddedPlural(n) => Intl.message(
     "There are ${Intl.plural(n, zero: 'nothing', one: 'one', other: 'some')}.",
-    name: 'embeddedPlural',
-    desc: 'An embedded plural',
-    args: [n]);
+    name: 'embeddedPlural', desc: 'An embedded plural', args: [n]);
