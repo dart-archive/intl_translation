@@ -334,8 +334,8 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
   void writeTranslations(
       Iterable<TranslatedMessage> usableTranslations, String locale) {
     output.write(r"""
-  var _messages;
-  get messages => _messages ??=
+  Map<String, dynamic> _messages;
+  Map<String, dynamic> get messages => _messages ??=
       const JsonDecoder().convert(messageText) as Map<String, dynamic>;
 """);
 
@@ -371,10 +371,10 @@ String evaluateJsonTemplate(dynamic input, List<dynamic> args) {
     return "\${args[input]}";
   }
 
-  List<dynamic> template = input;
+  var template = input as List<dynamic>;
   var messageName = template.first;
   if (messageName == "Intl.plural") {
-     var howMany = args[template[1]];
+     var howMany = args[template[1] as int] as num;
      return evaluateJsonTemplate(
          Intl.pluralLogic(
              howMany,
@@ -387,7 +387,7 @@ String evaluateJsonTemplate(dynamic input, List<dynamic> args) {
          args);
    }
    if (messageName == "Intl.gender") {
-     var gender = args[template[1]];
+     var gender = args[template[1] as int] as String;
      return evaluateJsonTemplate(
          Intl.genderLogic(
              gender,
@@ -397,8 +397,8 @@ String evaluateJsonTemplate(dynamic input, List<dynamic> args) {
          args);
    }
    if (messageName == "Intl.select") {
-     var select = args[template[1]];
-     var choices = template[2];
+     var select = args[template[1] as int];
+     var choices = template[2] as Map<Object, Object>;
      return evaluateJsonTemplate(Intl.selectLogic(select, choices), args);
    }
 
