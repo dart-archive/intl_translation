@@ -21,6 +21,7 @@ library extract_messages;
 
 import 'dart:io';
 
+import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/standard_ast_factory.dart';
@@ -30,6 +31,8 @@ import 'package:intl_translation/src/intl_message.dart';
 
 /// A function that takes a message and does something useful with it.
 typedef void OnMessage(String message);
+
+final _featureSet = FeatureSet.fromEnableFlags(['non-nullable']);
 
 /// A particular message extraction run.
 ///
@@ -110,7 +113,8 @@ class MessageExtraction {
   }
 
   CompilationUnit _parseCompilationUnit(String contents, String origin) {
-    var result = parseString(content: contents, throwIfDiagnostics: false);
+    var result = parseString(
+        content: contents, featureSet: _featureSet, throwIfDiagnostics: false);
 
     if (result.errors.isNotEmpty) {
       print("Error in parsing $origin, no messages extracted.");
