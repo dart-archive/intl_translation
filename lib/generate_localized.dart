@@ -45,6 +45,9 @@ class MessageGeneration {
   /// Should we use deferred loading for the generated libraries.
   bool useDeferredLoading = true;
 
+  /// Whether to generate null safe code instead of legacy code.
+  bool nullSafety = false;
+
   /// The mode to generate in - either 'release' or 'debug'.
   ///
   /// In release mode, a missing translation is an error. In debug mode, it
@@ -63,6 +66,8 @@ class MessageGeneration {
 
   /// Holds the generated translations.
   StringBuffer output = new StringBuffer();
+
+  String get orNull => nullSafety ? '?' : '';
 
   void clearOutput() {
     output = new StringBuffer();
@@ -224,7 +229,8 @@ class MessageLookup extends MessageLookupByLibrary {
       output.write(loadOperation);
     }
     output.write("};\n");
-    output.write("\nMessageLookupByLibrary _findExact(String localeName) {\n"
+    output.write(
+        "\nMessageLookupByLibrary$orNull _findExact(String localeName) {\n"
         "  switch (localeName) {\n");
     for (var rawLocale in allLocales) {
       var locale = Intl.canonicalizedLocale(rawLocale);
@@ -287,7 +293,7 @@ bool _messagesExistFor(String locale) {
   }
 }
 
-MessageLookupByLibrary _findGeneratedMessagesFor(String locale) {
+MessageLookupByLibrary$orNull _findGeneratedMessagesFor(String locale) {
   var actualLocale = Intl.verifiedLocale(locale, _messagesExistFor,
       onFailure: (_) => null);
   if (actualLocale == null) return null;
@@ -307,7 +313,7 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
   String prologue(locale) =>
       super.prologue(locale) +
       '''
-  String evaluateMessage(translation, List<dynamic> args) {
+  String$orNull evaluateMessage(translation, List<dynamic> args) {
     return evaluateJsonTemplate(translation, args);
   }
 ''';
@@ -333,8 +339,8 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
 
   void writeTranslations(
       Iterable<TranslatedMessage> usableTranslations, String locale) {
-    output.write(r"""
-  Map<String, dynamic> _messages;
+    output.write("""
+  Map<String, dynamic>$orNull _messages;
   Map<String, dynamic> get messages => _messages ??=
       const JsonDecoder().convert(messageText) as Map<String, dynamic>;
 """);
@@ -364,7 +370,7 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
 ///   * \['Intl.gender', String gender, (templates for female, male, other)\]
 ///   * \['Intl.select', String choice, { 'case' : template, ...} \]
 ///   * \['text alternating with ', 0 , ' indexes in the argument list'\]
-String evaluateJsonTemplate(dynamic input, List<dynamic> args) {
+String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
   if (input == null) return null;
   if (input is String) return input;
   if (input is int) {
