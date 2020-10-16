@@ -103,7 +103,7 @@ class MessageExtraction {
     } else {
       return {};
     }
-    var visitor = new MessageFindingVisitor(this);
+    var visitor = MessageFindingVisitor(this);
     visitor.generateNameAndArgs = transformer;
     root.accept(visitor);
     return visitor.messages;
@@ -131,7 +131,7 @@ class MessageExtraction {
   String origin;
 
   String _reportErrorLocation(AstNode node) {
-    var result = new StringBuffer();
+    var result = StringBuffer();
     if (origin != null) result.write("    from $origin");
     var info = root.lineInfo;
     if (info != null) {
@@ -154,7 +154,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   final MessageExtraction extraction;
 
   /// Accumulates the messages we have found, keyed by name.
-  final Map<String, MainMessage> messages = new Map<String, MainMessage>();
+  final Map<String, MainMessage> messages = Map<String, MainMessage>();
 
   /// Should we generate the name and arguments from the function definition,
   /// meaning we're running in the transformer.
@@ -287,7 +287,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
     if (reason != null) {
       if (!extraction.suppressWarnings) {
-        var err = new StringBuffer()
+        var err = StringBuffer()
           ..write("Skipping invalid Intl.message invocation\n    <$node>\n")
           ..writeAll(
               ["    reason: $reason\n", extraction._reportErrorLocation(node)]);
@@ -361,7 +361,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
       MainMessage extract(MainMessage message, List<AstNode> arguments),
       void setAttribute(
           MainMessage message, String fieldName, Object fieldValue)) {
-    var message = new MainMessage();
+    var message = MainMessage();
     message.sourcePosition = node.offset;
     message.endPosition = node.end;
     message.arguments =
@@ -373,7 +373,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     for (var namedArgument in arguments.whereType<NamedExpression>()) {
       var name = namedArgument.name.label.name;
       var exp = namedArgument.expression;
-      var evaluator = new ConstantEvaluator();
+      var evaluator = ConstantEvaluator();
       var basicValue = exp.accept(evaluator);
       var value = basicValue == ConstantEvaluator.NOT_A_CONSTANT
           ? exp.toString()
@@ -402,7 +402,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// Find the message pieces from a Dart interpolated string.
   List _extractFromIntlCallWithInterpolation(
       MainMessage message, List<AstNode> arguments) {
-    var interpolation = new InterpolationVisitor(message, extraction);
+    var interpolation = InterpolationVisitor(message, extraction);
     arguments.first.accept(interpolation);
     if (interpolation.pieces.any((x) => x is Plural || x is Gender) &&
         !extraction.allowEmbeddedPluralsAndGenders) {
@@ -429,7 +429,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
         message.addPieces(extracted);
       } on IntlMessageExtractionException catch (e) {
         message = null;
-        var err = new StringBuffer()
+        var err = StringBuffer()
           ..writeAll(["Error ", e, "\nProcessing <", node, ">\n"])
           ..write(extraction._reportErrorLocation(node));
         var errString = err.toString();
@@ -451,8 +451,8 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// and the parameters to the Intl.plural or Intl.gender call.
   MainMessage messageFromDirectPluralOrGenderCall(MethodInvocation node) {
     MainMessage extractFromPluralOrGender(MainMessage message, _) {
-      var visitor = new PluralAndGenderVisitor(
-          message.messagePieces, message, extraction);
+      var visitor =
+          PluralAndGenderVisitor(message.messagePieces, message, extraction);
       node.accept(visitor);
       return message;
     }
@@ -516,7 +516,7 @@ class InterpolationVisitor extends SimpleAstVisitor {
   }
 
   void lookForPluralOrGender(InterpolationExpression node) {
-    var visitor = new PluralAndGenderVisitor(pieces, message, extraction);
+    var visitor = PluralAndGenderVisitor(pieces, message, extraction);
     node.accept(visitor);
     if (!visitor.foundPluralOrGender) {
       throw new IntlMessageExtractionException(
@@ -600,13 +600,13 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
     var message;
     switch (node.methodName.name) {
       case "gender":
-        message = new Gender();
+        message = Gender();
         break;
       case "plural":
-        message = new Plural();
+        message = Plural();
         break;
       case "select":
-        message = new Select();
+        message = Select();
         break;
       default:
         throw new IntlMessageExtractionException(
@@ -618,7 +618,7 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
     var arguments = message.argumentsOfInterestFor(node);
     arguments.forEach((key, value) {
       try {
-        var interpolation = new InterpolationVisitor(message, extraction);
+        var interpolation = InterpolationVisitor(message, extraction);
         value.accept(interpolation);
         // Might be null due to previous errors.
         // Continue collecting errors, but don't build message.
@@ -627,7 +627,7 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
         }
       } on IntlMessageExtractionException catch (e) {
         message = null;
-        var err = new StringBuffer()
+        var err = StringBuffer()
           ..writeAll(["Error ", e, "\nProcessing <", node, ">"])
           ..write(extraction._reportErrorLocation(node));
         var errString = err.toString();
@@ -642,7 +642,7 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
     } else if (mainArg is SimpleIdentifier) {
       message.mainArgument = mainArg.name;
     } else {
-      var err = new StringBuffer()
+      var err = StringBuffer()
         ..write("Error (Invalid argument to plural/gender/select, "
             "must be simple variable reference) "
             "\nProcessing <$node>")

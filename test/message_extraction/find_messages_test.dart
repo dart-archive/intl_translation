@@ -90,7 +90,7 @@ String message(String string) =>
       final messageExtraction = new MessageExtraction();
       var messages = findMessages(
           'List<String> list = [Intl.message("message string", '
-          'name: "list", desc: "in list")];',
+              'name: "list", desc: "in list")];',
           '',
           messageExtraction);
 

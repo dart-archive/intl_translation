@@ -36,17 +36,16 @@ Map<String, List<MainMessage>> messages;
 
 const jsonDecoder = const JsonCodec();
 
-main(List<String> args) {
+void main(List<String> args) {
   var targetDir;
-  var parser = new ArgParser();
-  var extraction = new MessageExtraction();
-  var generation = new MessageGeneration();
+  var parser = ArgParser();
+  var extraction = MessageExtraction();
+  var generation = MessageGeneration();
   String sourcesListFile;
   String translationsListFile;
   var transformer;
   parser.addFlag('json', defaultsTo: false, callback: (useJson) {
-    generation =
-        useJson ? new JsonMessageGeneration() : new MessageGeneration();
+    generation = useJson ? JsonMessageGeneration() : MessageGeneration();
   }, help: 'Generate translations as a JSON string rather than as functions.');
   parser.addFlag("suppress-warnings",
       defaultsTo: false,
@@ -109,10 +108,10 @@ main(List<String> args) {
   // for real projects we could provide a command-line flag to indicate which
   // sort of automated name we're using.
   extraction.suppressWarnings = true;
-  var allMessages = dartFiles
-      .map((each) => extraction.parseFile(new File(each), transformer));
+  var allMessages =
+      dartFiles.map((each) => extraction.parseFile(File(each), transformer));
 
-  messages = new Map();
+  messages = Map();
   for (var eachMap in allMessages) {
     eachMap.forEach(
         (key, value) => messages.putIfAbsent(key, () => []).add(value));
@@ -130,12 +129,12 @@ main(List<String> args) {
     generateLocaleFile(locale, data, targetDir, generation);
   });
 
-  var mainImportFile = new File(path.join(
+  var mainImportFile = File(path.join(
       targetDir, '${generation.generatedFilePrefix}messages_all.dart'));
   mainImportFile.writeAsStringSync(generation.generateMainImportFile());
 }
 
-loadData(String filename, Map<String, List<Map>> messagesByLocale,
+void loadData(String filename, Map<String, List<Map>> messagesByLocale,
     MessageGeneration generation) {
   var file = File(filename);
   var src = file.readAsStringSync();
@@ -148,8 +147,8 @@ loadData(String filename, Map<String, List<Map>> messagesByLocale,
     // my_file_fr.arb is locale "fr" or "file_fr".
     var name = path.basenameWithoutExtension(file.path);
     locale = name.split("_").skip(1).join("_");
-    print("No @@locale or _locale field found in $name, "
-        "assuming '$locale' based on the file name.");
+    print('No @@locale or _locale field found in $name, '
+        'assuming \'$locale\' based on the file name.');
   }
   messagesByLocale.putIfAbsent(locale, () => []).add(data);
   generation.allLocales.add(locale);
@@ -188,7 +187,7 @@ BasicTranslatedMessage recreateIntlObjects(String id, data) {
   if (parsed is LiteralString && parsed.string.isEmpty) {
     parsed = plainParser.parse(data).value;
   }
-  return new BasicTranslatedMessage(id, parsed);
+  return BasicTranslatedMessage(id, parsed);
 }
 
 /// A TranslatedMessage that just uses the name as the id and knows how to look
@@ -205,5 +204,5 @@ class BasicTranslatedMessage extends TranslatedMessage {
   List<MainMessage> _findOriginals() => originalMessages = messages[id];
 }
 
-final pluralAndGenderParser = new IcuParser().message;
-final plainParser = new IcuParser().nonIcuMessage;
+final pluralAndGenderParser = IcuParser().message;
+final plainParser = IcuParser().nonIcuMessage;

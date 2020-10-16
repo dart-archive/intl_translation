@@ -134,7 +134,7 @@ class MessageGeneration {
             .toList()
               ..sort((a, b) => a.name.compareTo(b.name)))
         .map((original) =>
-            '    "${original.escapeAndValidateString(original.name)}" '
+            '    \'${original.escapeAndValidateString(original.name)}\' '
             ': ${_mapReference(original, locale)}');
     output..write(entries.join(",\n"))..write("\n  };\n}\n");
   }
@@ -477,8 +477,8 @@ bool _hasArguments(MainMessage message) => message.arguments.length != 0;
 String _mapReference(MainMessage original, String locale) {
   if (!_hasArguments(original)) {
     // No parameters, can be printed simply.
-    return 'MessageLookupByLibrary.simpleMessage("'
-        '${original.translations[locale]}")';
+    return 'MessageLookupByLibrary.simpleMessage(\''
+        '${original.translations[locale]}\')';
   } else {
     return _methodNameFor(original.name);
   }
