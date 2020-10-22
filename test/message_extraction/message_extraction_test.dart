@@ -8,7 +8,6 @@ library message_extraction_test;
 
 import 'package:test/test.dart';
 import 'dart:io';
-import 'dart:async';
 import 'dart:convert';
 import 'package:path/path.dart' as path;
 import '../data_directory.dart';

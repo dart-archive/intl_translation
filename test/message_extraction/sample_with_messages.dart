@@ -10,7 +10,6 @@ library sample;
 import "package:intl/intl.dart";
 import "foo_messages_all.dart";
 import "print_to_list.dart";
-import "dart:async";
 
 part 'part_of_sample_with_messages.dart';
 
