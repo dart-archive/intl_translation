@@ -1,3 +1,6 @@
+## 0.17.10+2
+* Allow generated code to be used in null-safe environment
+
 ## 0.17.10+1
   * Generate code that passes analysis with `implicit-casts: false`.
   * Allow use of `MessageExtraction` and `MessageGeneration` without `File`.

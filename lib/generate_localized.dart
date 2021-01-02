@@ -148,13 +148,14 @@ class MessageGeneration {
       // 24356
       """
   final messages = _notInlinedMessages(_notInlinedMessages);
-  static _notInlinedMessages(_) => <String, Function> {
+  static Map<String, Function> _notInlinedMessages(_) => <String, Function> {
 """;
 
   /// [generateIndividualMessageFile] for the beginning of the file,
   /// parameterized by [locale].
   String prologue(String locale) =>
       """
+//@dart=2.7
 // DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
 // This is a library that provides messages for a $locale locale. All the
 // messages from the main program should be duplicated here with the same
@@ -238,6 +239,7 @@ class MessageLookup extends MessageLookupByLibrary {
   /// Constant string used in [generateMainImportFile] for the beginning of the
   /// file.
   get mainPrologue => """
+//@dart=2.7
 // DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
 // This is a library that looks up messages for specific locales by
 // delegating to the appropriate library.
