@@ -135,7 +135,8 @@ class MessageGeneration {
               ..sort((a, b) => a.name.compareTo(b.name)))
         .map((original) =>
             '    "${original.escapeAndValidateString(original.name)}" '
-            ': ${_mapReference(original, locale)}');
+            ': ${_mapReference(original, locale)}')
+        .toSet();
     output..write(entries.join(",\n"))..write("\n  };\n}\n");
   }
 
