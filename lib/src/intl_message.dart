@@ -32,6 +32,7 @@
 library intl_message;
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/src/dart/ast/constant_evaluator.dart';
@@ -380,23 +381,22 @@ class VariableSubstitution extends Message {
   /// save it separately and look it up case-insensitively once the parent
   /// (and its arguments) are definitely available.
   VariableSubstitution.named(String name, Message parent) : super(parent) {
-    _variableNameUpper = name.toUpperCase();
+    _parsedVariableName = name;
   }
 
   /// The index in the list of parameters of the containing function.
   int _index;
   int get index {
     if (_index != null) return _index;
-    if (arguments.isEmpty) return null;
     // We may have been given an all-uppercase version of the name, so compare
     // case-insensitive.
     _index = arguments
         .map((x) => x.toUpperCase())
         .toList()
-        .indexOf(_variableNameUpper);
+        .indexOf(_parsedVariableName.toUpperCase());
     if (_index == -1) {
       throw new ArgumentError(
-          "Cannot find parameter named '$_variableNameUpper' in "
+          "Cannot find parameter named '$_parsedVariableName' in "
           "message named '$name'. Available "
           "parameters are $arguments");
     }
@@ -405,17 +405,19 @@ class VariableSubstitution extends Message {
 
   /// The variable name we get from parsing. This may be an all uppercase
   /// version of the Dart argument name.
-  String _variableNameUpper;
+  String _parsedVariableName;
 
   /// The name of the variable in the parameter list of the containing function.
   /// Used when generating code for the interpolation.
   String get variableName =>
       _variableName == null ? _variableName = arguments[index] : _variableName;
   String _variableName;
+
   // Although we only allow simple variable references, we always enclose them
   // in curly braces so that there's no possibility of ambiguity with
   // surrounding text.
   toCode() => "\${${variableName}}";
+
   toJson() => index;
   toString() => "VariableSubstitution($index)";
   String expanded([Function f = _nullTransform]) => f(this, index);
@@ -518,9 +520,14 @@ class MainMessage extends ComplexMessage {
   /// Record the translation for this message in the given locale, after
   /// suitably escaping it.
   void addTranslation(String locale, Message translated) {
-    translated.parent = this;
-    translations[locale] = translated.toCode();
-    jsonTranslations[locale] = translated.toJson();
+    try {
+      translated.parent = this;
+      translations[locale] = translated.toCode();
+      jsonTranslations[locale] = translated.toJson();
+    } on ArgumentError catch (ex) {
+      stderr.write(
+          "Could not generate code for message '${translated.name}' with defined arguments: '${translated.arguments}' for locale '${locale}', Error: '${ex.message}'. Translation will not be available. \n");
+    }
   }
 
   toCode() =>
