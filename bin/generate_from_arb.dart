@@ -44,10 +44,20 @@ main(List<String> args) {
   String sourcesListFile;
   String translationsListFile;
   var transformer;
+  var useFlutterLocaleSplit = false;
   parser.addFlag('json', defaultsTo: false, callback: (useJson) {
     generation =
         useJson ? new JsonMessageGeneration() : new MessageGeneration();
   }, help: 'Generate translations as a JSON string rather than as functions.');
+  parser.addFlag('flutter',
+      defaultsTo: false,
+      callback: (val) => useFlutterLocaleSplit = val,
+      help: 'Generate localization file that uses Flutter locale split.');
+  parser.addOption('flutter-import-path',
+      callback: (val) => generation.flutterImportPath = val,
+      hide: true,
+      help: 'Customize the flutter import path, used for testing. Defaults to '
+          'package:flutter.');
   parser.addFlag("suppress-warnings",
       defaultsTo: false,
       callback: (x) => extraction.suppressWarnings = x,
@@ -132,7 +142,18 @@ main(List<String> args) {
 
   var mainImportFile = new File(path.join(
       targetDir, '${generation.generatedFilePrefix}messages_all.dart'));
-  mainImportFile.writeAsStringSync(generation.generateMainImportFile());
+  mainImportFile.writeAsStringSync(
+      generation.generateMainImportFile(flutter: useFlutterLocaleSplit));
+
+  var localesImportFile = new File(path.join(
+      targetDir, '${generation.generatedFilePrefix}messages_all_locales.dart'));
+  localesImportFile.writeAsStringSync(generation.generateLocalesImportFile());
+
+  if (useFlutterLocaleSplit) {
+    var flutterImportFile = new File(path.join(
+        targetDir, '${generation.generatedFilePrefix}messages_flutter.dart'));
+    flutterImportFile.writeAsStringSync(generation.generateFlutterImportFile());
+  }
 }
 
 loadData(String filename, Map<String, List<Map>> messagesByLocale,

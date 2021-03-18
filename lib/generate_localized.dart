@@ -23,6 +23,12 @@ class MessageGeneration {
   /// code.
   var intlImportPath = 'intl';
 
+  /// If the import path for flutter is not package:flutter, modify the
+  /// [flutterImportPath] variable to change the import directives in the
+  /// generated code. This is useful to mock out Flutter during tests since
+  /// package:flutter cannot be imported from Dart VM.
+  var flutterImportPath = 'package:flutter';
+
   /// If the path to the generated files is something other than the current
   /// directory, update the [generatedImportPath] variable to change the import
   /// directives in the generated code.
@@ -206,11 +212,11 @@ class MessageLookup extends MessageLookupByLibrary {
 
 """;
 
-  /// This section generates the messages_all.dart file based on the list of
-  /// [allLocales].
-  String generateMainImportFile() {
+  /// This section generates the messages_all_locales.dart file based on the
+  /// list of [allLocales].
+  String generateLocalesImportFile() {
     clearOutput();
-    output.write(mainPrologue);
+    output.write(localesPrologue);
     for (var locale in allLocales) {
       var baseFile = '${generatedFilePrefix}messages_$locale.dart';
       var file = importForGeneratedFile(baseFile);
@@ -237,13 +243,13 @@ class MessageLookup extends MessageLookupByLibrary {
       output.write(
           "    case '$locale':\n      return ${libraryName(locale)}.messages;\n");
     }
-    output.write(closing);
+    output.write(localesClosing);
     return output.toString();
   }
 
-  /// Constant string used in [generateMainImportFile] for the beginning of the
-  /// file.
-  get mainPrologue => """
+  /// Constant string used in [generateLocalesImportFile] for the beginning of
+  /// the file.
+  get localesPrologue => """
 // DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
 // This is a library that looks up messages for specific locales by
 // delegating to the appropriate library.
@@ -261,8 +267,9 @@ import 'package:$intlImportPath/src/intl_helpers.dart';
 
 """;
 
-  /// Constant string used in [generateMainImportFile] as the end of the file.
-  get closing => """
+  /// Constant string used in [generateLocalesImportFile] as the end of the
+  /// file.
+  get localesClosing => """
     default:\n      return null;
   }
 }
@@ -298,6 +305,36 @@ MessageLookupByLibrary$orNull _findGeneratedMessagesFor(String locale) {
   return _findExact(actualLocale);
 }
 """;
+
+  String generateFlutterImportFile() => throw UnimplementedError();
+
+  /// This section generates the messages_all.dart file.
+  String generateMainImportFile({bool flutter = false}) {
+    clearOutput();
+    output.write(mainPrologue);
+    if (flutter) {
+      output.write("export '${generatedFilePrefix}messages_flutter.dart'\n"
+          "  if (dart.library.js) '${generatedFilePrefix}messages_all_locales.dart'\n"
+          '  show initializeMessages;\n\n');
+    } else {
+      output.write("export '${generatedFilePrefix}messages_all_locales.dart'\n"
+          '  show initializeMessages;\n\n');
+    }
+    output.write(closing);
+    return output.toString();
+  }
+
+  /// Constant string used in [generateMainImportFile] for the beginning of the
+  /// file.
+  get mainPrologue => """
+// DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
+// This is a library that looks up messages for specific locales by
+// delegating to the appropriate library.
+
+""";
+
+  /// Constant string used in [generateMainImportFile] as the end of the file.
+  get closing => '';
 }
 
 class JsonMessageGeneration extends MessageGeneration {
@@ -353,6 +390,12 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
     var jsonEncoded = new JsonEncoder().convert(map);
     output.write(_embedInLiteral(jsonEncoded));
   }
+
+  get mainPrologue =>
+      super.mainPrologue +
+      """
+import 'package:$intlImportPath/intl.dart';
+""";
 
   get closing =>
       super.closing +
@@ -420,6 +463,80 @@ String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
   }
 
  ''';
+
+  String generateFlutterImportFile() {
+    clearOutput();
+    output.write(flutterPrologue);
+    return output.toString();
+  }
+
+  /// Constant string used in [generateFlutterImportFile] for the beginning of
+  /// the file.
+  get flutterPrologue => """
+// DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
+// This is a library that looks up messages for specific locales by
+// delegating to the appropriate library.
+
+import 'dart:convert';
+import 'package:$intlImportPath/intl.dart';
+import 'package:$intlImportPath/message_lookup_by_library.dart';
+import 'package:$intlImportPath/src/intl_helpers.dart';
+import '$flutterImportPath/services.dart';
+
+import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
+
+class ResourceMessageLookup extends MessageLookupByLibrary {
+  ResourceMessageLookup(this.localeName, String messageText) {
+    this.messages =
+        const JsonDecoder().convert(messageText) as Map<String, dynamic>;
+  }
+  final String localeName;
+
+  String evaluateMessage(translation, List<dynamic> args) {
+    return evaluateJsonTemplate(translation, args);
+  }
+
+  Map<String, dynamic> messages;
+}
+
+/// User programs should call this before using [localeName] for messages.
+Future<bool> initializeMessages(String localeName) async {
+  if (localeName == null) {
+    return false;
+  }
+
+  localeName = Intl.canonicalizedLocale(localeName);
+
+  final localeParts = localeName.split('_');
+  initializeInternalMessageLookup(() => new CompositeMessageLookup());
+  var message = await SystemChannels.localization
+      .invokeMethod('Localization.getStringResource', {
+    'key': 'flutter_localization_string',
+    'locale': localeName,
+  });
+
+  if (message == null) {
+    try {
+      // Normalize the locale name
+      localeName = localeName.replaceAll('_', '-');
+      message = await rootBundle
+          .loadString('__flutter_localization/\${localeName}.json');
+    } catch (_) {
+      // Locale is not found, return false here to use the default locale.
+      return false;
+    }
+  }
+
+  if (message == null) {
+    return false;
+  }
+
+  messageLookup.addLocale(
+      localeName, (_) => ResourceMessageLookup(localeName, message));
+  return true;
+}
+
+""";
 }
 
 /// This represents a message and its translation. We assume that the
