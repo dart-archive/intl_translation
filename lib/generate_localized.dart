@@ -527,7 +527,11 @@ Future<bool> initializeMessages(String localeName) async {
     }
   }
 
-  if (message == null) {
+  if (message == null || message.isEmpty) {
+    // On Android we include an empty string in the default locale resource,
+    // otherwise loading all the other locales would fail. When we encounter an
+    // empty string here, we treat it as locale not found. The intl package will
+    // fallback to using the default locale.
     return false;
   }
 
