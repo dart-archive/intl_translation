@@ -68,8 +68,6 @@ class MessageGeneration {
 
   bool get releaseMode => codegenMode == 'release';
 
-  bool get jsonMode => false;
-
   /// Holds the generated translations.
   StringBuffer output = new StringBuffer();
 
@@ -337,7 +335,11 @@ MessageLookupByLibrary$orNull _findGeneratedMessagesFor(String locale) {
   get closing => '';
 }
 
-class JsonMessageGeneration extends MessageGeneration {
+/// Message generator that parses translations from a `Map<String, dynamic>`.
+///
+/// [JsonMessageGeneration] and [CodeMapMessageGeneration] extend this
+/// class.
+abstract class DataMapMessageGeneration extends MessageGeneration {
   /// We import the main file so as to get the shared code to evaluate
   /// the JSON data.
   String get extraImports => '''
@@ -353,43 +355,8 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
   }
 ''';
 
-  /// Embed the JSON string in a Dart raw string literal.
-  ///
-  /// In simple cases this just wraps it in a Dart raw triple-quoted
-  /// literal. However, a translated message may contain a triple quote,
-  /// which would end the Dart literal. So when we encounter this, we turn
-  /// it into three adjacent strings, one of which is just the
-  /// triple-quote.
-  String _embedInLiteral(String jsonMessages) {
-    var triple = "'''";
-    var result = jsonMessages;
-    if (jsonMessages.contains(triple)) {
-      var doubleQuote = '"';
-      var asAdjacentStrings =
-          '$triple  r$doubleQuote$triple$doubleQuote r$triple';
-      result = jsonMessages.replaceAll(triple, asAdjacentStrings);
-    }
-    return "r'''\n$result''';\n}";
-  }
-
   void writeTranslations(
-      Iterable<TranslatedMessage> usableTranslations, String locale) {
-    output.write("""
-  Map<String, dynamic>$orNull _messages;
-  Map<String, dynamic> get messages => _messages ??=
-      const JsonDecoder().convert(messageText) as Map<String, dynamic>;
-""");
-
-    output.write("  static final messageText = ");
-    var entries = usableTranslations
-        .expand((translation) => translation.originalMessages);
-    var map = {};
-    for (var original in entries) {
-      map[original.name] = original.toJsonForLocale(locale);
-    }
-    var jsonEncoded = new JsonEncoder().convert(map);
-    output.write(_embedInLiteral(jsonEncoded));
-  }
+      Iterable<TranslatedMessage> usableTranslations, String locale);
 
   get mainPrologue =>
       super.mainPrologue +
@@ -541,6 +508,163 @@ Future<bool> initializeMessages(String localeName) async {
 }
 
 """;
+}
+
+class JsonMessageGeneration extends DataMapMessageGeneration {
+  /// Embed the JSON string in a Dart raw string literal.
+  ///
+  /// In simple cases this just wraps it in a Dart raw triple-quoted
+  /// literal. However, a translated message may contain a triple quote,
+  /// which would end the Dart literal. So when we encounter this, we turn
+  /// it into three adjacent strings, one of which is just the
+  /// triple-quote.
+  String _embedInLiteral(String jsonMessages) {
+    var triple = "'''";
+    var result = jsonMessages;
+    if (jsonMessages.contains(triple)) {
+      var doubleQuote = '"';
+      var asAdjacentStrings =
+          '$triple  r$doubleQuote$triple$doubleQuote r$triple';
+      result = jsonMessages.replaceAll(triple, asAdjacentStrings);
+    }
+    return "r'''\n$result''';\n}";
+  }
+
+  @override
+  void writeTranslations(
+      Iterable<TranslatedMessage> usableTranslations, String locale) {
+    output.write("""
+  Map<String, dynamic>$orNull _messages;
+  Map<String, dynamic> get messages => _messages ??=
+      const JsonDecoder().convert(messageText) as Map<String, dynamic>;
+""");
+
+    output.write("  static final messageText = ");
+    var entries = usableTranslations
+        .expand((translation) => translation.originalMessages);
+    var map = {};
+    for (var original in entries) {
+      map[original.name] = original.toJsonForLocale(locale);
+    }
+    var jsonEncoded = new JsonEncoder().convert(map);
+    output.write(_embedInLiteral(jsonEncoded));
+  }
+}
+
+/// Message generator that stores translations in a constant map.
+///
+/// This generates a const message map for size, but then copies it once
+/// at run time to ensure O(1) lookup.
+class CodeMapMessageGeneration extends JsonMessageGeneration {
+  @override
+  void writeTranslations(
+      Iterable<TranslatedMessage> usableTranslations, String locale) {
+    output.write("""
+  Map<String, dynamic>$orNull _messages;
+  Map<String, dynamic> get messages =>
+    _messages ??= HashMap.from(_constMessages);
+
+""");
+
+    var entries = usableTranslations
+        .expand((translation) => translation.originalMessages);
+    var map = <String, Object>{};
+    for (var original in entries) {
+      map[original.name] = original.toJsonForLocale(locale);
+    }
+
+    output.write("  static const _constMessages = ");
+    _writeValue(map);
+
+    output.write(";\n\n");
+    output.write("}");
+  }
+
+  void _writeValue(Object value) {
+    if (value == null) {
+      output.write('null');
+      return;
+    }
+    if (value is num) {
+      output.write(value);
+      return;
+    }
+    if (value is String) {
+      _writeString(value);
+      return;
+    }
+    if (value is List) {
+      output.write('<Object$orNull>[');
+      var isFirst = true;
+      for (final v in value) {
+        if (isFirst) {
+          isFirst = false;
+        } else {
+          output.write(',');
+        }
+        _writeValue(v);
+      }
+      output.write(']');
+      return;
+    }
+    if (value is Map) {
+      output.write('<String, Object$orNull>{');
+      var isFirst = true;
+      value.forEach((k, v) {
+        if (isFirst) {
+          isFirst = false;
+        } else {
+          output.write(',');
+        }
+        _writeValue(k);
+        output.write(':');
+        _writeValue(v);
+      });
+      output.write('}');
+      return;
+    }
+
+    throw 'Unhandled type ${value.runtimeType}';
+  }
+
+  void _writeString(String s) {
+    final length = s.length;
+    output.write('"');
+    for (var i = 0; i < length; ++i) {
+      final c = s.codeUnitAt(i);
+      switch(c) {
+        case 0xa:
+          output.write(r'\n');
+          break;
+
+        case 0xd:
+          output.write(r'\r');
+          break;
+
+        case 0x22:
+          output.write(r'\"');
+          break;
+
+        case 0x24:
+          output.write(r'\$');
+          break;
+
+        case 0x5c:
+          output.write(r'\\');
+          break;
+
+        default:
+          if (c >= 128) {
+            final hex = c.toRadixString(16).padLeft(4, '0');
+            output.write('\\u$hex');
+          } else {
+            output.writeCharCode(c);
+          }
+          break;
+      }
+    }
+    output.write('"');
+  }
 }
 
 /// This represents a message and its translation. We assume that the

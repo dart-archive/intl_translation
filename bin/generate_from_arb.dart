@@ -44,10 +44,20 @@ main(List<String> args) {
   String sourcesListFile;
   String translationsListFile;
   var transformer;
+  var useJsonFlag = false;
+  var useCodeMapFlag = false;
   var useFlutterLocaleSplit = false;
-  parser.addFlag('json', defaultsTo: false, callback: (useJson) {
-    generation =
-        useJson ? new JsonMessageGeneration() : new MessageGeneration();
+  parser.addFlag('json', callback: (useJson) {
+    useJsonFlag = useJson;
+    if (useJson) {
+      generation = JsonMessageGeneration();
+    }
+  }, help: 'Generate translations as a JSON string rather than as functions.');
+  parser.addFlag('code-map', callback: (useCodeMap) {
+    useCodeMapFlag = useCodeMap;
+    if (useCodeMap) {
+      generation = CodeMapMessageGeneration();
+    }
   }, help: 'Generate translations as a JSON string rather than as functions.');
   parser.addFlag('flutter',
       defaultsTo: false,
@@ -107,6 +117,14 @@ main(List<String> args) {
         ' translation1_<languageTag>.arb translation2.arb ...');
     print(parser.usage);
     exit(0);
+  }
+
+  if (useCodeMapFlag && useJsonFlag) {
+    throw 'Only one of code-map and json can be specified';
+  }
+
+  if (useCodeMapFlag && useFlutterLocaleSplit) {
+    throw 'code-map cannot be used in combination with flutter locale split';
   }
 
   // TODO(alanknight): There is a possible regression here. If a project is
