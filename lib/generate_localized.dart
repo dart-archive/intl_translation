@@ -175,6 +175,8 @@ class MessageGeneration {
 // ignore_for_file:annotate_overrides,prefer_generic_function_type_aliases
 // ignore_for_file:unused_import, file_names
 
+import 'dart:collection';
+
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
 $extraImports
@@ -561,8 +563,7 @@ class CodeMapMessageGeneration extends JsonMessageGeneration {
       Iterable<TranslatedMessage> usableTranslations, String locale) {
     output.write("""
   Map<String, dynamic>$orNull _messages;
-  Map<String, dynamic> get messages =>
-    _messages ??= HashMap.from(_constMessages);
+  Map<String, dynamic> get messages => _messages ??= HashMap.of(_constMessages);
 
 """);
 
