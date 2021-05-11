@@ -9,12 +9,12 @@
 // ignore_for_file:annotate_overrides,prefer_generic_function_type_aliases
 // ignore_for_file:unused_import, file_names
 
-import 'dart:collection';
-
 import 'package:intl/intl.dart';
 import 'package:intl/message_lookup_by_library.dart';
 import 'dart:convert';
 import 'code_map_messages_all.dart' show evaluateJsonTemplate;
+
+import 'dart:collection';
 
 final messages = new MessageLookup();
 
@@ -27,8 +27,7 @@ class MessageLookup extends MessageLookupByLibrary {
     return evaluateJsonTemplate(translation, args);
   }
   Map<String, dynamic> _messages;
-  Map<String, dynamic> get messages =>
-    _messages ??= HashMap.from(_constMessages);
+  Map<String, dynamic> get messages => _messages ??= HashMap.of(_constMessages);
 
   static const _constMessages = <String, Object>{"Hello from application":"Bonjour de l'application"};
 

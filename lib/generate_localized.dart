@@ -557,12 +557,17 @@ class JsonMessageGeneration extends DataMapMessageGeneration {
 /// at run time to ensure O(1) lookup.
 class CodeMapMessageGeneration extends JsonMessageGeneration {
   @override
+  String get extraImports => '''
+${super.extraImports}
+import 'dart:collection';
+''';
+
+  @override
   void writeTranslations(
       Iterable<TranslatedMessage> usableTranslations, String locale) {
     output.write("""
   Map<String, dynamic>$orNull _messages;
-  Map<String, dynamic> get messages =>
-    _messages ??= HashMap.from(_constMessages);
+  Map<String, dynamic> get messages => _messages ??= HashMap.of(_constMessages);
 
 """);
 
@@ -632,7 +637,7 @@ class CodeMapMessageGeneration extends JsonMessageGeneration {
     output.write('"');
     for (var i = 0; i < length; ++i) {
       final c = s.codeUnitAt(i);
-      switch(c) {
+      switch (c) {
         case 0xa:
           output.write(r'\n');
           break;
