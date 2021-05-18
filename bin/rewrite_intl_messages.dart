@@ -14,9 +14,8 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
-
-import 'package:intl_translation/src/message_rewriter.dart';
 import 'package:dart_style/dart_style.dart';
+import 'package:intl_translation/src/message_rewriter.dart';
 
 String outputFileOption = 'transformed_output.dart';
 
@@ -27,7 +26,7 @@ main(List<String> args) {
   var parser = new ArgParser();
   parser.addOption('output',
       defaultsTo: 'transformed_output.dart',
-      callback: (x) => outputFileOption = x,
+      callback: (x) => outputFileOption = x!,
       help: 'Specify the output file.');
   parser.addFlag('replace',
       defaultsTo: false,

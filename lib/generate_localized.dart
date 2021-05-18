@@ -11,11 +11,13 @@
 /// in test/message_extract/generate_from_json.dart
 library generate_localized;
 
-import 'package:intl/intl.dart';
-import 'src/intl_message.dart';
 import 'dart:convert';
 import 'dart:io';
+
+import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
+
+import 'src/intl_message.dart';
 
 class MessageGeneration {
   /// If the import path following package: is something else, modify the
@@ -49,13 +51,13 @@ class MessageGeneration {
   ///
   /// In release mode, a missing translation is an error. In debug mode, it
   /// falls back to the original string.
-  String codegenMode;
+  String codegenMode = 'release';
 
   /// What is the path to the package for which we are generating.
   ///
   /// The exact format of this string depends on the generation mechanism,
   /// so it's left undefined.
-  String package;
+  String package = '';
 
   bool get releaseMode => codegenMode == 'release';
 
@@ -436,7 +438,7 @@ abstract class TranslatedMessage {
 
   /// The original messages that we are a translation of. There can
   ///  be more than one original message for the same translation.
-  List<MainMessage> _originalMessages;
+  List<MainMessage> _originalMessages = [];
 
   List<MainMessage> get originalMessages => _originalMessages;
   set originalMessages(List<MainMessage> x) {

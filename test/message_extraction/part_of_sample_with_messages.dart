@@ -6,7 +6,7 @@ part of sample;
 
 class Person {
   String name;
-  String gender;
+  String? gender;
   Person(this.name, this.gender);
 }
 
@@ -44,7 +44,7 @@ class YouveGotMessages {
       desc: "Basic plurals");
 
   whereTheyWent(Person person, String place) =>
-      whereTheyWentMessage(person.name, person.gender, place);
+      whereTheyWentMessage(person.name, person.gender!, place);
 
   whereTheyWentMessage(String name, String gender, String place) {
     return Intl.message(

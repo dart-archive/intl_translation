@@ -20,7 +20,7 @@ Map toARB(
   bool supressMetadata = false,
   bool includeSourceText = false,
 }) {
-  if (message.messagePieces.isEmpty) return null;
+  if (message.messagePieces.isEmpty) return {};
   var out = {};
   out[message.name] = icuForm(message);
 

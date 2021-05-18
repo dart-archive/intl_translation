@@ -7,11 +7,11 @@
 /// extract_message.dart for the files sample_with_messages.dart and
 /// part_of_sample_with_messages.dart and writing out hard-coded translations
 /// for German and French locales.
-
 import 'dart:convert';
 import 'dart:io';
-import 'package:path/path.dart' as path;
+
 import 'package:args/args.dart';
+import 'package:path/path.dart' as path;
 
 /// A list of the French translations that we will produce.
 var french = {
@@ -151,14 +151,14 @@ var german = {
 };
 
 /// The output directory for translated files.
-String targetDir;
+late String targetDir;
 
 const jsonCodec = const JsonCodec();
 
 /// Generate a translated json version from [originals] in [locale] looking
 /// up the translations in [translations].
 void translate(Map originals, String locale, Map translations,
-    [String filename]) {
+    [String? filename]) {
   var translated = {"_locale": locale};
   originals.forEach((name, text) {
     if (translations[name] != null) {
@@ -178,7 +178,7 @@ main(List<String> args) {
   }
   var parser = new ArgParser();
   parser.addOption("output-dir",
-      defaultsTo: '.', callback: (value) => targetDir = value);
+      defaultsTo: '.', callback: (value) => targetDir = value!);
   parser.parse(args);
 
   var fileArgs = args.where((x) => x.contains('.arb'));

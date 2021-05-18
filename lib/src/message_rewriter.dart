@@ -5,7 +5,6 @@
 /// Code to rewrite Intl.message calls adding the name and args parameters
 /// automatically, primarily used by the transformer.
 import 'package:analyzer/dart/analysis/utilities.dart';
-
 import 'package:intl_translation/extract_messages.dart';
 
 /// Rewrite all Intl.message/plural/etc. calls in [source], adding "name"
@@ -71,7 +70,7 @@ final RegExp argsCheck = new RegExp('[\\n,]\\s+args\:');
 ///
 /// Report errors as coming from [sourceName]
 List findMessages(String source, String sourceName,
-    [MessageExtraction extraction]) {
+    [MessageExtraction? extraction]) {
   extraction = extraction ?? new MessageExtraction();
   try {
     var result = parseString(content: source);

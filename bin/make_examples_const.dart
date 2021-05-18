@@ -66,7 +66,7 @@ void rewrite(StringBuffer newSource, String source, int start, message) {
     newSource.write(originalSource);
   } else {
     var modifiedSource = originalSource.replaceFirst(
-        examples.group(1), examples.group(1) + 'const');
+        examples.group(1)!, examples.group(1)! + 'const');
     newSource.write(modifiedSource);
   }
 }
