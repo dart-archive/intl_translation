@@ -267,7 +267,7 @@ abstract class Message {
     if (value is int) return new VariableSubstitution(value, parent);
     if (value is List) {
       if (value.length == 1) return Message.from(value[0], parent);
-      var result = new CompositeMessage([], parent as ComplexMessage);
+      var result = new CompositeMessage([], parent as ComplexMessage?);
       var items = value.map((x) => from(x, result)).toList();
       result.pieces.addAll(items);
       return result;
