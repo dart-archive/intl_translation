@@ -11,11 +11,13 @@
 /// in test/message_extract/generate_from_json.dart
 library generate_localized;
 
-import 'package:intl/intl.dart';
-import 'src/intl_message.dart';
 import 'dart:convert';
 import 'dart:io';
+
+import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
+
+import 'src/intl_message.dart';
 
 class MessageGeneration {
   /// If the import path following package: is something else, modify the
