@@ -195,13 +195,13 @@ BasicTranslatedMessage? recreateIntlObjects(String id, data) {
 class BasicTranslatedMessage extends TranslatedMessage {
   BasicTranslatedMessage(String name, translated) : super(name, translated);
 
-  List<MainMessage> get originalMessages => (super.originalMessages == null)
+  List<MainMessage> get originalMessages => (super.originalMessages.isEmpty)
       ? _findOriginals()
       : super.originalMessages;
 
   // We know that our [id] is the name of the message, which is used as the
   //key in [messages].
-  List<MainMessage> _findOriginals() => originalMessages = messages[id]!;
+  List<MainMessage> _findOriginals() => originalMessages = messages[id] ?? [];
 }
 
 final pluralAndGenderParser = new IcuParser().message;

@@ -221,6 +221,9 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   void visitMethodDeclaration(MethodDeclaration node) {
     name = node.name.name;
     parameters = node.parameters;
+    if (parameters == null && node.propertyKeyword?.lexeme == 'get') {
+      parameters = _emptyParameterList;
+    }
     super.visitMethodDeclaration(node);
     name = '';
     parameters = null;
@@ -231,6 +234,9 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   void visitFunctionDeclaration(FunctionDeclaration node) {
     name = node.name.name;
     parameters = node.functionExpression.parameters;
+    if (parameters == null && node.propertyKeyword?.lexeme == 'get') {
+      parameters = _emptyParameterList;
+    }
     super.visitFunctionDeclaration(node);
     name = '';
     parameters = null;
@@ -570,7 +576,10 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
   }
 
   visitMethodInvocation(MethodInvocation node) {
-    pieces.add(messageFromMethodInvocation(node));
+    final result = messageFromMethodInvocation(node);
+    if (result != null) {
+      pieces.add(result);
+    }
     super.visitMethodInvocation(node);
   }
 
@@ -596,7 +605,7 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
   /// Create a MainMessage from [node] using the name and
   /// parameters of the last function/method declaration we encountered
   /// and the parameters to the Intl.message call.
-  Message messageFromMethodInvocation(MethodInvocation node) {
+  Message? messageFromMethodInvocation(MethodInvocation node) {
     var message;
     switch (node.methodName.name) {
       case "gender":
@@ -635,12 +644,13 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
         extraction.warnings.add(errString);
       }
     });
+
     var mainArg = node.argumentList.arguments
         .firstWhere((each) => each is! NamedExpression);
     if (mainArg is SimpleStringLiteral) {
-      message.mainArgument = mainArg.toString();
+      message?.mainArgument = mainArg.toString();
     } else if (mainArg is SimpleIdentifier) {
-      message.mainArgument = mainArg.name;
+      message?.mainArgument = mainArg.name;
     } else {
       var err = new StringBuffer()
         ..write("Error (Invalid argument to plural/gender/select, "

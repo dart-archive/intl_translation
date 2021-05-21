@@ -130,6 +130,7 @@ Future<ProcessResult> run(
     ..add(filesInTheRightDirectory.first)
     ..addAll(["--output-dir=$tempDir"])
     ..addAll(filesInTheRightDirectory.skip(1));
+  print('Run process: $dart $args');
   var result = Process.run(dart, args,
       stdoutEncoding: new Utf8Codec(), stderrEncoding: new Utf8Codec());
   return result;

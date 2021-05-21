@@ -52,7 +52,7 @@ Map arbMetadata(MainMessage message) {
 
 void addArgumentFor(MainMessage message, String arg, Map result) {
   var extraInfo = {};
-  if (message.examples != null && message.examples[arg] != null) {
+  if (message.examples.isNotEmpty && message.examples[arg] != null) {
     extraInfo["example"] = message.examples[arg];
   }
   result[arg] = extraInfo;

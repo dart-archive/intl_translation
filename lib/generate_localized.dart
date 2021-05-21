@@ -95,11 +95,11 @@ class MessageGeneration {
     // original message (e.g. if we're using some messages from a larger
     // catalog)
     var usableTranslations = translations
-        .where((each) => each.originalMessages != null && each.message != null)
+        .where((each) => each.originalMessages.isNotEmpty && each.message != null)
         .toList();
     for (var each in usableTranslations) {
       for (var original in each.originalMessages) {
-        original.addTranslation(locale, each.message);
+        original.addTranslation(locale, each.message!);
       }
     }
     usableTranslations.sort((a, b) =>
@@ -434,7 +434,7 @@ abstract class TranslatedMessage {
   final String id;
 
   /// Our translated version of all the [originalMessages].
-  final Message translated;
+  final Message? translated;
 
   /// The original messages that we are a translation of. There can
   ///  be more than one original message for the same translation.
@@ -453,7 +453,7 @@ abstract class TranslatedMessage {
 
   TranslatedMessage(this.id, this.translated);
 
-  Message get message => translated;
+  Message? get message => translated;
 
   toString() => id.toString();
 
