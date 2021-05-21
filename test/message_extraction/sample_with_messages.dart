@@ -7,10 +7,12 @@
 /// and code generation.
 library sample;
 
+import "dart:async";
+
 import "package:intl/intl.dart";
+
 import "foo_messages_all.dart";
 import "print_to_list.dart";
-import "dart:async";
 
 part 'part_of_sample_with_messages.dart';
 
@@ -307,8 +309,6 @@ main() {
   var fr = new Intl("fr");
   var english = new Intl("en_US");
   var de = new Intl("de_DE");
-  // Throw in an initialize of a null locale to make sure it doesn't throw.
-  initializeMessages(null);
 
   // Verify that a translated message isn't initially present.
   var messageInGerman = Intl.withLocale('de_DE', message1);

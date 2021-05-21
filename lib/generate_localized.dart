@@ -310,7 +310,7 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
   String prologue(locale) =>
       super.prologue(locale) +
       '''
-  String evaluateMessage(translation, List<dynamic> args) {
+  String? evaluateMessage(translation, List<dynamic> args) {
     return evaluateJsonTemplate(translation, args);
   }
 ''';
@@ -337,7 +337,7 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
   void writeTranslations(
       Iterable<TranslatedMessage> usableTranslations, String locale) {
     output.write(r"""
-  Map<String, dynamic> _messages;
+  Map<String, dynamic>? _messages;
   Map<String, dynamic> get messages => _messages ??=
       const JsonDecoder().convert(messageText) as Map<String, dynamic>;
 """);
@@ -367,7 +367,7 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
 ///   * \['Intl.gender', String gender, (templates for female, male, other)\]
 ///   * \['Intl.select', String choice, { 'case' : template, ...} \]
 ///   * \['text alternating with ', 0 , ' indexes in the argument list'\]
-String evaluateJsonTemplate(dynamic input, List<dynamic> args) {
+String? evaluateJsonTemplate(dynamic input, List<dynamic> args) {
   if (input == null) return null;
   if (input is String) return input;
   if (input is int) {
