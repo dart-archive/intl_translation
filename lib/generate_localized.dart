@@ -150,7 +150,7 @@ class MessageGeneration {
       // 24356
       """
   final messages = _notInlinedMessages(_notInlinedMessages);
-  static _notInlinedMessages(_) => <String, Function> {
+  static Map<String, Function> _notInlinedMessages(_) => <String, Function> {
 """;
 
   /// [generateIndividualMessageFile] for the beginning of the file,
@@ -163,17 +163,17 @@ class MessageGeneration {
 // function name.
 
 // Ignore issues from commonly used lints in this file.
-// ignore_for_file:unnecessary_brace_in_string_interps, unnecessary_new
+// ignore_for_file:unnecessary_brace_in_string_interps
 // ignore_for_file:prefer_single_quotes,comment_references, directives_ordering
 // ignore_for_file:annotate_overrides,prefer_generic_function_type_aliases
-// ignore_for_file:unused_import, file_names
+// ignore_for_file:unused_import, file_names, always_declare_return_types
 
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
 $extraImports
-final messages = new MessageLookup();
+final messages = MessageLookup();
 
-typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
+typedef String MessageIfAbsent(String? messageStr, List<dynamic>? args);
 
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => '$locale';
@@ -183,17 +183,17 @@ class MessageLookup extends MessageLookupByLibrary {
 
   String overrideLookup = """
   String lookupMessage(
-      String message_str,
-      String locale,
-      String name,
-      List<dynamic> args,
-      String meaning,
-      {MessageIfAbsent ifAbsent}) {
-    String failedLookup(String message_str, List<dynamic> args) {
+      String? messageText, 
+      String? locale, 
+      String? name,
+      List<Object>? args, 
+      String? meaning,
+      {MessageIfAbsent? ifAbsent}) {
+    String Function(String? message_str, List<Object>? args) {
       // If there's no message_str, then we are an internal lookup, e.g. an
       // embedded plural, and shouldn't fail.
       if (message_str == null) return null;
-      throw new UnsupportedError(
+      throw UnsupportedError(
           "No translation found for message '\$name',\\n"
           "  original text '\$message_str'");
     }
@@ -222,11 +222,11 @@ class MessageLookup extends MessageLookupByLibrary {
       var locale = Intl.canonicalizedLocale(rawLocale);
       var loadOperation = (useDeferredLoading)
           ? "  '$locale': ${libraryName(locale)}.loadLibrary,\n"
-          : "  '$locale': () => new Future.value(null),\n";
+          : "  '$locale': () => Future.value(null),\n";
       output.write(loadOperation);
     }
     output.write("};\n");
-    output.write("\nMessageLookupByLibrary _findExact(String localeName) {\n"
+    output.write("\nMessageLookupByLibrary? _findExact(String localeName) {\n"
         "  switch (localeName) {\n");
     for (var rawLocale in allLocales) {
       var locale = Intl.canonicalizedLocale(rawLocale);
@@ -245,11 +245,12 @@ class MessageLookup extends MessageLookupByLibrary {
 // delegating to the appropriate library.
 
 // Ignore issues from commonly used lints in this file.
-// ignore_for_file:implementation_imports, file_names, unnecessary_new
+// ignore_for_file:implementation_imports, file_names
 // ignore_for_file:unnecessary_brace_in_string_interps, directives_ordering
 // ignore_for_file:argument_type_not_assignable, invalid_assignment
 // ignore_for_file:prefer_single_quotes, prefer_generic_function_type_aliases
 // ignore_for_file:comment_references
+// ignore_for_file:avoid_catches_without_on_clauses
 
 import 'dart:async';
 
@@ -267,18 +268,18 @@ import 'package:$intlImportPath/src/intl_helpers.dart';
 
 /// User programs should call this before using [localeName] for messages.
 Future<bool> initializeMessages(String localeName) async {
-  var availableLocale = Intl.verifiedLocale(
+  final availableLocale = Intl.verifiedLocale(
     localeName,
     (locale) => _deferredLibraries[locale] != null,
     onFailure: (_) => null);
   if (availableLocale == null) {
-    return new Future.value(false);
+    return Future.value(false);
   }
-  var lib = _deferredLibraries[availableLocale];
-  await (lib == null ? new Future.value(false) : lib());
-  initializeInternalMessageLookup(() => new CompositeMessageLookup());
+  final lib = _deferredLibraries[availableLocale];
+  await (lib == null ? Future.value(false) : lib());
+  initializeInternalMessageLookup(() => CompositeMessageLookup());
   messageLookup.addLocale(availableLocale, _findGeneratedMessagesFor);
-  return new Future.value(true);
+  return Future.value(true);
 }
 
 bool _messagesExistFor(String locale) {
@@ -289,8 +290,8 @@ bool _messagesExistFor(String locale) {
   }
 }
 
-MessageLookupByLibrary _findGeneratedMessagesFor(String locale) {
-  var actualLocale = Intl.verifiedLocale(locale, _messagesExistFor,
+MessageLookupByLibrary? _findGeneratedMessagesFor(String locale) {
+  final actualLocale = Intl.verifiedLocale(locale, _messagesExistFor,
       onFailure: (_) => null);
   if (actualLocale == null) return null;
   return _findExact(actualLocale);
@@ -406,7 +407,7 @@ String evaluateJsonTemplate(dynamic input, List<dynamic> args) {
 
    // If we get this far, then we are a basic interpolation, just strings and
    // ints.
-   var output = new StringBuffer();
+   var output = StringBuffer();
    for (var entry in template) {
      if (entry is int) {
        output.write("\${args[entry]}");
