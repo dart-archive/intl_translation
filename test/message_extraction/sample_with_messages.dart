@@ -266,7 +266,7 @@ printStuff(Intl locale) {
     printOut(thing.plurals(100000));
     var alice = new Person("Alice", "female");
     var bob = new Person("Bob", "male");
-    var cat = new Person("cat", null);
+    var cat = new Person("cat", "unknown");
     printOut(thing.whereTheyWent(alice, "house"));
     printOut(thing.whereTheyWent(bob, "house"));
     printOut(thing.whereTheyWent(cat, "litter box"));

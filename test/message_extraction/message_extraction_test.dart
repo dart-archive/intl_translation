@@ -82,6 +82,7 @@ main() {
 
 void copyFilesToTempDirectory() {
   if (useLocalDirectory) return;
+  print('Use temp directory at $tempDir');
   var files = [
     asTestDirPath('sample_with_messages.dart')!,
     asTestDirPath('part_of_sample_with_messages.dart')!,
@@ -95,11 +96,13 @@ void copyFilesToTempDirectory() {
     '.packages' // Copy this so that package test can find the imports
   ];
   for (var filename in files) {
-    var file = new File(filename);
+    final file = new File(filename);
     if (file.existsSync()) {
       file.copySync(path.join(tempDir, path.basename(filename)));
     }
   }
+  final file = new File('test/pubspec.txt');
+  file.copySync(path.join(tempDir, path.basename('pubspec.yaml')));
 }
 
 void deleteGeneratedFiles() {
@@ -116,9 +119,11 @@ void deleteGeneratedFiles() {
 /// are in dir() and need to be qualified in case that's not our working
 /// directory.
 Future<ProcessResult> run(
-    ProcessResult? previousResult, List<String> filenames) {
+    ProcessResult? previousResult, List<String> filenames) async {
   // If there's a failure in one of the sub-programs, print its output.
   checkResult(previousResult);
+  final resultPubGet = await _runPubGet();
+  checkResult(resultPubGet);
   var filesInTheRightDirectory = filenames
       .map((x) => asTempDirPath(x)!)
       .map((x) => path.normalize(x))
@@ -134,6 +139,11 @@ Future<ProcessResult> run(
   var result = Process.run(dart, args,
       stdoutEncoding: new Utf8Codec(), stderrEncoding: new Utf8Codec());
   return result;
+}
+
+Future<ProcessResult> _runPubGet() {
+  return Process.run(dart, ['pub', 'get'],
+      stdoutEncoding: new Utf8Codec(), stderrEncoding: new Utf8Codec());
 }
 
 checkResult(ProcessResult? previousResult) {
