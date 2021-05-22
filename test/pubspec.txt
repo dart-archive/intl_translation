@@ -1,4 +1,4 @@
-name: test_intl_translation
+name: verify_and_run
 version: 1.0.0
 
 environment:
