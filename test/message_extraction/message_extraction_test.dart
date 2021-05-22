@@ -122,8 +122,6 @@ Future<ProcessResult> run(
     ProcessResult? previousResult, List<String> filenames) async {
   // If there's a failure in one of the sub-programs, print its output.
   checkResult(previousResult);
-  final resultPubGet = await _runPubGet();
-  checkResult(resultPubGet);
   var filesInTheRightDirectory = filenames
       .map((x) => asTempDirPath(x)!)
       .map((x) => path.normalize(x))
@@ -143,6 +141,7 @@ Future<ProcessResult> run(
 
 Future<ProcessResult> _runPubGet() {
   return Process.run(dart, ['pub', 'get'],
+      workingDirectory: tempDir,
       stdoutEncoding: new Utf8Codec(), stderrEncoding: new Utf8Codec());
 }
 
@@ -186,6 +185,8 @@ Future<ProcessResult> generateCodeFromTranslation(
       'arb_list.txt'
     ]);
 
-Future<ProcessResult> runAndVerify(ProcessResult? previousResult) {
+Future<ProcessResult> runAndVerify(ProcessResult? previousResult) async {
+  final resultPubGet = await _runPubGet();
+  checkResult(resultPubGet);
   return run(previousResult, ['run_and_verify.dart', 'intl_messages.arb']);
 }
