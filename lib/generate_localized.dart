@@ -401,7 +401,7 @@ String? evaluateJsonTemplate(dynamic input, List<dynamic> args) {
    }
    if (messageName == "Intl.select") {
      var select = args[template[1] as int];
-     var choices = template[2] as Map<Object, Object>;
+     var choices = template[2] as Map<String, dynamic>;
      return evaluateJsonTemplate(Intl.selectLogic(select, choices), args);
    }
 
