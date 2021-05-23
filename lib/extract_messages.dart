@@ -29,6 +29,8 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/src/dart/ast/constant_evaluator.dart';
 import 'package:intl_translation/src/intl_message.dart';
 
+export 'src/arb_generation.dart';
+
 /// A function that takes a message and does something useful with it.
 typedef void OnMessage(String message);
 
