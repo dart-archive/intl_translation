@@ -19,6 +19,9 @@ import 'package:path/path.dart' as path;
 
 import 'src/intl_message.dart';
 
+export 'src/icu_parser.dart';
+export 'src/intl_message.dart';
+
 class MessageGeneration {
   /// If the import path following package: is something else, modify the
   /// [intlImportPath] variable to change the import directives in the generated
@@ -182,14 +185,14 @@ class MessageLookup extends MessageLookupByLibrary {
       (releaseMode ? overrideLookup : "");
 
   String overrideLookup = """
-  String lookupMessage(
+  String? lookupMessage(
       String? messageText, 
       String? locale, 
       String? name,
       List<Object>? args, 
       String? meaning,
       {MessageIfAbsent? ifAbsent}) {
-    String Function(String? message_str, List<Object>? args) {
+    String? Function(String? message_str, List<Object>? args) {
       // If there's no message_str, then we are an internal lookup, e.g. an
       // embedded plural, and shouldn't fail.
       if (message_str == null) return null;
