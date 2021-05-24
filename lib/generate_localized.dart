@@ -176,7 +176,7 @@ import 'package:$intlImportPath/message_lookup_by_library.dart';
 $extraImports
 final messages = MessageLookup();
 
-typedef String MessageIfAbsent(String? messageStr, List<dynamic>? args);
+typedef String MessageIfAbsent(String? messageStr, List<Object>? args);
 
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => '$locale';
@@ -185,6 +185,7 @@ class MessageLookup extends MessageLookupByLibrary {
       (releaseMode ? overrideLookup : "");
 
   String overrideLookup = """
+  @override
   String? lookupMessage(
       String? messageText, 
       String? locale, 
@@ -192,15 +193,15 @@ class MessageLookup extends MessageLookupByLibrary {
       List<Object>? args, 
       String? meaning,
       {MessageIfAbsent? ifAbsent}) {
-    String? Function(String? message_str, List<Object>? args) {
+    MessageIfAbsent failedLookup = (String? message_str, List<Object>? args) {
       // If there's no message_str, then we are an internal lookup, e.g. an
       // embedded plural, and shouldn't fail.
-      if (message_str == null) return null;
+      if (message_str == null) return '';
       throw UnsupportedError(
           "No translation found for message '\$name',\\n"
-          "  original text '\$message_str'");
-    }
-    return super.lookupMessage(message_str, locale, name, args, meaning,
+              "  original text '\$message_str'");
+    };
+    return super.lookupMessage(messageText, locale, name, args, meaning,
         ifAbsent: ifAbsent ?? failedLookup);
   }
 
