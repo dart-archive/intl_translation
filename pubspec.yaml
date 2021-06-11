@@ -15,7 +15,7 @@ dependencies:
   args: ">=0.12.1 <2.0.0"
   dart_style: ^1.0.0
   intl: ">=0.15.3 <=0.18.0"
-  path: ">=0.9.0 <2.0.0"
+  path: ">=0.9.0 <=2.0.0"
   petitparser: ^3.0.0
 dev_dependencies:
   test: ^1.2.0
