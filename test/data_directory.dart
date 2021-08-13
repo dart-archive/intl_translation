@@ -27,7 +27,6 @@ String get packageDirectory {
   if (_isIntlRoot(Directory.current.path)) return Directory.current.path;
 
   // Search upwards from the script location.
-  var script = Platform.script;
   var dir = path.fromUri(Platform.script);
   var root = path.rootPrefix(dir);
 
