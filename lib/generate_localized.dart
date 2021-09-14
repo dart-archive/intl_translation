@@ -141,11 +141,13 @@ class MessageGeneration {
             .expand((translation) => translation.originalMessages)
             .toSet()
             .toList()
-              ..sort((a, b) => a.name.compareTo(b.name)))
+          ..sort((a, b) => a.name.compareTo(b.name)))
         .map((original) =>
             '    "${original.escapeAndValidateString(original.name)}" '
             ': ${_mapReference(original, locale)}');
-    output..write(entries.join(",\n"))..write("\n  };\n}\n");
+    output
+      ..write(entries.join(",\n"))
+      ..write("\n  };\n}\n");
   }
 
   /// Any additional imports the individual message files need.
@@ -566,9 +568,7 @@ import 'dart:collection';
   void writeTranslations(
       Iterable<TranslatedMessage> usableTranslations, String locale) {
     output.write("""
-  Map<String, dynamic>$orNull _messages;
-  Map<String, dynamic> get messages => _messages ??= HashMap.of(_constMessages);
-
+  Map<String, dynamic> get messages => _constMessages;
 """);
 
     var entries = usableTranslations

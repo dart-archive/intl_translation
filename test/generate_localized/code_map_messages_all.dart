@@ -50,7 +50,7 @@ String evaluateJsonTemplate(dynamic input, List<dynamic> args) {
          args);
    }
    if (messageName == "Intl.select") {
-     var select = args[template[1] as int];
+     var select = args[template[1] as int] as Object;
      var choices = template[2] as Map<Object, Object>;
      return evaluateJsonTemplate(Intl.selectLogic(select, choices), args);
    }
