@@ -32,7 +32,7 @@ import 'package:intl_translation/src/intl_message.dart';
 /// A function that takes a message and does something useful with it.
 typedef void OnMessage(String message);
 
-final _featureSet = FeatureSet.fromEnableFlags(['non-nullable']);
+final _featureSet = FeatureSet.latestLanguageVersion();
 
 /// A particular message extraction run.
 ///
