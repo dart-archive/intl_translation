@@ -554,9 +554,6 @@ class JsonMessageGeneration extends DataMapMessageGeneration {
 }
 
 /// Message generator that stores translations in a constant map.
-///
-/// This generates a const message map for size, but then copies it once
-/// at run time to ensure O(1) lookup.
 class CodeMapMessageGeneration extends JsonMessageGeneration {
   @override
   String get extraImports => '''
