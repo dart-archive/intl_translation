@@ -164,11 +164,17 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// meaning we're running in the transformer.
   bool generateNameAndArgs = false;
 
-  /// We keep track of the data from the last MethodDeclaration,
-  /// FunctionDeclaration or FunctionExpression that we saw on the way down,
-  /// as that will be the nearest parent of the Intl.message invocation.
+  // We keep track of the data from the last MethodDeclaration,
+  // FunctionDeclaration or FunctionExpression that we saw on the way down,
+  // as that will be the nearest parent of the Intl.message invocation.
+  /// Parameters of the currently visited method.
   FormalParameterList parameters;
+
+  /// Name of the currently visited method.
   String name;
+
+  /// Dartdoc of the currently visited method.
+  Comment documentation;
 
   final FormalParameterList _emptyParameterList =
       astFactory.formalParameterList(null, [], null, null, null);
@@ -224,9 +230,11 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   void visitMethodDeclaration(MethodDeclaration node) {
     name = node.name.name;
     parameters = node.parameters ?? _emptyParameterList;
+    documentation = node.documentationComment;
     super.visitMethodDeclaration(node);
     name = null;
     parameters = null;
+    documentation = null;
   }
 
   /// Record the parameters of the function or method declaration we last
@@ -234,9 +242,11 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   void visitFunctionDeclaration(FunctionDeclaration node) {
     name = node.name.name;
     parameters = node.functionExpression.parameters ?? _emptyParameterList;
+    documentation = node.documentationComment;
     super.visitFunctionDeclaration(node);
     name = null;
     parameters = null;
+    documentation = null;
   }
 
   /// Record the name of field declaration we last
@@ -249,10 +259,12 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     } else {
       name = null;
     }
+    documentation = node.documentationComment;
     parameters = _emptyParameterList;
     super.visitFieldDeclaration(node);
     name = null;
     parameters = null;
+    documentation = null;
   }
 
   /// Record the name of the top level variable declaration we last
@@ -266,9 +278,11 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
       name = null;
     }
     parameters = _emptyParameterList;
+    documentation = node.documentationComment;
     super.visitTopLevelVariableDeclaration(node);
     name = null;
     parameters = null;
+    documentation = null;
   }
 
   /// Examine method invocations to see if they look like calls to Intl.message.
@@ -370,6 +384,10 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     message.endPosition = node.end;
     message.arguments =
         parameters.parameters.map((x) => x.identifier.name).toList();
+    if (documentation != null) {
+      message.documentation
+          .addAll(documentation.tokens.map((token) => token.toString()));
+    }
     var arguments = node.argumentList.arguments;
     var extractionResult = extract(message, arguments);
     if (extractionResult == null) return null;

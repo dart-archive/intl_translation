@@ -435,6 +435,9 @@ class MainMessage extends ComplexMessage {
   /// The position in the source at which this message ends.
   int endPosition;
 
+  /// Optional documentation of the member that wraps the message definition.
+  List<String> documentation = [];
+
   /// Verify that this looks like a correct Intl.message invocation.
   String checkValidity(MethodInvocation node, List arguments, String outerName,
       FormalParameterList outerArgs,
