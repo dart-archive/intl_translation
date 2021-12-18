@@ -24,7 +24,6 @@ import 'dart:io';
 import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/ast/standard_ast_factory.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/src/dart/ast/constant_evaluator.dart';
 import 'package:intl_translation/src/intl_message.dart';
@@ -168,7 +167,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   // FunctionDeclaration or FunctionExpression that we saw on the way down,
   // as that will be the nearest parent of the Intl.message invocation.
   /// Parameters of the currently visited method.
-  FormalParameterList parameters;
+  List<FormalParameter> parameters;
 
   /// Name of the currently visited method.
   String name;
@@ -176,8 +175,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// Dartdoc of the currently visited method.
   Comment documentation;
 
-  final FormalParameterList _emptyParameterList =
-      astFactory.formalParameterList(null, [], null, null, null);
+  final List<FormalParameter> _emptyParameterList = const [];
 
   /// Return true if [node] matches the pattern we expect for Intl.message()
   bool looksLikeIntlMessage(MethodInvocation node) {
@@ -215,7 +213,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
           "top level declaration.";
     }
     // The containing function cannot have named parameters.
-    if (parameters.parameters.any((each) => each.isNamed)) {
+    if (parameters.any((each) => each.isNamed)) {
       return "Named parameters on message functions are not supported.";
     }
     var arguments = node.argumentList.arguments;
@@ -229,7 +227,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// encountered before seeing the Intl.message call.
   void visitMethodDeclaration(MethodDeclaration node) {
     name = node.name.name;
-    parameters = node.parameters ?? _emptyParameterList;
+    parameters = node.parameters?.parameters ?? _emptyParameterList;
     documentation = node.documentationComment;
     super.visitMethodDeclaration(node);
     name = null;
@@ -241,7 +239,8 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// encountered before seeing the Intl.message call.
   void visitFunctionDeclaration(FunctionDeclaration node) {
     name = node.name.name;
-    parameters = node.functionExpression.parameters ?? _emptyParameterList;
+    parameters =
+        node.functionExpression.parameters?.parameters ?? _emptyParameterList;
     documentation = node.documentationComment;
     super.visitFunctionDeclaration(node);
     name = null;
@@ -382,8 +381,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     var message = new MainMessage();
     message.sourcePosition = node.offset;
     message.endPosition = node.end;
-    message.arguments =
-        parameters.parameters.map((x) => x.identifier.name).toList();
+    message.arguments = parameters.map((x) => x.identifier.name).toList();
     if (documentation != null) {
       message.documentation
           .addAll(documentation.tokens.map((token) => token.toString()));

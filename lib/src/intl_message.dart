@@ -131,16 +131,15 @@ abstract class Message {
   /// parameter indicates if we will fail if parameter examples are not provided
   /// for messages with parameters.
   String checkValidity(MethodInvocation node, List arguments, String outerName,
-      FormalParameterList outerArgs,
+      List<FormalParameter> outerArgs,
       {bool nameAndArgsGenerated: false, bool examplesRequired: false}) {
     // If we have parameters, we must specify args and name.
     NamedExpression args = arguments.firstWhere(
         (each) => each is NamedExpression && each.name.label.name == 'args',
         orElse: () => null);
-    var parameterNames =
-        outerArgs.parameters.map((x) => x.identifier.name).toList();
+    var parameterNames = outerArgs.map((x) => x.identifier.name).toList();
     var hasArgs = args != null;
-    var hasParameters = !outerArgs.parameters.isEmpty;
+    var hasParameters = !outerArgs.isEmpty;
     if (!nameAndArgsGenerated && !hasArgs && hasParameters) {
       return "The 'args' argument for Intl.message must be specified for "
           "messages with parameters. Consider using rewrite_intl_messages.dart";
@@ -440,7 +439,7 @@ class MainMessage extends ComplexMessage {
 
   /// Verify that this looks like a correct Intl.message invocation.
   String checkValidity(MethodInvocation node, List arguments, String outerName,
-      FormalParameterList outerArgs,
+      List<FormalParameter> outerArgs,
       {bool nameAndArgsGenerated: false, bool examplesRequired: false}) {
     if (arguments.first is! StringLiteral) {
       return "Intl.message messages must be string literals";
