@@ -152,6 +152,30 @@ String message(String string) =>
     });
   });
 
+  group('messages with the same name', () {
+    test('are resolved in favour of the earlier one by default', () {
+      final messageExtraction = new MessageExtraction();
+      final messages = findMessages('''
+      final msg1 = Intl.message('hello there', desc: 'abc');
+      final msg2 = Intl.message('hello there', desc: 'def');
+      ''', '', messageExtraction);
+
+      expect(messages.map((m) => m.description), equals(['abc']));
+    });
+
+    test('are resolved with custom merger', () {
+      final messageExtraction = new MessageExtraction();
+      messageExtraction.mergeMessages =
+          (m1, m2) => m1..description = '${m1.description}/${m2.description}';
+      final messages = findMessages('''
+      final msg1 = Intl.message('hello there', desc: 'abc');
+      final msg2 = Intl.message('hello there', desc: 'def');
+      ''', '', messageExtraction);
+
+      expect(messages.map((m) => m.description), equals(['abc/def']));
+    });
+  });
+
   group('documentation', () {
     test('is populated from dartdoc', () {
       final messageExtraction = new MessageExtraction();

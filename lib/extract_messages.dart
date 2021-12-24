@@ -79,6 +79,11 @@ class MessageExtraction {
   /// Whether to include source_text in messages
   bool includeSourceText = false;
 
+  /// How messages with the same name are resolved.
+  ///
+  /// This function is allowed to mutate its arguments.
+  MainMessage Function(MainMessage, MainMessage) mergeMessages;
+
   /// Parse the source of the Dart program file [file] and return a Map from
   /// message names to [IntlMessage] instances.
   ///
@@ -350,6 +355,9 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     }
     var existing = messages[message.name];
     if (existing != null) {
+      if (!message.skip && extraction.mergeMessages != null) {
+        messages[message.name] = extraction.mergeMessages(existing, message);
+      }
       // TODO(alanknight): We may want to require the descriptions to match.
       var existingCode =
           existing.toOriginalCode(includeDesc: false, includeExamples: false);
@@ -363,9 +371,8 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
       if (!message.skip) {
         messages[message.name] = message;
       }
-      return null;
     }
-    return null; // Placate the analyzer
+    return null;
   }
 
   /// Create a MainMessage from [node] using the name and
