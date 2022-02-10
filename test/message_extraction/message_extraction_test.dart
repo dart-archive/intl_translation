@@ -6,10 +6,12 @@
 
 library message_extraction_test;
 
-import 'package:test/test.dart';
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
+
 import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
+
 import '../data_directory.dart';
 
 final dart = Platform.executable;
@@ -91,6 +93,7 @@ void copyFilesToTempDirectory() {
     asTestDirPath('run_and_verify.dart'),
     asTestDirPath('embedded_plural_text_before.dart'),
     asTestDirPath('embedded_plural_text_after.dart'),
+    asTestDirPath('select_arg_order.dart'),
     asTestDirPath('print_to_list.dart'),
     asTestDirPath('dart_list.txt'),
     asTestDirPath('arb_list.txt'),
