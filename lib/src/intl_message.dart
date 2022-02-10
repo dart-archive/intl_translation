@@ -86,26 +86,6 @@ abstract class Message {
     }
   }
 
-  /// Verify that the args argument's first element is the choice argument.
-  bool checkChoiceArgs(
-      MethodInvocation node, List nodeArguments, NamedExpression args) {
-    final choiceMessageTypes = const {'select'};
-    if (!choiceMessageTypes.contains(node.methodName.name)) {
-      return true;
-    }
-
-    if (args == null) return false;
-    if (nodeArguments.isEmpty) return false;
-    ListLiteral identifiers = args.childEntities.last;
-    // Choice message types must always have argument
-    if (identifiers.elements.isEmpty) return false;
-    // Arguments must always be SimpleIdentifier (also checked in checkArgs())
-    if (!(identifiers.elements.first is SimpleIdentifier)) return false;
-    final firstArgName = (identifiers.elements.first as SimpleIdentifier).name;
-    return nodeArguments.first is SimpleIdentifier &&
-        nodeArguments.first.name == firstArgName;
-  }
-
   /// Verify that the args argument matches the method parameters and
   /// isn't, e.g. passing string names instead of the argument values.
   bool checkArgs(NamedExpression args, List<String> parameterNames) {
@@ -167,10 +147,6 @@ abstract class Message {
     if (!checkArgs(args, parameterNames)) {
       return "The 'args' argument must match the message arguments,"
           " e.g. args: ${parameterNames}";
-    }
-    if (!checkChoiceArgs(node, arguments, args)) {
-      return 'Conditional messages must have the choice argument first in '
-          'the \'args\' list: ${arguments.first.name}';
     }
     var messageNameArgument = arguments.firstWhere(
         (eachArg) =>
