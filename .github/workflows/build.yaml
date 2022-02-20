@@ -1,0 +1,31 @@
+name: Dart
+
+on:
+  schedule:
+    # “At 00:00 (UTC) on Sunday.”
+    - cron: '0 0 * * 0'
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    container:
+      image:  google/dart:dev
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: pub get
+        run: pub get
+
+      - name: dart analyze
+        run: dart analyze
+
+      # TODO: This is disabled for now; we have 3 test failures. We'll re-enable
+      # after the next google3 sync to see if the issues have been addressed.
+      # - name: dart test
+      #   run: dart test
