@@ -23,14 +23,10 @@ bool _isIntlRoot(String dir) {
 }
 
 String get packageDirectory {
-  // TODO(alanknight): We can also do this using mirrors, which may
-  // be better. See dart_style/test/utils.dart for an example.
-  var script = Platform.script;
-  // If being run in package:test, we're in an isolate with a data URI, so
-  // just assume the current directory is the package.
-  if (script.scheme == 'data') {
-    return Directory.current.path;
-  }
+  // Try the current directory.
+  if (_isIntlRoot(Directory.current.path)) return Directory.current.path;
+
+  // Search upwards from the script location.
   var dir = path.fromUri(Platform.script);
   var root = path.rootPrefix(dir);
 
