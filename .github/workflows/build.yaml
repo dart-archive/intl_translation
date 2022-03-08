@@ -25,7 +25,5 @@ jobs:
       - name: dart analyze
         run: dart analyze
 
-      # TODO: This is disabled for now; we have 3 test failures. We'll re-enable
-      # after the next google3 sync to see if the issues have been addressed.
-      # - name: dart test
-      #   run: dart test
+      - name: dart test
+        run: dart test
