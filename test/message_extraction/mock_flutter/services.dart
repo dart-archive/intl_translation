@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'foo_messages_fr.dart' as fr;
+
 import 'foo_messages_de_DE.dart' as de_de;
+import 'foo_messages_fr.dart' as fr;
 
 // Mocks the Flutter interfaces used in the generated messages_flutter.dart.
 class SystemChannels {
@@ -11,7 +12,7 @@ class SystemChannels {
 class MethodChannel {
   const MethodChannel();
 
-  Future<String> invokeMethod(String method, [ dynamic arguments ]) async {
+  Future<String> invokeMethod(String method, [dynamic arguments]) async {
     var locale = arguments['locale'];
     if (locale == null) {
       return null;
@@ -28,7 +29,7 @@ class MethodChannel {
 }
 
 class AssetBundle {
-  Future<String> loadString(String key, { bool cache = true }) async {
+  Future<String> loadString(String key, {bool cache = true}) async {
     // We only have two locales in the test.
     if (key.contains("fr")) {
       return jsonEncode(fr.MessageLookup().messages);

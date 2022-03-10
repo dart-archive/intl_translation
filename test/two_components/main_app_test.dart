@@ -5,8 +5,9 @@
 /// An application using the component
 
 import "package:intl/intl.dart";
-import "app_messages_all.dart";
 import "package:test/test.dart";
+
+import "app_messages_all.dart";
 import "component.dart" as component;
 
 appMessage() => Intl.message("Hello from application", desc: 'hi');

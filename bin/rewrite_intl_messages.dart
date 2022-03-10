@@ -10,13 +10,12 @@
 /// It takes as input a single source Dart file and rewrites any
 /// Intl.message or related calls to automatically include the name and args
 /// parameters and writes the result to stdout.
-///
+
 import 'dart:io';
 
 import 'package:args/args.dart';
-
-import 'package:intl_translation/src/message_rewriter.dart';
 import 'package:dart_style/dart_style.dart';
+import 'package:intl_translation/src/message_rewriter.dart';
 
 String outputFileOption = 'transformed_output.dart';
 
@@ -45,7 +44,7 @@ main(List<String> args) {
           ' produces less readable code.');
   print(args);
   var rest = parser.parse(args).rest;
-  if (rest.length == 0) {
+  if (rest.isEmpty) {
     print('Accepts Dart file paths and adds "name" and "args" parameters '
         ' to Intl.message calls.');
     print('Primarily useful for exercising the transformer logic or '

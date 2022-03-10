@@ -18,8 +18,8 @@ import 'package:intl_translation/src/directory_utils.dart';
 import 'package:path/path.dart' as path;
 
 main(List<String> args) {
-  var targetDir;
-  var outputFilename;
+  String targetDir;
+  String outputFilename;
   String sourcesListFile;
   bool transformer;
   var parser = new ArgParser();
@@ -78,7 +78,7 @@ main(List<String> args) {
       callback: (val) => extraction.descriptionRequired = val);
 
   parser.parse(args);
-  if (args.length == 0) {
+  if (args.isEmpty) {
     print('Accepts Dart files and produces $outputFilename');
     print('Usage: extract_to_arb [options] [files.dart]');
     print(parser.usage);

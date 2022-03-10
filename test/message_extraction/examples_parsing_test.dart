@@ -6,11 +6,14 @@
 
 /// Test for parsing the examples argument from an Intl.message call. Very
 /// minimal so far.
-import 'package:test/test.dart';
-import 'package:intl_translation/extract_messages.dart';
-import '../data_directory.dart';
-import 'package:path/path.dart' as path;
+
 import 'dart:io';
+
+import 'package:intl_translation/extract_messages.dart';
+import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
+
+import '../data_directory.dart';
 
 main() {
   test("Message examples are correctly extracted", () {

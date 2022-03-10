@@ -6,9 +6,11 @@
 
 library failed_extraction_test;
 
-import "message_extraction_test.dart";
 import "dart:io";
+
 import "package:test/test.dart";
+
+import "message_extraction_test.dart";
 
 main() {
   test("Expect warnings but successful extraction", () {
@@ -44,10 +46,12 @@ void runTestWithWarnings(
     args.add('--no-embedded-plurals');
   }
   var files = sourceFiles.map(asTempDirPath).toList();
-  List<String> allArgs = [program]..addAll(args)..addAll(files);
+  List<String> allArgs = [program]
+    ..addAll(args)
+    ..addAll(files);
   var callback = expectAsync1(verify);
 
   run(null, allArgs).then(callback);
 }
 
-typedef dynamic ThenArgument(ProcessResult _);
+typedef ThenArgument = dynamic Function(ProcessResult _);

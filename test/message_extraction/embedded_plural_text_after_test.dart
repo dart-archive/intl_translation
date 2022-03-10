@@ -6,8 +6,9 @@
 
 library embedded_plural_text_after_test;
 
-import "failed_extraction_test.dart";
 import "package:test/test.dart";
+
+import "failed_extraction_test.dart";
 
 main() {
   test("Expect failure because of embedded plural with text after it", () {
