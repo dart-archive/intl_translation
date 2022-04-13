@@ -184,23 +184,25 @@ import 'package:$intlImportPath/message_lookup_by_library.dart';
 $extraImports
 final messages = new MessageLookup();
 
-typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
+typedef String$orNull MessageIfAbsent(
+    String$orNull messageStr, List<Object>$orNull args);
 
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => '$locale';
 
 """ +
-      (releaseMode ? overrideLookup : "");
+      (releaseMode ? overrideLookup() : "");
 
-  String overrideLookup = """
-  String lookupMessage(
-      String message_str,
-      String locale,
-      String name,
-      List<dynamic> args,
-      String meaning,
-      {MessageIfAbsent ifAbsent}) {
-    String failedLookup(String message_str, List<dynamic> args) {
+  String overrideLookup() => """
+  String$orNull lookupMessage(
+      String$orNull message_str,
+      String$orNull locale,
+      String$orNull name,
+      List<Object>$orNull args,
+      String$orNull meaning,
+      {MessageIfAbsent$orNull ifAbsent}) {
+    String$orNull failedLookup(
+        String$orNull message_str, List<Object>$orNull args) {
       // If there's no message_str, then we are an internal lookup, e.g. an
       // embedded plural, and shouldn't fail.
       if (message_str == null) return null;
@@ -277,7 +279,7 @@ import 'package:$intlImportPath/src/intl_helpers.dart';
 }
 
 /// User programs should call this before using [localeName] for messages.
-Future<bool> initializeMessages(String localeName) async {
+Future<bool> initializeMessages(String$orNull localeName) async {
   var availableLocale = Intl.verifiedLocale(
     localeName,
     (locale) => _deferredLibraries[locale] != null,
@@ -416,7 +418,7 @@ String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
    }
    if (messageName == "Intl.select") {
      var select = args[template[1] as int] as Object;
-     var choices = template[2] as Map<Object, Object>;
+     var choices = template[2] as Map<Object, Object$orNull>;
      return evaluateJsonTemplate(Intl.selectLogic(select, choices), args);
    }
 
