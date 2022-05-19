@@ -26,7 +26,9 @@ class MessageLookup extends MessageLookupByLibrary {
   String evaluateMessage(translation, List<dynamic> args) {
     return evaluateJsonTemplate(translation, args);
   }
-  Map<String, dynamic> get messages => _constMessages;
-  static const _constMessages = <String, Object>{"Hello from application":"Bonjour de l'application"};
 
+  Map<String, dynamic> get messages => _constMessages;
+  static const _constMessages = <String, Object>{
+    "Hello from application": "Bonjour de l'application"
+  };
 }
