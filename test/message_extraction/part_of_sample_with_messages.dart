@@ -34,11 +34,13 @@ class YouveGotMessages {
     return msg;
   }
 
-  plurals(num) => Intl.message(
-      """${Intl.plural(num,
-          zero: 'Is zero plural?',
-          one: 'This is singular.',
-          other: 'This is plural ($num).')}""",
+  plurals(num num) => Intl.message(
+      """${Intl.plural(
+        num,
+        zero: 'Is zero plural?',
+        one: 'This is singular.',
+        other: 'This is plural ($num).',
+      )}""",
       name: "plurals",
       args: [num],
       desc: "Basic plurals");
@@ -48,10 +50,12 @@ class YouveGotMessages {
 
   whereTheyWentMessage(String name, String gender, String place) {
     return Intl.message(
-        "${Intl.gender(gender,
-            male: '$name went to his $place',
-            female: '$name went to her $place',
-            other: '$name went to its $place')}",
+        "${Intl.gender(
+          gender,
+          male: '$name went to his $place',
+          female: '$name went to her $place',
+          other: '$name went to its $place',
+        )}",
         name: "whereTheyWentMessage",
         args: [name, gender, place],
         desc: 'A person went to some place that they own, e.g. their room');
@@ -66,14 +70,20 @@ class YouveGotMessages {
     if (number == 0) combinedGender = "other";
 
     nestedMessage(names, number, combinedGender, place) => Intl.message(
-        '''${Intl.gender(combinedGender,
-            other: '${Intl.plural(number,
-                zero: "Personne n'est allé au $place",
-                one: "${names} est allé au $place",
-                other: "${names} sont allés au $place")}',
-            female: '${Intl.plural(number,
-                one: "$names est allée au $place",
-                other: "$names sont allées au $place")}')}''',
+        '''${Intl.gender(
+          combinedGender,
+          other: '${Intl.plural(
+            number,
+            zero: "Personne n'est allé au $place",
+            one: "${names} est allé au $place",
+            other: "${names} sont allés au $place",
+          )}',
+          female: '${Intl.plural(
+            number,
+            one: "$names est allée au $place",
+            other: "$names sont allées au $place",
+          )}',
+        )}''',
         desc: "Nested message example",
         name: "nestedMessage",
         args: [names, number, combinedGender, place]);
