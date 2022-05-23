@@ -22,13 +22,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:path/path.dart' as path;
-
 import 'package:intl_translation/extract_messages.dart';
 import 'package:intl_translation/generate_localized.dart';
 import 'package:intl_translation/src/directory_utils.dart';
-import 'package:intl_translation/src/intl_message.dart';
 import 'package:intl_translation/src/icu_parser.dart';
+import 'package:intl_translation/src/intl_message.dart';
+import 'package:path/path.dart' as path;
 
 /// Keeps track of all the messages we have processed so far, keyed by message
 /// name.
@@ -37,13 +36,13 @@ Map<String, List<MainMessage>> messages;
 const jsonDecoder = const JsonCodec();
 
 main(List<String> args) {
-  var targetDir;
+  String targetDir;
   var parser = new ArgParser();
   var extraction = new MessageExtraction();
   var generation = new MessageGeneration();
   String sourcesListFile;
   String translationsListFile;
-  var transformer;
+  bool transformer;
   var useJsonFlag = false;
   var useCodeMapFlag = false;
   var useFlutterLocaleSplit = false;
@@ -111,7 +110,7 @@ main(List<String> args) {
   var jsonFiles = args.where((x) => x.endsWith(".arb")).toList();
   dartFiles.addAll(linesFromFile(sourcesListFile));
   jsonFiles.addAll(linesFromFile(translationsListFile));
-  if (dartFiles.length == 0 || jsonFiles.length == 0) {
+  if (dartFiles.isEmpty || jsonFiles.isEmpty) {
     print('Usage: generate_from_arb [options]'
         ' file1.dart file2.dart ...'
         ' translation1_<languageTag>.arb translation2.arb ...');

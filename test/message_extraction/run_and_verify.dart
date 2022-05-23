@@ -12,7 +12,7 @@ import 'sample_with_messages.dart' as sample;
 import 'verify_messages.dart';
 
 main(List<String> args) {
-  if (args.length == 0) {
+  if (args.isEmpty) {
     print('Usage: run_and_verify [message_file.arb]');
     exit(0);
   }
