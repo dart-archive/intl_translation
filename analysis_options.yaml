@@ -1,0 +1,10 @@
+include: package:lints/core.yaml
+
+linter:
+  rules:
+    # Disable requiring lowercase_with_underscore file names.
+    file_names: false
+
+    # Enable some additional lints.
+    directives_ordering: true
+    sort_pub_dependencies: true
