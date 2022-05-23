@@ -86,7 +86,10 @@ main() {
 }
 
 void copyFilesToTempDirectory() {
-  if (useLocalDirectory) return;
+  if (useLocalDirectory) {
+    return;
+  }
+
   var files = [
     asTestDirPath('sample_with_messages.dart'),
     asTestDirPath('part_of_sample_with_messages.dart'),
@@ -98,14 +101,24 @@ void copyFilesToTempDirectory() {
     asTestDirPath('dart_list.txt'),
     asTestDirPath('arb_list.txt'),
     asTestDirPath('mock_flutter/services.dart'),
-    '.packages' // Copy this so that package test can find the imports
   ];
+
   for (var filename in files) {
     var file = new File(filename);
     if (file.existsSync()) {
       file.copySync(path.join(tempDir, path.basename(filename)));
     }
   }
+
+  // Copy our package_config.json file so the test can locate packages.
+  var sourcePackageConfig =
+      File(path.join('.dart_tool', 'package_config.json'));
+  var destPackageConfig =
+      File(path.join(tempDir, '.dart_tool', 'package_config.json'));
+  if (!destPackageConfig.parent.existsSync()) {
+    destPackageConfig.parent.createSync();
+  }
+  sourcePackageConfig.copySync(destPackageConfig.path);
 }
 
 void deleteGeneratedFiles() {
