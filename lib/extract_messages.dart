@@ -662,22 +662,26 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
         extraction.warnings.add(errString);
       }
     });
-    var mainArg = node.argumentList.arguments
-        .firstWhere((each) => each is! NamedExpression);
-    if (mainArg is SimpleStringLiteral) {
-      message.mainArgument = mainArg.toString();
-    } else if (mainArg is SimpleIdentifier) {
-      message.mainArgument = mainArg.name;
-    } else {
-      var err = new StringBuffer()
-        ..write("Error (Invalid argument to plural/gender/select, "
-            "must be simple variable reference) "
-            "\nProcessing <$node>")
-        ..write(extraction._reportErrorLocation(node));
-      var errString = err.toString();
-      extraction.onMessage(errString);
-      extraction.warnings.add(errString);
+
+    if (message != null) {
+      var mainArg = node.argumentList.arguments
+          .firstWhere((each) => each is! NamedExpression);
+      if (mainArg is SimpleStringLiteral) {
+        message.mainArgument = mainArg.toString();
+      } else if (mainArg is SimpleIdentifier) {
+        message.mainArgument = mainArg.name;
+      } else {
+        var err = new StringBuffer()
+          ..write("Error (Invalid argument to plural/gender/select, "
+              "must be simple variable reference) "
+              "\nProcessing <$node>")
+          ..write(extraction._reportErrorLocation(node));
+        var errString = err.toString();
+        extraction.onMessage(errString);
+        extraction.warnings.add(errString);
+      }
     }
+
     return message;
   }
 }
