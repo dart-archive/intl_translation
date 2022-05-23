@@ -6,10 +6,12 @@
 
 library message_extraction_test;
 
-import 'package:test/test.dart';
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
+
 import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
+
 import '../data_directory.dart';
 
 final dart = Platform.executable;
@@ -37,8 +39,8 @@ final vmArgs = Platform.executableArguments;
 /// step if [useLocalDirectory] is true. The place we move them to is saved as
 /// [tempDir].
 String get tempDir => _tempDir == null ? _tempDir = _createTempDir() : _tempDir;
-var _tempDir;
-_createTempDir() => useLocalDirectory
+String _tempDir;
+String _createTempDir() => useLocalDirectory
     ? '.'
     : Directory.systemTemp.createTempSync('message_extraction_test').path;
 
@@ -62,7 +64,8 @@ String asTempDirPath([String s]) {
   return path.join(tempDir, s);
 }
 
-typedef Future<ProcessResult> ThenResult(ProcessResult _);
+typedef ThenResult = Future<ProcessResult> Function(ProcessResult _);
+
 main() {
   setUp(copyFilesToTempDirectory);
   tearDown(deleteGeneratedFiles);

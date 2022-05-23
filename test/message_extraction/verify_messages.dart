@@ -1,10 +1,12 @@
 library verify_messages;
 
-import "print_to_list.dart";
 import "package:test/test.dart";
 
+import "print_to_list.dart";
+
 verifyResult() {
-  var lineIterator;
+  Iterator<String> lineIterator;
+
   verify(String s) {
     lineIterator.moveNext();
     var value = lineIterator.current;

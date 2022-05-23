@@ -10,8 +10,9 @@
 
 import 'dart:convert';
 import 'dart:io';
-import 'package:path/path.dart' as path;
+
 import 'package:args/args.dart';
+import 'package:path/path.dart' as path;
 
 /// A list of the French translations that we will produce.
 var french = {
@@ -171,7 +172,7 @@ void translate(Map originals, String locale, Map translations,
 }
 
 main(List<String> args) {
-  if (args.length == 0) {
+  if (args.isEmpty) {
     print('Usage: make_hardcoded_translation [--output-dir=<dir>] '
         '[originalFile.arb]');
     exit(0);

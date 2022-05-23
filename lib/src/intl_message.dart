@@ -99,7 +99,7 @@ abstract class Message {
     var names = identifiers.elements
         .map((each) => (each as SimpleIdentifier).name)
         .toList();
-    var both;
+    Map<String, String> both;
     try {
       both = new Map.fromIterables(names, parameterNames);
     } catch (e) {
@@ -139,7 +139,7 @@ abstract class Message {
         orElse: () => null);
     var parameterNames = outerArgs.map((x) => x.identifier.name).toList();
     var hasArgs = args != null;
-    var hasParameters = !outerArgs.isEmpty;
+    var hasParameters = outerArgs.isNotEmpty;
     if (!nameAndArgsGenerated && !hasArgs && hasParameters) {
       return "The 'args' argument for Intl.message must be specified for "
           "messages with parameters. Consider using rewrite_intl_messages.dart";
@@ -671,7 +671,7 @@ abstract class SubMessage extends ComplexMessage {
   /// argument names and values.
   Map argumentsOfInterestFor(MethodInvocation node) {
     var basicArguments = node.argumentList.arguments;
-    var others = basicArguments.where((each) => each is NamedExpression);
+    var others = basicArguments.whereType<NamedExpression>();
     return new Map.fromIterable(others,
         key: (node) => node.name.label.token.value(),
         value: (node) => node.expression);

@@ -29,7 +29,7 @@ import 'package:analyzer/src/dart/ast/constant_evaluator.dart';
 import 'package:intl_translation/src/intl_message.dart';
 
 /// A function that takes a message and does something useful with it.
-typedef void OnMessage(String message);
+typedef OnMessage = void Function(String message);
 
 final _featureSet = FeatureSet.latestLanguageVersion();
 
@@ -624,7 +624,7 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
   /// parameters of the last function/method declaration we encountered
   /// and the parameters to the Intl.message call.
   Message messageFromMethodInvocation(MethodInvocation node) {
-    var message;
+    SubMessage message;
     switch (node.methodName.name) {
       case "gender":
         message = new Gender();

@@ -5,8 +5,9 @@
 /// An application using the code map messages.
 
 import 'package:intl/intl.dart';
-import 'code_map_messages_all.dart';
 import 'package:test/test.dart';
+
+import 'code_map_messages_all.dart';
 
 appMessage() => Intl.message('Hello from application', desc: 'hi');
 

@@ -9,7 +9,8 @@ import 'package:intl/src/intl_helpers.dart';
 
 import 'component_messages_fr_xyz123.dart' deferred as messages_fr_xyz123;
 
-typedef Future<dynamic> LibraryLoader();
+typedef LibraryLoader = Future<dynamic> Function();
+
 Map<String, LibraryLoader> _deferredLibraries = {
   'fr_xyz123': () => messages_fr_xyz123.loadLibrary(),
 };

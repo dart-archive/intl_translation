@@ -13,7 +13,7 @@ import 'package:intl_translation/src/message_rewriter.dart';
 main(List<String> args) {
   var parser = new ArgParser();
   var rest = parser.parse(args).rest;
-  if (rest.length == 0) {
+  if (rest.isEmpty) {
     print('Accepts Dart file paths and rewrites the examples to be const '
         'in Intl.message calls.');
     print('Usage: make_examples_const [options] [file.dart]...');

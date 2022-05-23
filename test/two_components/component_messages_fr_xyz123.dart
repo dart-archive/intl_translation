@@ -12,7 +12,7 @@ final messages = new MessageLookup();
 final _keepAnalysisHappy = Intl.defaultLocale;
 
 // ignore: non_constant_identifier_names
-typedef MessageIfAbsent(String message_str, List args);
+typedef MessageIfAbsent = Function(String message_str, List args);
 
 class MessageLookup extends MessageLookupByLibrary {
   get localeName => 'fr_xyz123';
