@@ -5,7 +5,7 @@
 import 'package:intl_translation/src/intl_message.dart';
 import 'package:test/test.dart';
 
-main() {
+void main() {
   test('Prefer explicit =0 to ZERO in plural', () {
     var msg = Plural.from(
         'main',
@@ -16,6 +16,7 @@ main() {
         null);
     expect((msg['zero'] as LiteralString).string, 'explicit');
   });
+
   test('Prefer explicit =1 to ONE in plural', () {
     var msg = Plural.from(
         'main',
@@ -26,6 +27,7 @@ main() {
         null);
     expect((msg['one'] as LiteralString).string, 'explicit');
   });
+
   test('Prefer explicit =1 to ONE in plural, reverse order', () {
     var msg = Plural.from(
         'main',
@@ -36,6 +38,7 @@ main() {
         null);
     expect((msg['one'] as LiteralString).string, 'explicit');
   });
+
   test('Prefer explicit =2 to TWO in plural', () {
     var msg = Plural.from(
         'main',

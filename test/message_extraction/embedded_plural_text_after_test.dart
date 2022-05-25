@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 
 import 'failed_extraction_test.dart';
 
-main() {
+void main() {
   test('Expect failure because of embedded plural with text after it', () {
     List<String> specialFiles = ['embedded_plural_text_after.dart'];
     runTestWithWarnings(

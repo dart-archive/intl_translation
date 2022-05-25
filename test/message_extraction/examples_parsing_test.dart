@@ -13,7 +13,7 @@ import 'package:test/test.dart';
 
 import '../data_directory.dart';
 
-main() {
+void main() {
   test('Message examples are correctly extracted', () {
     var file = path.join(packageDirectory, 'test', 'message_extraction',
         'sample_with_messages.dart');

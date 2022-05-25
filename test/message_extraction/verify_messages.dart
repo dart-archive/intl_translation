@@ -4,10 +4,10 @@ import 'package:test/test.dart';
 
 import 'print_to_list.dart';
 
-verifyResult() {
+void verifyResult() {
   Iterator<String> lineIterator;
 
-  verify(String s) {
+  void verify(String s) {
     lineIterator.moveNext();
     var value = lineIterator.current;
     expect(value, s);

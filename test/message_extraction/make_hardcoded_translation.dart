@@ -166,12 +166,11 @@ void translate(Map originals, String locale, Map translations,
       translated[name] = translations[name];
     }
   });
-  var file =
-      File(path.join(targetDir, filename ?? 'translation_$locale.arb'));
+  var file = File(path.join(targetDir, filename ?? 'translation_$locale.arb'));
   file.writeAsStringSync(jsonCodec.encode(translated));
 }
 
-main(List<String> args) {
+void main(List<String> args) {
   if (args.isEmpty) {
     print('Usage: make_hardcoded_translation [--output-dir=<dir>] '
         '[originalFile.arb]');

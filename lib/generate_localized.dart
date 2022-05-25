@@ -253,7 +253,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   /// Constant string used in [generateLocalesImportFile] for the beginning of
   /// the file.
-  get localesPrologue => """
+  String get localesPrologue => """
 // DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
 // This is a library that looks up messages for specific locales by
 // delegating to the appropriate library.
@@ -273,7 +273,7 @@ import 'package:$intlImportPath/src/intl_helpers.dart';
 
   /// Constant string used in [generateLocalesImportFile] as the end of the
   /// file.
-  get localesClosing => '''
+  String get localesClosing => '''
     default:\n      return null;
   }
 }
@@ -330,7 +330,7 @@ MessageLookupByLibrary$orNull _findGeneratedMessagesFor(String locale) {
 
   /// Constant string used in [generateMainImportFile] for the beginning of the
   /// file.
-  get mainPrologue => '''
+  String get mainPrologue => '''
 // DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
 // This is a library that looks up messages for specific locales by
 // delegating to the appropriate library.
@@ -338,7 +338,7 @@ MessageLookupByLibrary$orNull _findGeneratedMessagesFor(String locale) {
 ''';
 
   /// Constant string used in [generateMainImportFile] as the end of the file.
-  get closing => '';
+  String get closing => '';
 }
 
 /// Message generator that parses translations from a `Map<String, dynamic>`.
@@ -368,14 +368,14 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
       Iterable<TranslatedMessage> usableTranslations, String locale);
 
   @override
-  get mainPrologue =>
+  String get mainPrologue =>
       super.mainPrologue +
       """
 import 'package:$intlImportPath/intl.dart';
 """;
 
   @override
-  get closing =>
+  String get closing =>
       super.closing +
       '''
 /// Turn the JSON template into a string.
@@ -451,7 +451,7 @@ String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
 
   /// Constant string used in [generateFlutterImportFile] for the beginning of
   /// the file.
-  get flutterPrologue => """
+  String get flutterPrologue => """
 // DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
 // This is a library that looks up messages for specific locales by
 // delegating to the appropriate library.
@@ -715,13 +715,13 @@ abstract class TranslatedMessage {
   Message get message => translated;
 
   @override
-  toString() => id.toString();
+  String toString() => id.toString();
 
   @override
   bool operator ==(other) => other is TranslatedMessage && other.id == id;
 
   @override
-  get hashCode => id.hashCode;
+  int get hashCode => id.hashCode;
 }
 
 /// We can't use a hyphen in a Dart library name, so convert the locale

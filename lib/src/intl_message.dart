@@ -39,7 +39,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/src/dart/ast/constant_evaluator.dart';
 
 /// A default function for the [Message.expanded] method.
-_nullTransform(msg, chunk) => chunk;
+dynamic _nullTransform(msg, chunk) => chunk;
 
 const jsonEncoder = JsonCodec();
 
@@ -58,12 +58,12 @@ abstract class Message {
   /// We find the arguments from the top-level [MainMessage] and use those to
   /// do variable substitutions. [MainMessage] overrides this to return
   /// the actual arguments.
-  get arguments => parent == null ? const [] : parent.arguments;
+  dynamic get arguments => parent == null ? const [] : parent.arguments;
 
   /// We find the examples from the top-level [MainMessage] and use those
   /// when writing out variables. [MainMessage] overrides this to return
   /// the actual examples.
-  get examples => parent == null ? const [] : parent.examples;
+  dynamic get examples => parent == null ? const [] : parent.examples;
 
   /// The name of the top-level [MainMessage].
   String get name => parent == null ? '<unnamed>' : parent.name;
@@ -324,7 +324,7 @@ abstract class ComplexMessage extends Message {
   /// and set their attributes by string names, so we override the indexing
   /// operators so that they behave like maps with respect to those attribute
   /// names.
-  operator [](String attributeName);
+  dynamic operator [](String attributeName);
 
   /// When we create these from strings or from AST nodes, we want to look up
   /// and set their attributes by string names, so we override the indexing
@@ -355,11 +355,11 @@ class CompositeMessage extends Message {
     }
   }
   @override
-  toCode() => pieces.map((each) => each.toCode()).join('');
+  String toCode() => pieces.map((each) => each.toCode()).join('');
   @override
-  toJson() => pieces.map((each) => each.toJson()).toList();
+  List<Object> toJson() => pieces.map((each) => each.toJson()).toList();
   @override
-  toString() => 'CompositeMessage(' + pieces.toString() + ')';
+  String toString() => 'CompositeMessage(' + pieces.toString() + ')';
   @override
   String expanded([Function transform = _nullTransform]) =>
       pieces.map((chunk) => transform(this, chunk)).join('');
@@ -370,11 +370,11 @@ class LiteralString extends Message {
   String string;
   LiteralString(this.string, Message parent) : super(parent);
   @override
-  toCode() => escapeAndValidateString(string);
+  String toCode() => escapeAndValidateString(string);
   @override
-  toJson() => string;
+  String toJson() => string;
   @override
-  toString() => 'Literal($string)';
+  String toString() => 'Literal($string)';
   @override
   String expanded([Function transform = _nullTransform]) =>
       transform(this, string);
@@ -428,11 +428,11 @@ class VariableSubstitution extends Message {
   // in curly braces so that there's no possibility of ambiguity with
   // surrounding text.
   @override
-  toCode() => '\${$variableName}';
+  String toCode() => '\${$variableName}';
   @override
-  toJson() => index;
+  int toJson() => index;
   @override
-  toString() => 'VariableSubstitution($index)';
+  String toString() => 'VariableSubstitution($index)';
   @override
   String expanded([Function transform = _nullTransform]) =>
       transform(this, index);
@@ -549,9 +549,12 @@ class MainMessage extends ComplexMessage {
   }
 
   @override
-  toCode() => throw UnsupportedError('MainMessage.toCode requires a locale');
+  String toCode() =>
+      throw UnsupportedError('MainMessage.toCode requires a locale');
+
   @override
-  toJson() => throw UnsupportedError('MainMessage.toJson requires a locale');
+  String toJson() =>
+      throw UnsupportedError('MainMessage.toJson requires a locale');
 
   /// Generate code for this message, expecting it to be part of a map
   /// keyed by name with values the function that calls Intl.message.
@@ -566,11 +569,11 @@ class MainMessage extends ComplexMessage {
   }
 
   /// Return a JSON string representation of this message.
-  toJsonForLocale(String locale) {
+  Object toJsonForLocale(String locale) {
     return jsonTranslations[locale];
   }
 
-  turnInterpolationBackIntoStringForm(Message message, chunk) {
+  String turnInterpolationBackIntoStringForm(Message message, chunk) {
     if (chunk is String) return escapeAndValidateString(chunk);
     if (chunk is int) return r'${' + message.arguments[chunk] + '}';
     if (chunk is Message) return chunk.toCode();
@@ -638,7 +641,7 @@ class MainMessage extends ComplexMessage {
   /// The AST node will have the attribute names as strings, so we translate
   /// between those and the fields of the class.
   @override
-  operator [](String attributeName) {
+  dynamic operator [](String attributeName) {
     switch (attributeName) {
       case 'desc':
         return description;
@@ -661,14 +664,14 @@ class MainMessage extends ComplexMessage {
 
   // This is the top-level construct, so there's no meaningful ICU name.
   @override
-  get icuMessageName => '';
+  String get icuMessageName => '';
 
   @override
-  get dartMessageName => 'message';
+  String get dartMessageName => 'message';
 
   /// The parameters that the Intl.message call may provide.
   @override
-  get attributeNames =>
+  List<String> get attributeNames =>
       const ['name', 'desc', 'examples', 'args', 'meaning', 'skip'];
 
   @override
@@ -691,7 +694,7 @@ abstract class SubMessage extends ComplexMessage {
   }
 
   @override
-  toString() => expanded();
+  String toString() => expanded();
 
   /// The name of the main argument, which is expected to have the value which
   /// is one of [attributeNames] and is used to decide which clause to use.
@@ -714,7 +717,7 @@ abstract class SubMessage extends ComplexMessage {
 
   @override
   String expanded([Function transform = _nullTransform]) {
-    fullMessageForClause(String key) =>
+    String fullMessageForClause(String key) =>
         key + '{' + transform(parent, this[key]).toString() + '}';
     var clauses = attributeNames
         .where((key) => this[key] != null)
@@ -743,7 +746,7 @@ abstract class SubMessage extends ComplexMessage {
   /// order that they appear in codeAttributeNames. Any missing arguments are
   /// saved as an explicit null.
   @override
-  toJson() {
+  List toJson() {
     var json = [];
     json.add(dartMessageName);
     json.add(arguments.indexOf(mainArgument));
@@ -777,9 +780,9 @@ class Gender extends SubMessage {
   String get dartMessageName => 'Intl.gender';
 
   @override
-  get attributeNames => ['female', 'male', 'other'];
+  List<String> get attributeNames => ['female', 'male', 'other'];
   @override
-  get codeAttributeNames => attributeNames;
+  List<String> get codeAttributeNames => attributeNames;
 
   /// The node will have the attribute names as strings, so we translate
   /// between those and the fields of the class.
@@ -834,9 +837,10 @@ class Plural extends SubMessage {
   String get dartMessageName => 'Intl.plural';
 
   @override
-  get attributeNames => ['=0', '=1', '=2', 'few', 'many', 'other'];
+  List<String> get attributeNames => ['=0', '=1', '=2', 'few', 'many', 'other'];
   @override
-  get codeAttributeNames => ['zero', 'one', 'two', 'few', 'many', 'other'];
+  List<String> get codeAttributeNames =>
+      ['zero', 'one', 'two', 'few', 'many', 'other'];
 
   /// The node will have the attribute names as strings, so we translate
   /// between those and the fields of the class.
@@ -930,9 +934,9 @@ class Select extends SubMessage {
   String get dartMessageName => 'Intl.select';
 
   @override
-  get attributeNames => cases.keys.toList();
+  List<String> get attributeNames => cases.keys.toList();
   @override
-  get codeAttributeNames => attributeNames;
+  List<String> get codeAttributeNames => attributeNames;
 
   // Check for valid select keys.
   // See http://site.icu-project.org/design/formatting/select
@@ -1009,7 +1013,7 @@ class Select extends SubMessage {
   /// (e.g. Intl.select), the index in the arguments list of the main argument,
   /// and then a Map from the cases to the List of strings or sub-messages.
   @override
-  toJson() {
+  List toJson() {
     var json = [];
     json.add(dartMessageName);
     json.add(arguments.indexOf(mainArgument));

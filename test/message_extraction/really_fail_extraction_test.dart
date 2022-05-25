@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 
 import 'failed_extraction_test.dart';
 
-main() {
+void main() {
   test('Expect failure because warnings are errors', () {
     runTestWithWarnings(warningsAreErrors: true, expectedExitCode: 1);
   });

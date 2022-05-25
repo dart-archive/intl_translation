@@ -14,7 +14,7 @@ import 'package:test/test.dart';
 import 'app_messages_all.dart';
 import 'main_app_test.dart';
 
-main() {
+void main() {
   test('Initialize sub-locale', () async {
     await initializeMessages('fr_FR');
     Intl.withLocale(

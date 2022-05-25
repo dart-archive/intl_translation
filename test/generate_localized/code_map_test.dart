@@ -11,7 +11,7 @@ import 'code_map_messages_all.dart';
 
 String appMessage() => Intl.message('Hello from application', desc: 'hi');
 
-main() async {
+void main() async {
   Intl.defaultLocale = 'fr';
   await initializeMessages('fr');
   test('String lookups should provide translation to French', () {

@@ -8,7 +8,7 @@ library message_extraction_no_deferred_test;
 
 import 'message_extraction_test.dart' as main_test;
 
-main() {
+void main() {
   main_test.useDeferredLoading = false;
   main_test.main();
 }

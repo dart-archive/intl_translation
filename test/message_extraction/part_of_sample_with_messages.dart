@@ -16,11 +16,11 @@ class Person {
 
 class YouveGotMessages {
   // A static message, rather than a standalone function.
-  static staticMessage() => Intl.message('This comes from a static method',
+  static String staticMessage() => Intl.message('This comes from a static method',
       name: 'staticMessage', desc: 'Static');
 
   // An instance method, rather than a standalone function.
-  method() => Intl.message('This comes from a method',
+  String method() => Intl.message('This comes from a method',
       name: 'YouveGotMessages_method',
       desc: 'This is a method with a '
           'long description which spans '
@@ -28,7 +28,7 @@ class YouveGotMessages {
 
   // A non-lambda, i.e. not using => syntax, and with an additional statement
   // before the Intl.message call.
-  nonLambda() {
+  String nonLambda() {
     var aTrueValue = true;
     var msg = Intl.message('This method is not a lambda',
         name: 'nonLambda', desc: 'Not a lambda');
@@ -38,7 +38,7 @@ class YouveGotMessages {
     return msg;
   }
 
-  plurals(num num) => Intl.message(
+  String plurals(num num) => Intl.message(
       """${Intl.plural(
         num,
         zero: 'Is zero plural?',
@@ -49,10 +49,10 @@ class YouveGotMessages {
       args: [num],
       desc: 'Basic plurals');
 
-  whereTheyWent(Person person, String place) =>
+  dynamic whereTheyWent(Person person, String place) =>
       whereTheyWentMessage(person.name, person.gender, place);
 
-  whereTheyWentMessage(String name, String gender, String place) {
+  String whereTheyWentMessage(String name, String gender, String place) {
     return Intl.message(
         "${Intl.gender(
           gender,
@@ -66,14 +66,14 @@ class YouveGotMessages {
   }
 
   // English doesn't do enough with genders, so this example is French.
-  nested(List people, String place) {
+  String nested(List people, String place) {
     var names = people.map((x) => x.name).join(', ');
     var number = people.length;
     var combinedGender =
         people.every((x) => x.gender == 'female') ? 'female' : 'other';
     if (number == 0) combinedGender = 'other';
 
-    nestedMessage(names, number, combinedGender, place) => Intl.message(
+    String nestedMessage(names, number, combinedGender, place) => Intl.message(
         '''${Intl.gender(
           combinedGender,
           other: '${Intl.plural(

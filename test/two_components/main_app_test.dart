@@ -12,7 +12,7 @@ import 'component.dart' as component;
 
 String appMessage() => Intl.message('Hello from application', desc: 'hi');
 
-main() async {
+void main() async {
   Intl.defaultLocale = 'fr';
   await initializeMessages('fr');
   await component.initComponent();

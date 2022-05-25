@@ -13,7 +13,8 @@ import 'print_to_list.dart';
 
 part 'part_of_sample_with_messages.dart';
 
-String message1() => Intl.message('This is a message', name: 'message1', desc: 'foo');
+String message1() =>
+    Intl.message('This is a message', name: 'message1', desc: 'foo');
 
 String message2(x) => Intl.message('Another message with parameter $x',
     name: 'mess' 'age2',
@@ -57,8 +58,9 @@ String originalNotInBMP() =>
     Intl.message('Ancient Greek hangman characters: 𐅆𐅇.', desc: 'non-BMP');
 
 // A string for which we don't provide all translations.
-String notAlwaysTranslated() => Intl.message('This is missing some translations',
-    name: 'notAlwaysTranslated', desc: 'Not always translated');
+String notAlwaysTranslated() =>
+    Intl.message('This is missing some translations',
+        name: 'notAlwaysTranslated', desc: 'Not always translated');
 
 // This is invalid and should be recognized as such, because the message has
 // to be a literal. Otherwise, interpolations would be outside of the function
@@ -122,8 +124,8 @@ String failedSelect(currency) => Intl.select(
 String nestedSelect(currency, amount) => Intl.select(
     currency,
     {
-      'CDN':
-          Intl.plural(amount, one: '$amount Canadian dollar', other: '$amount Canadian dollars'),
+      'CDN': Intl.plural(amount,
+          one: '$amount Canadian dollar', other: '$amount Canadian dollars'),
       'other': 'Whatever',
     },
     name: 'nestedSelect',
@@ -202,7 +204,7 @@ String skipMessageExistingTranslation() =>
         skip: true,
         desc: 'Skip with existing translation');
 
-printStuff(Intl locale) {
+void printStuff(Intl locale) {
   // Use a name that's not a literal so this will get skipped. Then we have
   // a name that's not in the original but we include it in the French
   // translation. Because it's not in the original it shouldn't get included

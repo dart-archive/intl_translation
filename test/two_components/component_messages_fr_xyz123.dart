@@ -16,11 +16,11 @@ typedef MessageIfAbsent = Function(String message_str, List args);
 
 class MessageLookup extends MessageLookupByLibrary {
   @override
-  get localeName => 'fr_xyz123';
+  String get localeName => 'fr_xyz123';
 
   @override
   final messages = _notInlinedMessages(_notInlinedMessages);
-  static _notInlinedMessages(_) => {
+  static Map<String, String Function()> _notInlinedMessages(_) => {
         'Hello from component':
             MessageLookupByLibrary.simpleMessage('Bonjour du composant'),
         '_message2': MessageLookupByLibrary.simpleMessage('Locale explicite')

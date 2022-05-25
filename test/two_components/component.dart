@@ -21,8 +21,10 @@ String get myParticularLocale => '${Intl.defaultLocale}_$mySuffix';
 const mySuffix = 'xyz123';
 
 /// We can wrap all of our top-level API calls in a zone that stores the locale.
-dynamic componentApiFunction() => Intl.withLocale(myParticularLocale, _message1);
+dynamic componentApiFunction() =>
+    Intl.withLocale(myParticularLocale, _message1);
 
 dynamic directApiCall() => _message2();
 
-Future<bool> initComponent() async => await initializeMessages(myParticularLocale);
+Future<bool> initComponent() async =>
+    await initializeMessages(myParticularLocale);

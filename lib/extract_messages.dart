@@ -389,9 +389,10 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// [messageFromIntlMessageCall] and [messageFromDirectPluralOrGenderCall].
   MainMessage _messageFromNode(
       MethodInvocation node,
-      MainMessage Function(MainMessage message, List<AstNode> arguments) extract,
-      void Function(
-          MainMessage message, String fieldName, Object fieldValue) setAttribute) {
+      MainMessage Function(MainMessage message, List<AstNode> arguments)
+          extract,
+      void Function(MainMessage message, String fieldName, Object fieldValue)
+          setAttribute) {
     var message = MainMessage();
     message.sourcePosition = node.offset;
     message.endPosition = node.end;
@@ -580,7 +581,7 @@ class InterpolationVisitor extends SimpleAstVisitor {
 /// A visitor to extract information from Intl.plural/gender sends. Note that
 /// this is a SimpleAstVisitor, so it doesn't automatically recurse. So this
 /// needs to be called where we expect a plural or gender immediately below.
-class PluralAndGenderVisitor extends SimpleAstVisitor {
+class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
   /// The message extraction in which we are running.
   final MessageExtraction extraction;
 
@@ -598,7 +599,7 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
   PluralAndGenderVisitor(this.pieces, this.parent, this.extraction) : super();
 
   @override
-  visitInterpolationExpression(InterpolationExpression node) {
+  void visitInterpolationExpression(InterpolationExpression node) {
     // TODO(alanknight): Provide better errors for malformed expressions.
     if (!looksLikePluralOrGender(node.expression)) return;
     var reason = checkValidity(node.expression);
@@ -610,7 +611,7 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
   }
 
   @override
-  visitMethodInvocation(MethodInvocation node) {
+  void visitMethodInvocation(MethodInvocation node) {
     pieces.add(messageFromMethodInvocation(node));
     super.visitMethodInvocation(node);
   }

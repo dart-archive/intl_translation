@@ -6,7 +6,7 @@ import 'package:intl_translation/extract_messages.dart';
 import 'package:intl_translation/src/message_rewriter.dart';
 import 'package:test/test.dart';
 
-main() {
+void main() {
   group('findMessages denied usages', () {
     test('fails with message on non-literal examples Map', () {
       final messageExtraction = MessageExtraction();

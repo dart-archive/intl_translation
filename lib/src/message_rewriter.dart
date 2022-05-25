@@ -38,13 +38,14 @@ String rewriteMessages(String source, String sourceName,
 /// Rewrite the message by regenerating from our internal representation.
 ///
 /// This may produce uglier source, but is more reliable.
-rewriteRegenerating(StringBuffer newSource, String source, int start, message) {
+void rewriteRegenerating(
+    StringBuffer newSource, String source, int start, message) {
   // TODO(alanknight): We could generate more efficient code than the
   // original here, dispatching more directly to the MessageLookup.
   newSource.write(message.toOriginalCode());
 }
 
-rewriteWithStringSubstitution(
+void rewriteWithStringSubstitution(
     StringBuffer newSource, String source, int start, message) {
   var originalSource =
       source.substring(message.sourcePosition, message.endPosition);

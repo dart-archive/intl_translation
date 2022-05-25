@@ -6,7 +6,7 @@
 /// JSON rather than functions
 import 'message_extraction_test.dart' as main_test;
 
-main() {
+void main() {
   main_test.useJson = true;
   main_test.useFlutterLocaleSplit = true;
   main_test.main();
