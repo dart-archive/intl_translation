@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@Timeout(const Duration(seconds: 180))
-
 library message_extraction_test;
 
 import 'dart:convert';
@@ -193,7 +191,8 @@ Future<ProcessResult> generateCodeFromTranslation(
       '--sources-list-file',
       'dart_list.txt',
       '--translations-list-file',
-      'arb_list.txt'
+      'arb_list.txt',
+      '--no-null-safety',
     ]);
 
 Future<ProcessResult> runAndVerify(ProcessResult previousResult) {
