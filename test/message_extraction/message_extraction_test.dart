@@ -64,7 +64,7 @@ String asTempDirPath([String s]) {
 
 typedef ThenResult = Future<ProcessResult> Function(ProcessResult _);
 
-main() {
+void main() {
   setUp(copyFilesToTempDirectory);
   tearDown(deleteGeneratedFiles);
   test(
@@ -142,26 +142,27 @@ Future<ProcessResult> run(
       .toList();
   // Inject the script argument --output-dir in between the script and its
   // arguments.
-  List<String> args = [...vmArgs, filesInTheRightDirectory.first, "--output-dir=$tempDir", ...filesInTheRightDirectory.skip(1)]
-    
-    
-    
-    ;
+  List<String> args = [
+    ...vmArgs,
+    filesInTheRightDirectory.first,
+    "--output-dir=$tempDir",
+    ...filesInTheRightDirectory.skip(1),
+  ];
   var result = Process.run(dart, args,
       stdoutEncoding: Utf8Codec(), stderrEncoding: Utf8Codec());
   return result;
 }
 
-checkResult(ProcessResult previousResult) {
-  if (previousResult != null) {
-    if (previousResult.exitCode != 0) {
+void checkResult(ProcessResult result) {
+  if (result != null) {
+    if (result.exitCode != 0) {
       print("Error running sub-program:");
+      print(result.stdout);
+      print(result.stderr);
+      print("exitCode=${result.exitCode}");
     }
-    print(previousResult.stdout);
-    print(previousResult.stderr);
-    print("exitCode=${previousResult.exitCode}");
-    // Fail the test.
-    expect(previousResult.exitCode, 0);
+
+    expect(result.exitCode, 0);
   }
 }
 
