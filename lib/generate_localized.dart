@@ -44,7 +44,7 @@ class MessageGeneration {
 
   /// A list of all the locales for which we have translations. Code that does
   /// the reading of translations should add to this.
-  Set<String> allLocales = Set();
+  Set<String> allLocales = {};
 
   /// If we have more than one set of messages to generate in a particular
   /// directory we may want to prefix some to distinguish them.
@@ -718,7 +718,7 @@ abstract class TranslatedMessage {
   toString() => id.toString();
 
   @override
-  operator ==(x) => x is TranslatedMessage && x.id == id;
+  bool operator ==(other) => other is TranslatedMessage && other.id == id;
 
   @override
   get hashCode => id.hashCode;

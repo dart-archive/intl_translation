@@ -6,9 +6,9 @@
 /// loading for the generated code.
 library message_extraction_no_deferred_test;
 
-import 'message_extraction_test.dart' as mainTest;
+import 'message_extraction_test.dart' as main_test;
 
 main() {
-  mainTest.useDeferredLoading = false;
-  mainTest.main();
+  main_test.useDeferredLoading = false;
+  main_test.main();
 }

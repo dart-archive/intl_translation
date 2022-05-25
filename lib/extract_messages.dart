@@ -164,7 +164,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   final MessageExtraction extraction;
 
   /// Accumulates the messages we have found, keyed by name.
-  final Map<String, MainMessage> messages = Map<String, MainMessage>();
+  final Map<String, MainMessage> messages = <String, MainMessage>{};
 
   /// Should we generate the name and arguments from the function definition,
   /// meaning we're running in the transformer.
@@ -389,9 +389,9 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// [messageFromIntlMessageCall] and [messageFromDirectPluralOrGenderCall].
   MainMessage _messageFromNode(
       MethodInvocation node,
-      MainMessage extract(MainMessage message, List<AstNode> arguments),
-      void setAttribute(
-          MainMessage message, String fieldName, Object fieldValue)) {
+      MainMessage Function(MainMessage message, List<AstNode> arguments) extract,
+      void Function(
+          MainMessage message, String fieldName, Object fieldValue) setAttribute) {
     var message = MainMessage();
     message.sourcePosition = node.offset;
     message.endPosition = node.end;
@@ -622,7 +622,7 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
     if (!['plural', 'gender', 'select'].contains(node.methodName.name)) {
       return false;
     }
-    if (!(node.target is SimpleIdentifier)) return false;
+    if (node.target is! SimpleIdentifier) return false;
     SimpleIdentifier target = node.target;
     return target.token.toString() == 'Intl';
   }
@@ -703,5 +703,5 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
 // NOTE: THIS LOGIC IS DUPLICATED IN intl AND THE TWO MUST MATCH.
 String computeMessageName(String name, String text, String meaning) {
   if (name != null && name != '') return name;
-  return meaning == null ? text : '${text}_${meaning}';
+  return meaning == null ? text : '${text}_$meaning';
 }

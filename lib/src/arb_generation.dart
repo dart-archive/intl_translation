@@ -64,7 +64,7 @@ String icuForm(MainMessage message) =>
     message.expanded(turnInterpolationIntoICUForm);
 
 String turnInterpolationIntoICUForm(Message message, chunk,
-    {bool shouldEscapeICU: false}) {
+    {bool shouldEscapeICU = false}) {
   if (chunk is String) {
     return shouldEscapeICU ? escape(chunk) : chunk;
   }

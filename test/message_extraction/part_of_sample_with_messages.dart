@@ -79,8 +79,8 @@ class YouveGotMessages {
           other: '${Intl.plural(
             number,
             zero: "Personne n'est allé au $place",
-            one: "${names} est allé au $place",
-            other: "${names} sont allés au $place",
+            one: "$names est allé au $place",
+            other: "$names sont allés au $place",
           )}',
           female: '${Intl.plural(
             number,

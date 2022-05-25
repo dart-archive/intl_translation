@@ -134,7 +134,7 @@ abstract class Message {
   /// for messages with parameters.
   String checkValidity(MethodInvocation node, List arguments, String outerName,
       List<FormalParameter> outerArgs,
-      {bool nameAndArgsGenerated: false, bool examplesRequired: false}) {
+      {bool nameAndArgsGenerated = false, bool examplesRequired = false}) {
     // If we have parameters, we must specify args and name.
     NamedExpression args = arguments.firstWhere(
         (each) => each is NamedExpression && each.name.label.name == 'args',
@@ -148,7 +148,7 @@ abstract class Message {
     }
     if (!checkArgs(args, parameterNames)) {
       return "The 'args' argument must match the message arguments,"
-          ' e.g. args: ${parameterNames}';
+          ' e.g. args: $parameterNames';
     }
     var messageNameArgument = arguments.firstWhere(
         (eachArg) =>
@@ -312,7 +312,7 @@ abstract class Message {
   /// Expand this string out into a printed form. The function [f] will be
   /// applied to any sub-messages, allowing this to be used to generate a form
   /// suitable for a wide variety of translation file formats.
-  String expanded([Function f]);
+  String expanded([Function transform]);
 }
 
 /// Abstract class for messages with internal structure, representing the
@@ -324,13 +324,13 @@ abstract class ComplexMessage extends Message {
   /// and set their attributes by string names, so we override the indexing
   /// operators so that they behave like maps with respect to those attribute
   /// names.
-  operator [](String x);
+  operator [](String attributeName);
 
   /// When we create these from strings or from AST nodes, we want to look up
   /// and set their attributes by string names, so we override the indexing
   /// operators so that they behave like maps with respect to those attribute
   /// names.
-  operator []=(String x, y);
+  operator []=(String attributeName, rawValue);
 
   List<String> get attributeNames;
 
@@ -350,7 +350,9 @@ class CompositeMessage extends Message {
 
   CompositeMessage.withParent(parent) : super(parent);
   CompositeMessage(this.pieces, ComplexMessage parent) : super(parent) {
-    pieces.forEach((x) => x.parent = this);
+    for (var x in pieces) {
+      x.parent = this;
+    }
   }
   @override
   toCode() => pieces.map((each) => each.toCode()).join('');
@@ -359,8 +361,8 @@ class CompositeMessage extends Message {
   @override
   toString() => 'CompositeMessage(' + pieces.toString() + ')';
   @override
-  String expanded([Function f = _nullTransform]) =>
-      pieces.map((chunk) => f(this, chunk)).join('');
+  String expanded([Function transform = _nullTransform]) =>
+      pieces.map((chunk) => transform(this, chunk)).join('');
 }
 
 /// Represents a simple constant string with no dynamic elements.
@@ -374,7 +376,8 @@ class LiteralString extends Message {
   @override
   toString() => 'Literal($string)';
   @override
-  String expanded([Function f = _nullTransform]) => f(this, string);
+  String expanded([Function transform = _nullTransform]) =>
+      transform(this, string);
 }
 
 /// Represents an interpolation of a variable value in a message. We expect
@@ -419,19 +422,20 @@ class VariableSubstitution extends Message {
   /// The name of the variable in the parameter list of the containing function.
   /// Used when generating code for the interpolation.
   String get variableName =>
-      _variableName == null ? _variableName = arguments[index] : _variableName;
+      _variableName ?? (_variableName = arguments[index]);
   String _variableName;
   // Although we only allow simple variable references, we always enclose them
   // in curly braces so that there's no possibility of ambiguity with
   // surrounding text.
   @override
-  toCode() => '\${${variableName}}';
+  toCode() => '\${$variableName}';
   @override
   toJson() => index;
   @override
   toString() => 'VariableSubstitution($index)';
   @override
-  String expanded([Function f = _nullTransform]) => f(this, index);
+  String expanded([Function transform = _nullTransform]) =>
+      transform(this, index);
 }
 
 class MainMessage extends ComplexMessage {
@@ -455,7 +459,7 @@ class MainMessage extends ComplexMessage {
   @override
   String checkValidity(MethodInvocation node, List arguments, String outerName,
       List<FormalParameter> outerArgs,
-      {bool nameAndArgsGenerated: false, bool examplesRequired: false}) {
+      {bool nameAndArgsGenerated = false, bool examplesRequired = false}) {
     if (arguments.first is! StringLiteral) {
       return 'Intl.message messages must be string literals';
     }
@@ -575,7 +579,7 @@ class MainMessage extends ComplexMessage {
 
   /// Create a string that will recreate this message, optionally
   /// including the compile-time only information desc and examples.
-  String toOriginalCode({bool includeDesc: true, includeExamples: true}) {
+  String toOriginalCode({bool includeDesc = true, includeExamples = true}) {
     var out = StringBuffer()..write("Intl.message('");
     out.write(expanded(turnInterpolationBackIntoStringForm));
     out.write("', ");
@@ -589,7 +593,7 @@ class MainMessage extends ComplexMessage {
     if (includeExamples) {
       // json is already mostly-escaped, but we need to handle interpolations.
       var json = jsonEncoder.encode(examples).replaceAll(r'$', r'\$');
-      out.write(examples == null ? '' : 'examples: const ${json}, ');
+      out.write(examples == null ? '' : 'examples: const $json, ');
     }
     out.write(meaning == null
         ? ''
@@ -695,12 +699,12 @@ abstract class SubMessage extends ComplexMessage {
 
   /// Return the arguments that affect this SubMessage as a map of
   /// argument names and values.
-  Map argumentsOfInterestFor(MethodInvocation node) {
+  Map<String, dynamic> argumentsOfInterestFor(MethodInvocation node) {
     var basicArguments = node.argumentList.arguments;
     var others = basicArguments.whereType<NamedExpression>();
-    return Map.fromIterable(others,
-        key: (node) => node.name.label.token.value(),
-        value: (node) => node.expression);
+    return {
+      for (var node in others) node.name.label.token.value(): node.expression,
+    };
   }
 
   /// Return the list of attribute names to use when generating code. This
@@ -843,7 +847,7 @@ class Plural extends SubMessage {
       case 'zero':
         // We prefer an explicit "=0" clause to a "ZERO"
         // if both are present.
-        if (zero == null) zero = value;
+        zero ??= value;
         return;
       case '=0':
         zero = value;
@@ -851,7 +855,7 @@ class Plural extends SubMessage {
       case 'one':
         // We prefer an explicit "=1" clause to a "ONE"
         // if both are present.
-        if (one == null) one = value;
+        one ??= value;
         return;
       case '=1':
         one = value;
@@ -859,7 +863,7 @@ class Plural extends SubMessage {
       case 'two':
         // We prefer an explicit "=2" clause to a "TWO"
         // if both are present.
-        if (two == null) two = value;
+        two ??= value;
         return;
       case '=2':
         two = value;
@@ -918,7 +922,7 @@ class Select extends SubMessage {
   Select.from(String mainArgument, List clauses, Message parent)
       : super.from(mainArgument, clauses, parent);
 
-  Map<String, Message> cases = Map<String, Message>();
+  Map<String, Message> cases = <String, Message>{};
 
   @override
   String get icuMessageName => 'select';
@@ -950,17 +954,21 @@ class Select extends SubMessage {
   @override
   Message operator [](String attributeName) {
     var exact = cases[attributeName];
-    return exact == null ? cases['other'] : exact;
+    return exact ?? cases['other'];
   }
 
   /// Return the arguments that we care about for the select. In this
   /// case they will all be passed in as a Map rather than as the named
   /// arguments used in Plural/Gender.
   @override
-  Map argumentsOfInterestFor(MethodInvocation node) {
+  Map<String, dynamic> argumentsOfInterestFor(MethodInvocation node) {
     SetOrMapLiteral casesArgument = node.argumentList.arguments[1];
-    return Map.fromIterable(casesArgument.elements,
-        key: (node) => _keyForm(node.key), value: (node) => node.value);
+    // ignore: prefer_for_elements_to_map_fromiterable
+    return Map.fromIterable(
+      casesArgument.elements,
+      key: (node) => _keyForm(node.key),
+      value: (node) => node.value,
+    );
   }
 
   // The key might already be a simple string, or it might be
