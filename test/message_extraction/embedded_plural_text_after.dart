@@ -6,7 +6,7 @@
 /// following the plural expression.
 library embedded_plural_text_after;
 
-import "package:intl/intl.dart";
+import 'package:intl/intl.dart';
 
 String embeddedPlural2(n) => Intl.message(
     "${Intl.plural(n, zero: 'none', one: 'one', other: 'some')} plus text.",

@@ -11,8 +11,8 @@
 ///   run things by default
 library data_directory;
 
-import "dart:io";
-import "package:path/path.dart" as path;
+import 'dart:io';
+import 'package:path/path.dart' as path;
 
 /// Returns whether [dir] is the root of the `intl` package. We validate that it
 /// is by looking for a pubspec file with the entry `name: intl`.

@@ -14,11 +14,11 @@ import 'package:test/test.dart';
 import '../data_directory.dart';
 
 main() {
-  test("Message examples are correctly extracted", () {
+  test('Message examples are correctly extracted', () {
     var file = path.join(packageDirectory, 'test', 'message_extraction',
         'sample_with_messages.dart');
     var extraction = MessageExtraction();
     var messages = extraction.parseFile(File(file));
-    expect(messages['message2'].examples, {"x": 3});
+    expect(messages['message2'].examples, {'x': 3});
   });
 }

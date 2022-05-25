@@ -49,7 +49,7 @@ var useLocalDirectory = false;
 /// is an absolute path or begins with "--", because some of the arguments
 /// might be command-line options.
 String asTestDirPath([String s]) {
-  if (s == null || s.startsWith("--") || path.isAbsolute(s)) return s;
+  if (s == null || s.startsWith('--') || path.isAbsolute(s)) return s;
   return path.join(packageDirectory, 'test', 'message_extraction', s);
 }
 
@@ -58,7 +58,7 @@ String asTestDirPath([String s]) {
 /// is an absolute path or begins with "--", because some of the arguments
 /// might be command-line options.
 String asTempDirPath([String s]) {
-  if (s == null || s.startsWith("--") || path.isAbsolute(s)) return s;
+  if (s == null || s.startsWith('--') || path.isAbsolute(s)) return s;
   return path.join(tempDir, s);
 }
 
@@ -68,8 +68,8 @@ void main() {
   setUp(copyFilesToTempDirectory);
   tearDown(deleteGeneratedFiles);
   test(
-      "Test round trip message extraction, translation, code generation, "
-      "and printing", () {
+      'Test round trip message extraction, translation, code generation, '
+      'and printing', () {
     var makeSureWeVerify = expectAsync1(runAndVerify);
     return extractMessages(null)
         .then((result) {
@@ -124,8 +124,8 @@ void deleteGeneratedFiles() {
   try {
     Directory(tempDir).deleteSync(recursive: true);
   } on Error catch (e) {
-    print("Failed to delete $tempDir");
-    print("Exception:\n$e");
+    print('Failed to delete $tempDir');
+    print('Exception:\n$e');
   }
 }
 
@@ -145,7 +145,7 @@ Future<ProcessResult> run(
   List<String> args = [
     ...vmArgs,
     filesInTheRightDirectory.first,
-    "--output-dir=$tempDir",
+    '--output-dir=$tempDir',
     ...filesInTheRightDirectory.skip(1),
   ];
   var result = Process.run(dart, args,
@@ -156,10 +156,10 @@ Future<ProcessResult> run(
 void checkResult(ProcessResult result) {
   if (result != null) {
     if (result.exitCode != 0) {
-      print("Error running sub-program:");
+      print('Error running sub-program:');
       print(result.stdout);
       print(result.stderr);
-      print("exitCode=${result.exitCode}");
+      print('exitCode=${result.exitCode}');
     }
 
     expect(result.exitCode, 0);

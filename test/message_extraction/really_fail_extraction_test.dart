@@ -4,12 +4,12 @@
 
 library really_fail_extraction_test;
 
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
-import "failed_extraction_test.dart";
+import 'failed_extraction_test.dart';
 
 main() {
-  test("Expect failure because warnings are errors", () {
+  test('Expect failure because warnings are errors', () {
     runTestWithWarnings(warningsAreErrors: true, expectedExitCode: 1);
   });
 }

@@ -6,7 +6,7 @@
 import 'package:intl/intl.dart';
 import 'package:intl/message_lookup_by_library.dart';
 
-final messages = new MessageLookup();
+final messages = MessageLookup();
 
 // ignore: unused_element
 final _keepAnalysisHappy = Intl.defaultLocale;
@@ -19,8 +19,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => {
-        "Hello from component":
-            MessageLookupByLibrary.simpleMessage("Bonjour du composant"),
-        "_message2": MessageLookupByLibrary.simpleMessage("Locale explicite")
+        'Hello from component':
+            MessageLookupByLibrary.simpleMessage('Bonjour du composant'),
+        '_message2': MessageLookupByLibrary.simpleMessage('Locale explicite')
       };
 }

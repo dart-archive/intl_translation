@@ -4,21 +4,21 @@
 
 library failed_extraction_test;
 
-import "dart:io";
+import 'dart:io';
 
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
-import "message_extraction_test.dart";
+import 'message_extraction_test.dart';
 
 main() {
-  test("Expect warnings but successful extraction", () {
+  test('Expect warnings but successful extraction', () {
     runTestWithWarnings(warningsAreErrors: false, expectedExitCode: 0);
   });
 }
 
 const List<String> defaultFiles = [
-  "sample_with_messages.dart",
-  "part_of_sample_with_messages.dart"
+  'sample_with_messages.dart',
+  'part_of_sample_with_messages.dart'
 ];
 
 void runTestWithWarnings(
@@ -35,8 +35,8 @@ void runTestWithWarnings(
   }
 
   copyFilesToTempDirectory();
-  var program = asTestDirPath("../../bin/extract_to_arb.dart");
-  List<String> args = ["--output-dir=$tempDir"];
+  var program = asTestDirPath('../../bin/extract_to_arb.dart');
+  List<String> args = ['--output-dir=$tempDir'];
   if (warningsAreErrors) {
     args.add('--warnings-are-errors');
   }

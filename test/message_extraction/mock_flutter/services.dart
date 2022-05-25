@@ -31,9 +31,9 @@ class MethodChannel {
 class AssetBundle {
   Future<String> loadString(String key, {bool cache = true}) async {
     // We only have two locales in the test.
-    if (key.contains("fr")) {
+    if (key.contains('fr')) {
       return jsonEncode(fr.MessageLookup().messages);
-    } else if (key.contains("de-DE")) {
+    } else if (key.contains('de-DE')) {
       return jsonEncode(de_de.MessageLookup().messages);
     }
     return null;
