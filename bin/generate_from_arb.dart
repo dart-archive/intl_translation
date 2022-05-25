@@ -84,6 +84,10 @@ main(List<String> args) {
       callback: (x) => generation.useDeferredLoading = x,
       help: 'Generate message code that must be loaded with deferred loading. '
           'Otherwise, all messages are eagerly loaded.');
+  parser.addFlag('null-safety',
+      defaultsTo: true,
+      callback: (val) => generation.nullSafety = val,
+      help: 'Generate null safe code vs legacy (pre-null safe) code.');
   parser.addOption('codegen_mode',
       allowed: ['release', 'debug'],
       defaultsTo: 'debug',

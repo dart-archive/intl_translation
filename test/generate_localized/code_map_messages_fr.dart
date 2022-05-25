@@ -18,7 +18,8 @@ import 'dart:collection';
 
 final messages = new MessageLookup();
 
-typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
+typedef String MessageIfAbsent(
+    String messageStr, List<Object> args);
 
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'fr';
