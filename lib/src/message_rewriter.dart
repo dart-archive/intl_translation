@@ -14,7 +14,7 @@ import 'package:intl_translation/src/intl_message.dart';
 /// Return the modified source code. If there are errors parsing, list
 /// [sourceName] in the error message.
 String rewriteMessages(String source, String sourceName,
-    {useStringSubstitution = false}) {
+    {bool useStringSubstitution = false}) {
   var messages = findMessages(source, sourceName);
   messages.sort((a, b) => a.sourcePosition.compareTo(b.sourcePosition));
 
@@ -39,14 +39,14 @@ String rewriteMessages(String source, String sourceName,
 ///
 /// This may produce uglier source, but is more reliable.
 void rewriteRegenerating(
-    StringBuffer newSource, String source, int start, message) {
+    StringBuffer newSource, String source, int start, MainMessage message) {
   // TODO(alanknight): We could generate more efficient code than the
   // original here, dispatching more directly to the MessageLookup.
   newSource.write(message.toOriginalCode());
 }
 
 void rewriteWithStringSubstitution(
-    StringBuffer newSource, String source, int start, message) {
+    StringBuffer newSource, String source, int start, MainMessage message) {
   var originalSource =
       source.substring(message.sourcePosition, message.endPosition);
   var closingParen = originalSource.lastIndexOf(')');

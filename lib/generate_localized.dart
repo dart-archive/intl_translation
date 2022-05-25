@@ -23,18 +23,18 @@ class MessageGeneration {
   /// If the import path following package: is something else, modify the
   /// [intlImportPath] variable to change the import directives in the generated
   /// code.
-  var intlImportPath = 'intl';
+  String intlImportPath = 'intl';
 
   /// If the import path for flutter is not package:flutter, modify the
   /// [flutterImportPath] variable to change the import directives in the
   /// generated code. This is useful to mock out Flutter during tests since
   /// package:flutter cannot be imported from Dart VM.
-  var flutterImportPath = 'package:flutter';
+  String flutterImportPath = 'package:flutter';
 
   /// If the path to the generated files is something other than the current
   /// directory, update the [generatedImportPath] variable to change the import
   /// directives in the generated code.
-  var generatedImportPath = '';
+  String generatedImportPath = '';
 
   /// Given a base file, return the file prefixed with the path to import it.
   /// By default, that is in the current directory, but if [generatedImportPath]
@@ -355,7 +355,7 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
 ''';
 
   @override
-  String prologue(locale) =>
+  String prologue(String locale) =>
       super.prologue(locale) +
       '''
   String$orNull evaluateMessage(translation, List<dynamic> args) {
@@ -718,7 +718,8 @@ abstract class TranslatedMessage {
   String toString() => id.toString();
 
   @override
-  bool operator ==(other) => other is TranslatedMessage && other.id == id;
+  bool operator ==(Object other) =>
+      other is TranslatedMessage && other.id == id;
 
   @override
   int get hashCode => id.hashCode;

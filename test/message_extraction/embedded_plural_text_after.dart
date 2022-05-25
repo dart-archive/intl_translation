@@ -8,7 +8,7 @@ library embedded_plural_text_after;
 
 import 'package:intl/intl.dart';
 
-String embeddedPlural2(n) => Intl.message(
+String embeddedPlural2(num n) => Intl.message(
     "${Intl.plural(n, zero: 'none', one: 'one', other: 'some')} plus text.",
     name: 'embeddedPlural2',
     desc: 'An embedded plural',

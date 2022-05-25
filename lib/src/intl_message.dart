@@ -58,12 +58,13 @@ abstract class Message {
   /// We find the arguments from the top-level [MainMessage] and use those to
   /// do variable substitutions. [MainMessage] overrides this to return
   /// the actual arguments.
-  dynamic get arguments => parent == null ? const [] : parent.arguments;
+  List<String> get arguments => parent == null ? const [] : parent.arguments;
 
   /// We find the examples from the top-level [MainMessage] and use those
   /// when writing out variables. [MainMessage] overrides this to return
   /// the actual examples.
-  dynamic get examples => parent == null ? const [] : parent.examples;
+  Map<String, dynamic> get examples =>
+      parent == null ? const {} : parent.examples;
 
   /// The name of the top-level [MainMessage].
   String get name => parent == null ? '<unnamed>' : parent.name;
@@ -247,7 +248,7 @@ abstract class Message {
   /// For a method foo in class Bar we allow either "foo" or "Bar_Foo" as the
   /// name.
   static String classPlusMethodName(MethodInvocation node, String outerName) {
-    ClassOrMixinDeclaration classNode(n) {
+    ClassOrMixinDeclaration classNode(AstNode n) {
       if (n == null) return null;
       if (n is ClassOrMixinDeclaration) return n;
       return classNode(n.parent);
@@ -330,7 +331,7 @@ abstract class ComplexMessage extends Message {
   /// and set their attributes by string names, so we override the indexing
   /// operators so that they behave like maps with respect to those attribute
   /// names.
-  operator []=(String attributeName, rawValue);
+  void operator []=(String attributeName, dynamic rawValue);
 
   List<String> get attributeNames;
 
@@ -537,8 +538,8 @@ class MainMessage extends ComplexMessage {
   /// message entity.
   /// See [messagePieces].
   @override
-  String expanded([Function f = _nullTransform]) =>
-      messagePieces.map((chunk) => f(this, chunk)).join('');
+  String expanded([Function transform = _nullTransform]) =>
+      messagePieces.map((chunk) => transform(this, chunk)).join('');
 
   /// Record the translation for this message in the given locale, after
   /// suitably escaping it.
@@ -573,7 +574,7 @@ class MainMessage extends ComplexMessage {
     return jsonTranslations[locale];
   }
 
-  String turnInterpolationBackIntoStringForm(Message message, chunk) {
+  String turnInterpolationBackIntoStringForm(Message message, dynamic chunk) {
     if (chunk is String) return escapeAndValidateString(chunk);
     if (chunk is int) return r'${' + message.arguments[chunk] + '}';
     if (chunk is Message) return chunk.toCode();
@@ -582,7 +583,8 @@ class MainMessage extends ComplexMessage {
 
   /// Create a string that will recreate this message, optionally
   /// including the compile-time only information desc and examples.
-  String toOriginalCode({bool includeDesc = true, includeExamples = true}) {
+  String toOriginalCode(
+      {bool includeDesc = true, bool includeExamples = true}) {
     var out = StringBuffer()..write("Intl.message('");
     out.write(expanded(turnInterpolationBackIntoStringForm));
     out.write("', ");
@@ -609,7 +611,7 @@ class MainMessage extends ComplexMessage {
   /// The AST node will have the attribute names as strings, so we translate
   /// between those and the fields of the class.
   @override
-  void operator []=(String attributeName, value) {
+  void operator []=(String attributeName, dynamic value) {
     switch (attributeName) {
       case 'desc':
         description = value;
@@ -734,8 +736,10 @@ abstract class SubMessage extends ComplexMessage {
     out.write('(');
     out.write(mainArgument);
     var args = codeAttributeNames.where((attribute) => this[attribute] != null);
-    args.fold(
-        out, (buffer, arg) => buffer..write(", $arg: '${this[arg].toCode()}'"));
+    args.fold<StringBuffer>(
+        out,
+        (buffer, arg) =>
+            buffer..write(", $arg: '${(this[arg] as Message).toCode()}'"));
     out.write(')}');
     return out.toString();
   }
@@ -787,7 +791,7 @@ class Gender extends SubMessage {
   /// The node will have the attribute names as strings, so we translate
   /// between those and the fields of the class.
   @override
-  void operator []=(String attributeName, rawValue) {
+  void operator []=(String attributeName, dynamic rawValue) {
     var value = Message.from(rawValue, this);
     switch (attributeName) {
       case 'female':
@@ -845,7 +849,7 @@ class Plural extends SubMessage {
   /// The node will have the attribute names as strings, so we translate
   /// between those and the fields of the class.
   @override
-  void operator []=(String attributeName, rawValue) {
+  void operator []=(String attributeName, dynamic rawValue) {
     var value = Message.from(rawValue, this);
     switch (attributeName) {
       case 'zero':
@@ -944,7 +948,7 @@ class Select extends SubMessage {
   static final validSelectKey = RegExp(selectPattern);
 
   @override
-  void operator []=(String attributeName, rawValue) {
+  void operator []=(String attributeName, dynamic rawValue) {
     var value = Message.from(rawValue, this);
     if (validSelectKey.stringMatch(attributeName) == attributeName) {
       cases[attributeName] = value;
@@ -970,8 +974,8 @@ class Select extends SubMessage {
     // ignore: prefer_for_elements_to_map_fromiterable
     return Map.fromIterable(
       casesArgument.elements,
-      key: (node) => _keyForm(node.key),
-      value: (node) => node.value,
+      key: (element) => _keyForm(element.key),
+      value: (element) => element.value,
     );
   }
 
@@ -1003,7 +1007,7 @@ class Select extends SubMessage {
     out.write(mainArgument);
     var args = codeAttributeNames;
     out.write(', {');
-    args.fold(out,
+    args.fold<StringBuffer>(out,
         (buffer, arg) => buffer..write("'$arg': '${this[arg].toCode()}', "));
     out.write('})}');
     return out.toString();

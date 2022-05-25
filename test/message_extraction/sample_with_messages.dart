@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: type_annotate_public_apis
+
 /// This is a program with various [Intl.message] messages. It just prints
 /// all of them, and is used for testing of message extraction, translation,
 /// and code generation.
@@ -16,7 +18,7 @@ part 'part_of_sample_with_messages.dart';
 String message1() =>
     Intl.message('This is a message', name: 'message1', desc: 'foo');
 
-String message2(x) => Intl.message('Another message with parameter $x',
+String message2(Object x) => Intl.message('Another message with parameter $x',
     name: 'mess' 'age2',
     desc: 'Description ' '2',
     args: [x],
@@ -47,7 +49,7 @@ String alwaysTranslated() => Intl.message('This string is always translated',
 
 // Test interpolation with curly braces around the expression, but it must
 // still be just a variable reference.
-String trickyInterpolation(s) =>
+String trickyInterpolation(String s) =>
     Intl.message('Interpolation is tricky when it ends a sentence like $s.',
         name: 'trickyInterpolation', args: [s], desc: 'interpolation');
 
@@ -187,7 +189,7 @@ String skipGender(g) => Intl.gender(g,
     args: [g],
     skip: true);
 
-String skipSelect(name) => Intl.select(
+String skipSelect(String name) => Intl.select(
     name,
     {
       'Bob': 'Extraction skipped select specified Bob!',
@@ -302,7 +304,7 @@ void printStuff(Intl locale) {
   });
 }
 
-var localeToUse = 'en_US';
+String localeToUse = 'en_US';
 
 Future<List> main() {
   var fr = Intl('fr');

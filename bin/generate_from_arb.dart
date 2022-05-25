@@ -208,7 +208,7 @@ void loadData(String filename, Map<String, List<Map>> messagesByLocale,
 void generateLocaleFile(String locale, List<Map> localeData, String targetDir,
     MessageGeneration generation) {
   List<TranslatedMessage> translations = [];
-  for (var jsonTranslations in localeData) {
+  for (/*Map<String, String>*/ var jsonTranslations in localeData) {
     jsonTranslations.forEach((id, messageData) {
       TranslatedMessage message = recreateIntlObjects(id, messageData);
       if (message != null) {
@@ -223,7 +223,7 @@ void generateLocaleFile(String locale, List<Map> localeData, String targetDir,
 /// things that are messages, we expect [id] not to start with "@" and
 /// [data] to be a String. For metadata we expect [id] to start with "@"
 /// and [data] to be a Map or null. For metadata we return null.
-BasicTranslatedMessage recreateIntlObjects(String id, data) {
+BasicTranslatedMessage recreateIntlObjects(String id, String data) {
   if (id.startsWith('@')) return null;
   if (data == null) return null;
   var parsed = pluralAndGenderParser.parse(data).value;

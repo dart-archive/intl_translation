@@ -42,7 +42,7 @@ String _createTempDir() => useLocalDirectory
     ? '.'
     : Directory.systemTemp.createTempSync('message_extraction_test').path;
 
-var useLocalDirectory = false;
+bool useLocalDirectory = false;
 
 /// Translate a relative file path into this test directory. This is
 /// applied to all the arguments of [run]. It will ignore a string that

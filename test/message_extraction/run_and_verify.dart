@@ -24,7 +24,8 @@ void main(List<String> args) {
 
   test('Messages with skipExtraction set should not be extracted', () {
     var fileArgs = args.where((x) => x.contains('.arb'));
-    var messages = JsonCodec().decode(File(fileArgs.first).readAsStringSync());
+    Map<String, dynamic> messages =
+        JsonCodec().decode(File(fileArgs.first).readAsStringSync());
     messages.forEach((name, _) {
       // Assume any name with 'skip' in it should not have been extracted.
       expect(name, isNot(contains('skip')),

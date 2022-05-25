@@ -9,15 +9,17 @@
 part of sample;
 
 class Person {
-  String name;
-  String gender;
+  final String name;
+  final String gender;
+
   Person(this.name, this.gender);
 }
 
 class YouveGotMessages {
   // A static message, rather than a standalone function.
-  static String staticMessage() => Intl.message('This comes from a static method',
-      name: 'staticMessage', desc: 'Static');
+  static String staticMessage() =>
+      Intl.message('This comes from a static method',
+          name: 'staticMessage', desc: 'Static');
 
   // An instance method, rather than a standalone function.
   String method() => Intl.message('This comes from a method',
@@ -66,7 +68,7 @@ class YouveGotMessages {
   }
 
   // English doesn't do enough with genders, so this example is French.
-  String nested(List people, String place) {
+  String nested(List<Person> people, String place) {
     var names = people.map((x) => x.name).join(', ');
     var number = people.length;
     var combinedGender =

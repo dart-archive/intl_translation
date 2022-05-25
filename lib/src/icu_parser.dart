@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: avoid_dynamic_calls
+
 /// Contains a parser for ICU format plural/gender/select format for localized
 /// messages. See extract_to_arb.dart and make_hardcoded_translation.dart.
 library icu_parser;
@@ -42,7 +44,7 @@ class IcuParser {
       ['=0', '=1', '=2', 'zero', 'one', 'two', 'few', 'many', 'other']);
   Parser get genderKeyword => asKeywords(['female', 'male', 'other']);
 
-  var interiorText = undefined();
+  SettableParser interiorText = undefined();
 
   Parser get preface => (openCurly & id & comma).map((values) => values[1]);
 

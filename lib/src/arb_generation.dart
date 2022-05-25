@@ -8,10 +8,10 @@ import 'package:intl_translation/src/intl_message.dart';
 /// the translation file format into a Dart interpolation. In our case we
 /// store it to the file in Dart interpolation syntax, so the transformation
 /// is trivial.
-String leaveTheInterpolationsInDartForm(MainMessage msg, chunk) {
+String leaveTheInterpolationsInDartForm(MainMessage msg, dynamic chunk) {
   if (chunk is String) return chunk;
   if (chunk is int) return '\$${msg.arguments[chunk]}';
-  return chunk.toCode();
+  return (chunk as Message).toCode();
 }
 
 /// Convert the [MainMessage] to a trivial JSON format.
@@ -63,7 +63,7 @@ void addArgumentFor(MainMessage message, String arg, Map result) {
 String icuForm(MainMessage message) =>
     message.expanded(turnInterpolationIntoICUForm);
 
-String turnInterpolationIntoICUForm(Message message, chunk,
+String turnInterpolationIntoICUForm(Message message, dynamic chunk,
     {bool shouldEscapeICU = false}) {
   if (chunk is String) {
     return shouldEscapeICU ? escape(chunk) : chunk;

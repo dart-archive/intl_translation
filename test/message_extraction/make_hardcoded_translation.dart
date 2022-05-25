@@ -15,7 +15,7 @@ import 'package:args/args.dart';
 import 'package:path/path.dart' as path;
 
 /// A list of the French translations that we will produce.
-var french = {
+Map<String, String> french = {
   'types': r'{a}, {b}, {c}',
   'This string extends across multiple lines.':
       'Cette message prend plusiers lignes.',
@@ -79,14 +79,14 @@ var french = {
 };
 
 // Used to test having translations in multiple files.
-var frenchExtra = {
+Map<String, String> frenchExtra = {
   'YouveGotMessages_method': "Cela vient d'une méthode",
   'nonLambda': "Cette méthode n'est pas un lambda",
   'staticMessage': "Cela vient d'une méthode statique",
 };
 
 /// A list of the German translations that we will produce.
-var german = {
+Map<String, String> german = {
   'types': r'{a}, {b}, {c}',
   'This string extends across multiple lines.':
       'Dieser String erstreckt sich über mehrere Zeilen erstrecken.',

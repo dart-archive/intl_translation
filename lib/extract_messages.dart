@@ -659,6 +659,7 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
 
     var arguments = message.argumentsOfInterestFor(node);
     arguments.forEach((key, value) {
+      // `value` is often - or always? - an Expression.
       try {
         var interpolation = InterpolationVisitor(message, extraction);
         value.accept(interpolation);
