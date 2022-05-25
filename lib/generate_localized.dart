@@ -348,11 +348,13 @@ MessageLookupByLibrary$orNull _findGeneratedMessagesFor(String locale) {
 abstract class DataMapMessageGeneration extends MessageGeneration {
   /// We import the main file so as to get the shared code to evaluate
   /// the JSON data.
+  @override
   String get extraImports => '''
 import 'dart:convert';
 import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
 ''';
 
+  @override
   String prologue(locale) =>
       super.prologue(locale) +
       '''
@@ -361,15 +363,18 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
   }
 ''';
 
+  @override
   void writeTranslations(
       Iterable<TranslatedMessage> usableTranslations, String locale);
 
+  @override
   get mainPrologue =>
       super.mainPrologue +
       """
 import 'package:$intlImportPath/intl.dart';
 """;
 
+  @override
   get closing =>
       super.closing +
       '''
@@ -437,6 +442,7 @@ String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
 
  ''';
 
+  @override
   String generateFlutterImportFile() {
     clearOutput();
     output.write(flutterPrologue);
@@ -708,10 +714,13 @@ abstract class TranslatedMessage {
 
   Message get message => translated;
 
+  @override
   toString() => id.toString();
 
+  @override
   operator ==(x) => x is TranslatedMessage && x.id == id;
 
+  @override
   get hashCode => id.hashCode;
 }
 

@@ -350,9 +350,13 @@ class CompositeMessage extends Message {
   CompositeMessage(this.pieces, ComplexMessage parent) : super(parent) {
     pieces.forEach((x) => x.parent = this);
   }
+  @override
   toCode() => pieces.map((each) => each.toCode()).join('');
+  @override
   toJson() => pieces.map((each) => each.toJson()).toList();
+  @override
   toString() => 'CompositeMessage(' + pieces.toString() + ')';
+  @override
   String expanded([Function f = _nullTransform]) =>
       pieces.map((chunk) => f(this, chunk)).join('');
 }
@@ -361,9 +365,13 @@ class CompositeMessage extends Message {
 class LiteralString extends Message {
   String string;
   LiteralString(this.string, Message parent) : super(parent);
+  @override
   toCode() => escapeAndValidateString(string);
+  @override
   toJson() => string;
+  @override
   toString() => 'Literal($string)';
+  @override
   String expanded([Function f = _nullTransform]) => f(this, string);
 }
 
@@ -414,9 +422,13 @@ class VariableSubstitution extends Message {
   // Although we only allow simple variable references, we always enclose them
   // in curly braces so that there's no possibility of ambiguity with
   // surrounding text.
+  @override
   toCode() => '\${${variableName}}';
+  @override
   toJson() => index;
+  @override
   toString() => 'VariableSubstitution($index)';
+  @override
   String expanded([Function f = _nullTransform]) => f(this, index);
 }
 
@@ -438,6 +450,7 @@ class MainMessage extends ComplexMessage {
   List<String> documentation = [];
 
   /// Verify that this looks like a correct Intl.message invocation.
+  @override
   String checkValidity(MethodInvocation node, List arguments, String outerName,
       List<FormalParameter> outerArgs,
       {bool nameAndArgsGenerated: false, bool examplesRequired: false}) {
@@ -467,6 +480,7 @@ class MainMessage extends ComplexMessage {
   String description;
 
   /// The examples from the Intl.message call
+  @override
   Map<String, dynamic> examples;
 
   /// A field to disambiguate two messages that might have exactly the
@@ -483,6 +497,7 @@ class MainMessage extends ComplexMessage {
   String id;
 
   /// The arguments list from the Intl.message call.
+  @override
   List<String> arguments;
 
   /// The locale argument from the Intl.message call
@@ -501,6 +516,7 @@ class MainMessage extends ComplexMessage {
 
   /// If the message was not given a name, we use the entire message string as
   /// the name.
+  @override
   String get name => _name ?? '';
   set name(String newName) {
     _name = newName;
@@ -514,6 +530,7 @@ class MainMessage extends ComplexMessage {
   /// either a String, an int or an object representing a more complex
   /// message entity.
   /// See [messagePieces].
+  @override
   String expanded([Function f = _nullTransform]) =>
       messagePieces.map((chunk) => f(this, chunk)).join('');
 
@@ -525,8 +542,10 @@ class MainMessage extends ComplexMessage {
     jsonTranslations[locale] = translated.toJson();
   }
 
+  @override
   toCode() =>
       throw UnsupportedError('MainMessage.toCode requires a locale');
+  @override
   toJson() =>
       throw UnsupportedError('MainMessage.toJson requires a locale');
 
@@ -582,6 +601,7 @@ class MainMessage extends ComplexMessage {
 
   /// The AST node will have the attribute names as strings, so we translate
   /// between those and the fields of the class.
+  @override
   void operator []=(String attributeName, value) {
     switch (attributeName) {
       case 'desc':
@@ -613,6 +633,7 @@ class MainMessage extends ComplexMessage {
 
   /// The AST node will have the attribute names as strings, so we translate
   /// between those and the fields of the class.
+  @override
   operator [](String attributeName) {
     switch (attributeName) {
       case 'desc':
@@ -635,14 +656,18 @@ class MainMessage extends ComplexMessage {
   }
 
   // This is the top-level construct, so there's no meaningful ICU name.
+  @override
   get icuMessageName => '';
 
+  @override
   get dartMessageName => 'message';
 
   /// The parameters that the Intl.message call may provide.
+  @override
   get attributeNames =>
       const ['name', 'desc', 'examples', 'args', 'meaning', 'skip'];
 
+  @override
   String toString() =>
       'Intl.message(${expanded()}, $name, $description, $examples, $arguments)';
 }
@@ -661,6 +686,7 @@ abstract class SubMessage extends ComplexMessage {
     }
   }
 
+  @override
   toString() => expanded();
 
   /// The name of the main argument, which is expected to have the value which
@@ -682,6 +708,7 @@ abstract class SubMessage extends ComplexMessage {
   ///  that map to the same clause.
   List<String> get codeAttributeNames;
 
+  @override
   String expanded([Function transform = _nullTransform]) {
     fullMessageForClause(String key) =>
         key + '{' + transform(parent, this[key]).toString() + '}';
@@ -692,6 +719,7 @@ abstract class SubMessage extends ComplexMessage {
     return "{$mainArgument,$icuMessageName, ${clauses.join("")}}";
   }
 
+  @override
   String toCode() {
     var out = StringBuffer();
     out.write('\${');
@@ -710,6 +738,7 @@ abstract class SubMessage extends ComplexMessage {
   /// for a plural), and then the values of all the possible arguments, in the
   /// order that they appear in codeAttributeNames. Any missing arguments are
   /// saved as an explicit null.
+  @override
   toJson() {
     var json = [];
     json.add(dartMessageName);
@@ -738,14 +767,19 @@ class Gender extends SubMessage {
   Message male;
   Message other;
 
+  @override
   String get icuMessageName => 'select';
+  @override
   String get dartMessageName => 'Intl.gender';
 
+  @override
   get attributeNames => ['female', 'male', 'other'];
+  @override
   get codeAttributeNames => attributeNames;
 
   /// The node will have the attribute names as strings, so we translate
   /// between those and the fields of the class.
+  @override
   void operator []=(String attributeName, rawValue) {
     var value = Message.from(rawValue, this);
     switch (attributeName) {
@@ -763,6 +797,7 @@ class Gender extends SubMessage {
     }
   }
 
+  @override
   Message operator [](String attributeName) {
     switch (attributeName) {
       case 'female':
@@ -789,14 +824,19 @@ class Plural extends SubMessage {
   Message many;
   Message other;
 
+  @override
   String get icuMessageName => 'plural';
+  @override
   String get dartMessageName => 'Intl.plural';
 
+  @override
   get attributeNames => ['=0', '=1', '=2', 'few', 'many', 'other'];
+  @override
   get codeAttributeNames => ['zero', 'one', 'two', 'few', 'many', 'other'];
 
   /// The node will have the attribute names as strings, so we translate
   /// between those and the fields of the class.
+  @override
   void operator []=(String attributeName, rawValue) {
     var value = Message.from(rawValue, this);
     switch (attributeName) {
@@ -838,6 +878,7 @@ class Plural extends SubMessage {
     }
   }
 
+  @override
   Message operator [](String attributeName) {
     switch (attributeName) {
       case 'zero':
@@ -879,10 +920,14 @@ class Select extends SubMessage {
 
   Map<String, Message> cases = Map<String, Message>();
 
+  @override
   String get icuMessageName => 'select';
+  @override
   String get dartMessageName => 'Intl.select';
 
+  @override
   get attributeNames => cases.keys.toList();
+  @override
   get codeAttributeNames => attributeNames;
 
   // Check for valid select keys.
@@ -890,6 +935,7 @@ class Select extends SubMessage {
   static const selectPattern = '[a-zA-Z][a-zA-Z0-9_-]*';
   static final validSelectKey = RegExp(selectPattern);
 
+  @override
   void operator []=(String attributeName, rawValue) {
     var value = Message.from(rawValue, this);
     if (validSelectKey.stringMatch(attributeName) == attributeName) {
@@ -901,6 +947,7 @@ class Select extends SubMessage {
     }
   }
 
+  @override
   Message operator [](String attributeName) {
     var exact = cases[attributeName];
     return exact == null ? cases['other'] : exact;
@@ -909,6 +956,7 @@ class Select extends SubMessage {
   /// Return the arguments that we care about for the select. In this
   /// case they will all be passed in as a Map rather than as the named
   /// arguments used in Plural/Gender.
+  @override
   Map argumentsOfInterestFor(MethodInvocation node) {
     SetOrMapLiteral casesArgument = node.argumentList.arguments[1];
     return Map.fromIterable(casesArgument.elements,
@@ -923,6 +971,7 @@ class Select extends SubMessage {
     return (key is SimpleStringLiteral) ? key.value : '$key'.split('.').last;
   }
 
+  @override
   void validate() {
     if (this['other'] == null) {
       throw IntlMessageExtractionException(
@@ -933,6 +982,7 @@ class Select extends SubMessage {
   /// Write out the generated representation of this message. This differs
   /// from Plural/Gender in that it prints a literal map rather than
   /// named arguments.
+  @override
   String toCode() {
     var out = StringBuffer();
     out.write('\${');
@@ -950,6 +1000,7 @@ class Select extends SubMessage {
   /// We represent this in JSON as a List with the name of the message
   /// (e.g. Intl.select), the index in the arguments list of the main argument,
   /// and then a Map from the cases to the List of strings or sub-messages.
+  @override
   toJson() {
     var json = [];
     json.add(dartMessageName);
@@ -971,5 +1022,6 @@ class IntlMessageExtractionException implements Exception {
   /// Creates a new exception with an optional error [message].
   const IntlMessageExtractionException([this.message = '']);
 
+  @override
   String toString() => 'IntlMessageExtractionException: $message';
 }

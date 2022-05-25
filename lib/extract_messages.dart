@@ -230,6 +230,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
   /// Record the parameters of the function or method declaration we last
   /// encountered before seeing the Intl.message call.
+  @override
   void visitMethodDeclaration(MethodDeclaration node) {
     name = node.name.name;
     parameters = node.parameters?.parameters ?? _emptyParameterList;
@@ -242,6 +243,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
   /// Record the parameters of the function or method declaration we last
   /// encountered before seeing the Intl.message call.
+  @override
   void visitFunctionDeclaration(FunctionDeclaration node) {
     name = node.name.name;
     parameters =
@@ -255,6 +257,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
   /// Record the name of field declaration we last
   /// encountered before seeing the Intl.message call.
+  @override
   void visitFieldDeclaration(FieldDeclaration node) {
     // We don't support names in list declarations,
     // e.g. String first, second = Intl.message(...);
@@ -273,6 +276,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
   /// Record the name of the top level variable declaration we last
   /// encountered before seeing the Intl.message call.
+  @override
   void visitTopLevelVariableDeclaration(TopLevelVariableDeclaration node) {
     // We don't support names in list declarations,
     // e.g. String first, second = Intl.message(...);
@@ -293,6 +297,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// If we've found one, stop recursing. This is important because we can have
   /// Intl.message(...Intl.plural...) and we don't want to treat the inner
   /// plural as if it was an outermost message.
+  @override
   void visitMethodInvocation(MethodInvocation node) {
     if (!addIntlMessage(node)) {
       super.visitMethodInvocation(node);
@@ -513,26 +518,31 @@ class InterpolationVisitor extends SimpleAstVisitor {
   List pieces = [];
   String get extractedMessage => pieces.join();
 
+  @override
   void visitAdjacentStrings(AdjacentStrings node) {
     node.visitChildren(this);
     super.visitAdjacentStrings(node);
   }
 
+  @override
   void visitStringInterpolation(StringInterpolation node) {
     node.visitChildren(this);
     super.visitStringInterpolation(node);
   }
 
+  @override
   void visitSimpleStringLiteral(SimpleStringLiteral node) {
     pieces.add(node.value);
     super.visitSimpleStringLiteral(node);
   }
 
+  @override
   void visitInterpolationString(InterpolationString node) {
     pieces.add(node.value);
     super.visitInterpolationString(node);
   }
 
+  @override
   void visitInterpolationExpression(InterpolationExpression node) {
     if (node.expression is SimpleIdentifier) {
       handleSimpleInterpolation(node);
@@ -585,6 +595,7 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
 
   PluralAndGenderVisitor(this.pieces, this.parent, this.extraction) : super();
 
+  @override
   visitInterpolationExpression(InterpolationExpression node) {
     // TODO(alanknight): Provide better errors for malformed expressions.
     if (!looksLikePluralOrGender(node.expression)) return;
@@ -596,6 +607,7 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
     super.visitInterpolationExpression(node);
   }
 
+  @override
   visitMethodInvocation(MethodInvocation node) {
     pieces.add(messageFromMethodInvocation(node));
     super.visitMethodInvocation(node);

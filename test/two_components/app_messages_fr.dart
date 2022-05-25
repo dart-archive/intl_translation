@@ -15,8 +15,10 @@ final _keepAnalysisHappy = Intl.defaultLocale;
 typedef MessageIfAbsent = Function(String message_str, List args);
 
 class MessageLookup extends MessageLookupByLibrary {
+  @override
   get localeName => 'fr';
 
+  @override
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => {
         'Hello from application':
