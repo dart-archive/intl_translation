@@ -12,6 +12,7 @@
 library data_directory;
 
 import 'dart:io';
+
 import 'package:path/path.dart' as path;
 
 /// Returns whether [dir] is the root of the `intl` package. We validate that it

@@ -10,7 +10,6 @@
 /// It takes as input a single source Dart file and rewrites any
 /// Intl.message or related calls to automatically include the name and args
 /// parameters and writes the result to stdout.
-
 import 'dart:io';
 
 import 'package:args/args.dart';

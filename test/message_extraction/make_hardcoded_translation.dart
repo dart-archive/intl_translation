@@ -7,7 +7,6 @@
 /// extract_message.dart for the files sample_with_messages.dart and
 /// part_of_sample_with_messages.dart and writing out hard-coded translations
 /// for German and French locales.
-
 import 'dart:convert';
 import 'dart:io';
 

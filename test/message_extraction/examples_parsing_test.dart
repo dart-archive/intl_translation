@@ -4,7 +4,6 @@
 
 /// Test for parsing the examples argument from an Intl.message call. Very
 /// minimal so far.
-
 import 'dart:io';
 
 import 'package:intl_translation/extract_messages.dart';

@@ -4,8 +4,8 @@
 
 /// A component which should have its own separate messages, with their own
 /// translations.
-
 import 'package:intl/intl.dart';
+
 import 'component_messages_all.dart';
 
 /// We can just define a normal message, in which case we'll want to pick up
