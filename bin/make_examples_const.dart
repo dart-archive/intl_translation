@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:dart_style/dart_style.dart';
+import 'package:intl_translation/src/intl_message.dart';
 import 'package:intl_translation/src/message_rewriter.dart';
 
 void main(List<String> args) {
@@ -58,7 +59,8 @@ String rewriteMessages(String source, String sourceName) {
   return newSource.toString();
 }
 
-void rewrite(StringBuffer newSource, String source, int start, message) {
+void rewrite(
+    StringBuffer newSource, String source, int start, MainMessage message) {
   var originalSource =
       source.substring(message.sourcePosition, message.endPosition);
   var examples = nonConstExamples.firstMatch(originalSource);

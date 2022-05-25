@@ -25,54 +25,54 @@ void main(List<String> args) {
   var parser = ArgParser();
   var extraction = MessageExtraction();
   String locale;
-  parser.addFlag("suppress-last-modified",
+  parser.addFlag('suppress-last-modified',
       defaultsTo: false,
       callback: (x) => extraction.suppressLastModified = x,
       help: 'Suppress @@last_modified entry.');
-  parser.addFlag("suppress-warnings",
+  parser.addFlag('suppress-warnings',
       defaultsTo: false,
       callback: (x) => extraction.suppressWarnings = x,
       help: 'Suppress printing of warnings.');
-  parser.addFlag("suppress-meta-data",
+  parser.addFlag('suppress-meta-data',
       defaultsTo: false,
       callback: (x) => extraction.suppressMetaData = x,
       help: 'Suppress writing meta information');
-  parser.addFlag("warnings-are-errors",
+  parser.addFlag('warnings-are-errors',
       defaultsTo: false,
       callback: (x) => extraction.warningsAreErrors = x,
       help: 'Treat all warnings as errors, stop processing ');
-  parser.addFlag("embedded-plurals",
+  parser.addFlag('embedded-plurals',
       defaultsTo: true,
       callback: (x) => extraction.allowEmbeddedPluralsAndGenders = x,
       help: 'Allow plurals and genders to be embedded as part of a larger '
           'string, otherwise they must be at the top level.');
-  parser.addFlag("transformer",
+  parser.addFlag('transformer',
       defaultsTo: false,
       callback: (x) => transformer = x,
-      help: "Assume that the transformer is in use, so name and args "
+      help: 'Assume that the transformer is in use, so name and args '
           "don't need to be specified for messages.");
-  parser.addOption("locale",
+  parser.addOption('locale',
       defaultsTo: null,
       callback: (value) => locale = value,
       help: 'Specify the locale set inside the arb file.');
-  parser.addFlag("with-source-text",
+  parser.addFlag('with-source-text',
       defaultsTo: false,
       callback: (x) => extraction.includeSourceText = x,
       help: 'Include source_text in meta information.');
-  parser.addOption("output-dir",
+  parser.addOption('output-dir',
       defaultsTo: '.',
       callback: (value) => targetDir = value,
       help: 'Specify the output directory.');
-  parser.addOption("output-file",
+  parser.addOption('output-file',
       defaultsTo: 'intl_messages.arb',
       callback: (value) => outputFilename = value,
       help: 'Specify the output file.');
-  parser.addOption("sources-list-file",
+  parser.addOption('sources-list-file',
       callback: (value) => sourcesListFile = value,
       help: 'A file that lists the Dart files to read, one per line.'
           'The paths in the file can be absolute or relative to the '
           'location of this file.');
-  parser.addFlag("require_descriptions",
+  parser.addFlag('require_descriptions',
       defaultsTo: false,
       help: "Fail for messages that don't have a description.",
       callback: (val) => extraction.descriptionRequired = val);
@@ -86,13 +86,13 @@ void main(List<String> args) {
   }
   var allMessages = {};
   if (locale != null) {
-    allMessages["@@locale"] = locale;
+    allMessages['@@locale'] = locale;
   }
   if (!extraction.suppressLastModified) {
-    allMessages["@@last_modified"] = DateTime.now().toIso8601String();
+    allMessages['@@last_modified'] = DateTime.now().toIso8601String();
   }
 
-  var dartFiles = args.where((x) => x.endsWith(".dart")).toList();
+  var dartFiles = args.where((x) => x.endsWith('.dart')).toList();
   dartFiles.addAll(linesFromFile(sourcesListFile));
   for (var arg in dartFiles) {
     var messages = extraction.parseFile(File(arg), transformer);
@@ -105,7 +105,7 @@ void main(List<String> args) {
     );
   }
   var file = File(path.join(targetDir, outputFilename));
-  var encoder = JsonEncoder.withIndent("  ");
+  var encoder = JsonEncoder.withIndent('  ');
   file.writeAsStringSync(encoder.convert(allMessages));
   if (extraction.hasWarnings && extraction.warningsAreErrors) {
     exit(1);

@@ -67,7 +67,7 @@ void main(List<String> args) {
       hide: true,
       help: 'Customize the flutter import path, used for testing. Defaults to '
           'package:flutter.');
-  parser.addFlag("suppress-warnings",
+  parser.addFlag('suppress-warnings',
       defaultsTo: false,
       callback: (x) => extraction.suppressWarnings = x,
       help: 'Suppress printing of warnings.');
@@ -75,11 +75,11 @@ void main(List<String> args) {
       defaultsTo: '.',
       callback: (x) => targetDir = x,
       help: 'Specify the output directory.');
-  parser.addOption("generated-file-prefix",
+  parser.addOption('generated-file-prefix',
       defaultsTo: '',
       callback: (x) => generation.generatedFilePrefix = x,
       help: 'Specify a prefix to be used for the generated file names.');
-  parser.addFlag("use-deferred-loading",
+  parser.addFlag('use-deferred-loading',
       defaultsTo: true,
       callback: (x) => generation.useDeferredLoading = x,
       help: 'Generate message code that must be loaded with deferred loading. '
@@ -93,25 +93,25 @@ void main(List<String> args) {
       defaultsTo: 'debug',
       callback: (x) => generation.codegenMode = x,
       help: 'What mode to run the code generator in. Either release or debug.');
-  parser.addOption("sources-list-file",
+  parser.addOption('sources-list-file',
       callback: (value) => sourcesListFile = value,
       help: 'A file that lists the Dart files to read, one per line.'
           'The paths in the file can be absolute or relative to the '
           'location of this file.');
-  parser.addOption("translations-list-file",
+  parser.addOption('translations-list-file',
       callback: (value) => translationsListFile = value,
       help: 'A file that lists the translation files to process, one per line.'
           'The paths in the file can be absolute or relative to the '
           'location of this file.');
-  parser.addFlag("transformer",
+  parser.addFlag('transformer',
       defaultsTo: false,
       callback: (x) => transformer = x,
-      help: "Assume that the transformer is in use, so name and args "
+      help: 'Assume that the transformer is in use, so name and args '
           "don't need to be specified for messages.");
 
   parser.parse(args);
-  var dartFiles = args.where((x) => x.endsWith("dart")).toList();
-  var jsonFiles = args.where((x) => x.endsWith(".arb")).toList();
+  var dartFiles = args.where((x) => x.endsWith('dart')).toList();
+  var jsonFiles = args.where((x) => x.endsWith('.arb')).toList();
   dartFiles.addAll(linesFromFile(sourcesListFile));
   jsonFiles.addAll(linesFromFile(translationsListFile));
   if (dartFiles.isEmpty || jsonFiles.isEmpty) {
@@ -177,20 +177,20 @@ void main(List<String> args) {
   }
 }
 
-loadData(String filename, Map<String, List<Map>> messagesByLocale,
+void loadData(String filename, Map<String, List<Map>> messagesByLocale,
     MessageGeneration generation) {
   var file = File(filename);
   var src = file.readAsStringSync();
-  var data = jsonDecoder.decode(src);
-  var locale = data["@@locale"] ?? data["_locale"];
+  var data = jsonDecoder.decode(src) as Map<String, Object>;
+  var locale = data['@@locale'] ?? data['_locale'];
   if (locale == null) {
     // Get the locale from the end of the file name. This assumes that the file
     // name doesn't contain any underscores except to begin the language tag
     // and to separate language from country. Otherwise we can't tell if
     // my_file_fr.arb is locale "fr" or "file_fr".
     var name = path.basenameWithoutExtension(file.path);
-    locale = name.split("_").skip(1).join("_");
-    print("No @@locale or _locale field found in $name, "
+    locale = name.split('_').skip(1).join('_');
+    print('No @@locale or _locale field found in $name, '
         "assuming '$locale' based on the file name.");
   }
   messagesByLocale.putIfAbsent(locale, () => []).add(data);
@@ -224,7 +224,7 @@ void generateLocaleFile(String locale, List<Map> localeData, String targetDir,
 /// [data] to be a String. For metadata we expect [id] to start with "@"
 /// and [data] to be a Map or null. For metadata we return null.
 BasicTranslatedMessage recreateIntlObjects(String id, data) {
-  if (id.startsWith("@")) return null;
+  if (id.startsWith('@')) return null;
   if (data == null) return null;
   var parsed = pluralAndGenderParser.parse(data).value;
   if (parsed is LiteralString && parsed.string.isEmpty) {
