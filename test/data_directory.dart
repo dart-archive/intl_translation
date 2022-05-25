@@ -17,7 +17,7 @@ import "package:path/path.dart" as path;
 /// Returns whether [dir] is the root of the `intl` package. We validate that it
 /// is by looking for a pubspec file with the entry `name: intl`.
 bool _isIntlRoot(String dir) {
-  var file = new File(path.join(dir, 'pubspec.yaml'));
+  var file = File(path.join(dir, 'pubspec.yaml'));
   if (!file.existsSync()) return false;
   return file.readAsStringSync().contains('name: intl_translation\n');
 }
@@ -34,6 +34,6 @@ String get packageDirectory {
     if (_isIntlRoot(dir)) return dir;
     dir = path.dirname(dir);
   }
-  throw new UnsupportedError(
+  throw UnsupportedError(
       'Cannot find the root directory of the `intl_translation` package.');
 }

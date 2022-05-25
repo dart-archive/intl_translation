@@ -18,6 +18,6 @@ main() {
   test("Initialize sub-locale", () async {
     await initializeMessages("fr_FR");
     Intl.withLocale(
-        "fr_FR", () => expect(appMessage(), "Bonjour de l\'application"));
+        "fr_FR", () => expect(appMessage(), "Bonjour de l'application"));
   });
 }

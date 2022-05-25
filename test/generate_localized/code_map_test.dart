@@ -9,7 +9,7 @@ import 'package:test/test.dart';
 
 import 'code_map_messages_all.dart';
 
-appMessage() => Intl.message('Hello from application', desc: 'hi');
+String appMessage() => Intl.message('Hello from application', desc: 'hi');
 
 main() async {
   Intl.defaultLocale = 'fr';

@@ -36,7 +36,7 @@ final vmArgs = Platform.executableArguments;
 /// generated files around after a failed test. For debugging, we omit that
 /// step if [useLocalDirectory] is true. The place we move them to is saved as
 /// [tempDir].
-String get tempDir => _tempDir == null ? _tempDir = _createTempDir() : _tempDir;
+String get tempDir => _tempDir ?? (_tempDir = _createTempDir());
 String _tempDir;
 String _createTempDir() => useLocalDirectory
     ? '.'
@@ -102,7 +102,7 @@ void copyFilesToTempDirectory() {
   ];
 
   for (var filename in files) {
-    var file = new File(filename);
+    var file = File(filename);
     if (file.existsSync()) {
       file.copySync(path.join(tempDir, path.basename(filename)));
     }
@@ -122,7 +122,7 @@ void copyFilesToTempDirectory() {
 void deleteGeneratedFiles() {
   if (useLocalDirectory) return;
   try {
-    new Directory(tempDir).deleteSync(recursive: true);
+    Directory(tempDir).deleteSync(recursive: true);
   } on Error catch (e) {
     print("Failed to delete $tempDir");
     print("Exception:\n$e");
@@ -142,13 +142,13 @@ Future<ProcessResult> run(
       .toList();
   // Inject the script argument --output-dir in between the script and its
   // arguments.
-  List<String> args = []
-    ..addAll(vmArgs)
-    ..add(filesInTheRightDirectory.first)
-    ..addAll(["--output-dir=$tempDir"])
-    ..addAll(filesInTheRightDirectory.skip(1));
+  List<String> args = [...vmArgs, filesInTheRightDirectory.first, "--output-dir=$tempDir", ...filesInTheRightDirectory.skip(1)]
+    
+    
+    
+    ;
   var result = Process.run(dart, args,
-      stdoutEncoding: new Utf8Codec(), stderrEncoding: new Utf8Codec());
+      stdoutEncoding: Utf8Codec(), stderrEncoding: Utf8Codec());
   return result;
 }
 

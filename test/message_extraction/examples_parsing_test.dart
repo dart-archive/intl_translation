@@ -17,8 +17,8 @@ main() {
   test("Message examples are correctly extracted", () {
     var file = path.join(packageDirectory, 'test', 'message_extraction',
         'sample_with_messages.dart');
-    var extraction = new MessageExtraction();
-    var messages = extraction.parseFile(new File(file));
+    var extraction = MessageExtraction();
+    var messages = extraction.parseFile(File(file));
     expect(messages['message2'].examples, {"x": 3});
   });
 }

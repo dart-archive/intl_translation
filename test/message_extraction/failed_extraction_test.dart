@@ -16,7 +16,7 @@ main() {
   });
 }
 
-const List<String> defaultFiles = const [
+const List<String> defaultFiles = [
   "sample_with_messages.dart",
   "part_of_sample_with_messages.dart"
 ];
@@ -24,8 +24,8 @@ const List<String> defaultFiles = const [
 void runTestWithWarnings(
     {bool warningsAreErrors,
     int expectedExitCode,
-    bool embeddedPlurals: true,
-    List<String> sourceFiles: defaultFiles}) {
+    bool embeddedPlurals = true,
+    List<String> sourceFiles = defaultFiles}) {
   verify(ProcessResult result) {
     try {
       expect(result.exitCode, expectedExitCode);
@@ -44,9 +44,9 @@ void runTestWithWarnings(
     args.add('--no-embedded-plurals');
   }
   var files = sourceFiles.map(asTempDirPath).toList();
-  List<String> allArgs = [program]
-    ..addAll(args)
-    ..addAll(files);
+  List<String> allArgs = [program, ...args, ...files]
+    
+    ;
   var callback = expectAsync1(verify);
 
   run(null, allArgs).then(callback);
