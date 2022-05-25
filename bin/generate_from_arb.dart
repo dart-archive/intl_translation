@@ -33,13 +33,13 @@ import 'package:path/path.dart' as path;
 /// name.
 Map<String, List<MainMessage>> messages;
 
-const jsonDecoder = const JsonCodec();
+const jsonDecoder = JsonCodec();
 
-main(List<String> args) {
+void main(List<String> args) {
   String targetDir;
-  var parser = new ArgParser();
-  var extraction = new MessageExtraction();
-  var generation = new MessageGeneration();
+  var parser = ArgParser();
+  var extraction = MessageExtraction();
+  var generation = MessageGeneration();
   String sourcesListFile;
   String translationsListFile;
   bool transformer;
@@ -140,10 +140,10 @@ main(List<String> args) {
   // for real projects we could provide a command-line flag to indicate which
   // sort of automated name we're using.
   extraction.suppressWarnings = true;
-  var allMessages = dartFiles
-      .map((each) => extraction.parseFile(new File(each), transformer));
+  var allMessages =
+      dartFiles.map((each) => extraction.parseFile(File(each), transformer));
 
-  messages = new Map();
+  messages = {};
   for (var eachMap in allMessages) {
     eachMap.forEach(
         (key, value) => messages.putIfAbsent(key, () => []).add(value));
@@ -161,17 +161,17 @@ main(List<String> args) {
     generateLocaleFile(locale, data, targetDir, generation);
   });
 
-  var mainImportFile = new File(path.join(
+  var mainImportFile = File(path.join(
       targetDir, '${generation.generatedFilePrefix}messages_all.dart'));
   mainImportFile.writeAsStringSync(
       generation.generateMainImportFile(flutter: useFlutterLocaleSplit));
 
-  var localesImportFile = new File(path.join(
+  var localesImportFile = File(path.join(
       targetDir, '${generation.generatedFilePrefix}messages_all_locales.dart'));
   localesImportFile.writeAsStringSync(generation.generateLocalesImportFile());
 
   if (useFlutterLocaleSplit) {
-    var flutterImportFile = new File(path.join(
+    var flutterImportFile = File(path.join(
         targetDir, '${generation.generatedFilePrefix}messages_flutter.dart'));
     flutterImportFile.writeAsStringSync(generation.generateFlutterImportFile());
   }
@@ -230,7 +230,7 @@ BasicTranslatedMessage recreateIntlObjects(String id, data) {
   if (parsed is LiteralString && parsed.string.isEmpty) {
     parsed = plainParser.parse(data).value;
   }
-  return new BasicTranslatedMessage(id, parsed);
+  return BasicTranslatedMessage(id, parsed);
 }
 
 /// A TranslatedMessage that just uses the name as the id and knows how to look
@@ -238,6 +238,7 @@ BasicTranslatedMessage recreateIntlObjects(String id, data) {
 class BasicTranslatedMessage extends TranslatedMessage {
   BasicTranslatedMessage(String name, translated) : super(name, translated);
 
+  @override
   List<MainMessage> get originalMessages => (super.originalMessages == null)
       ? _findOriginals()
       : super.originalMessages;
@@ -247,5 +248,5 @@ class BasicTranslatedMessage extends TranslatedMessage {
   List<MainMessage> _findOriginals() => originalMessages = messages[id];
 }
 
-final pluralAndGenderParser = new IcuParser().message;
-final plainParser = new IcuParser().nonIcuMessage;
+final pluralAndGenderParser = IcuParser().message;
+final plainParser = IcuParser().nonIcuMessage;

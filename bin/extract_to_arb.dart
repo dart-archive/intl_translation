@@ -17,13 +17,13 @@ import 'package:intl_translation/src/arb_generation.dart';
 import 'package:intl_translation/src/directory_utils.dart';
 import 'package:path/path.dart' as path;
 
-main(List<String> args) {
+void main(List<String> args) {
   String targetDir;
   String outputFilename;
   String sourcesListFile;
   bool transformer;
-  var parser = new ArgParser();
-  var extraction = new MessageExtraction();
+  var parser = ArgParser();
+  var extraction = MessageExtraction();
   String locale;
   parser.addFlag("suppress-last-modified",
       defaultsTo: false,
@@ -89,13 +89,13 @@ main(List<String> args) {
     allMessages["@@locale"] = locale;
   }
   if (!extraction.suppressLastModified) {
-    allMessages["@@last_modified"] = new DateTime.now().toIso8601String();
+    allMessages["@@last_modified"] = DateTime.now().toIso8601String();
   }
 
   var dartFiles = args.where((x) => x.endsWith(".dart")).toList();
   dartFiles.addAll(linesFromFile(sourcesListFile));
   for (var arg in dartFiles) {
-    var messages = extraction.parseFile(new File(arg), transformer);
+    var messages = extraction.parseFile(File(arg), transformer);
     messages.forEach(
       (k, v) => allMessages.addAll(
         toARB(v,
@@ -104,8 +104,8 @@ main(List<String> args) {
       ),
     );
   }
-  var file = new File(path.join(targetDir, outputFilename));
-  var encoder = new JsonEncoder.withIndent("  ");
+  var file = File(path.join(targetDir, outputFilename));
+  var encoder = JsonEncoder.withIndent("  ");
   file.writeAsStringSync(encoder.convert(allMessages));
   if (extraction.hasWarnings && extraction.warningsAreErrors) {
     exit(1);
