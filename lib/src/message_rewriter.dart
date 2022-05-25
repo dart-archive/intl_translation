@@ -56,7 +56,7 @@ rewriteWithStringSubstitution(
   var hasArgs = originalSource.contains(argsCheck);
   var withName = hasName ? '' : ",\nname: '${message.name}'";
   var withArgs = hasArgs ? '' : ',\nargs: ${message.arguments}';
-  var nameAndArgs = "$withName$withArgs)";
+  var nameAndArgs = '$withName$withArgs)';
   newSource.write(originalSource.substring(0, closingParen));
   newSource.write(nameAndArgs);
   // We normally don't have anything after the closing paren, but
