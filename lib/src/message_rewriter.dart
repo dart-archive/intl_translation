@@ -64,8 +64,8 @@ rewriteWithStringSubstitution(
   newSource.write(originalSource.substring(closingParen + 1));
 }
 
-final RegExp nameCheck = RegExp('[\\n,]\\s+name\:');
-final RegExp argsCheck = RegExp('[\\n,]\\s+args\:');
+final RegExp nameCheck = RegExp('[\\n,]\\s+name:');
+final RegExp argsCheck = RegExp('[\\n,]\\s+args:');
 
 /// Find all the messages in the [source] text.
 ///

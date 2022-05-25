@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: implementation_imports
+
 /// This provides classes to represent the internal structure of the
 /// arguments to `Intl.message`. It is used when parsing sources to extract
 /// messages or to generate code for message substitution. Normal programs
@@ -543,11 +545,9 @@ class MainMessage extends ComplexMessage {
   }
 
   @override
-  toCode() =>
-      throw UnsupportedError('MainMessage.toCode requires a locale');
+  toCode() => throw UnsupportedError('MainMessage.toCode requires a locale');
   @override
-  toJson() =>
-      throw UnsupportedError('MainMessage.toJson requires a locale');
+  toJson() => throw UnsupportedError('MainMessage.toJson requires a locale');
 
   /// Generate code for this message, expecting it to be part of a map
   /// keyed by name with values the function that calls Intl.message.

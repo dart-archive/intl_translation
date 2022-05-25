@@ -385,10 +385,10 @@ import 'package:$intlImportPath/intl.dart';
 /// * String s -> s
 /// * int n -> '\${args[n]}'
 /// * List list, one of
-///   * \['Intl.plural', int howMany, (templates for zero, one, ...)\]
-///   * \['Intl.gender', String gender, (templates for female, male, other)\]
-///   * \['Intl.select', String choice, { 'case' : template, ...} \]
-///   * \['text alternating with ', 0 , ' indexes in the argument list'\]
+///   * ['Intl.plural', int howMany, (templates for zero, one, ...)]
+///   * ['Intl.gender', String gender, (templates for female, male, other)]
+///   * ['Intl.select', String choice, { 'case' : template, ...} ]
+///   * ['text alternating with ', 0 , ' indexes in the argument list']
 String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
   if (input == null) return null;
   if (input is String) return input;

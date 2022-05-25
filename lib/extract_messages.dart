@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: implementation_imports
+
 /// This is for use in extracting messages from a Dart program
 /// using the Intl.message() mechanism and writing them to a file for
 /// translation. This provides only the stub of a mechanism, because it
@@ -483,8 +485,8 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// and the parameters to the Intl.plural or Intl.gender call.
   MainMessage messageFromDirectPluralOrGenderCall(MethodInvocation node) {
     MainMessage extractFromPluralOrGender(MainMessage message, _) {
-      var visitor = PluralAndGenderVisitor(
-          message.messagePieces, message, extraction);
+      var visitor =
+          PluralAndGenderVisitor(message.messagePieces, message, extraction);
       node.accept(visitor);
       return message;
     }

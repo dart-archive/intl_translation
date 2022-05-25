@@ -50,7 +50,7 @@ String trickyInterpolation(s) =>
     Intl.message('Interpolation is tricky when it ends a sentence like $s.',
         name: 'trickyInterpolation', args: [s], desc: 'interpolation');
 
-String get leadingQuotes => Intl.message('\"So-called\"', desc: 'so-called');
+String get leadingQuotes => Intl.message('"So-called"', desc: 'so-called');
 
 // A message with characters not in the basic multilingual plane.
 String originalNotInBMP() =>
@@ -219,7 +219,7 @@ printStuff(Intl locale) {
   // within another function definition.
   String message3(a, b, c) => Intl.message(
       'Characters that need escaping, e.g slashes \\ dollars \${ (curly braces '
-      'are ok) and xml reserved characters <& and quotes \" '
+      'are ok) and xml reserved characters <& and quotes " '
       'parameters $a, $b, and $c',
       desc: 'Lots of escapes',
       name: 'message3',

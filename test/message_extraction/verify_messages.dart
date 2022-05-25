@@ -21,7 +21,7 @@ verifyResult() {
   verify('Another message with parameter hello');
   verify('Characters that need escaping, e.g slashes \\ dollars \${ '
       '(curly braces are ok) and xml reserved characters <& and '
-      'quotes \" parameters 1, 2, and 3');
+      'quotes " parameters 1, 2, and 3');
   verify('This string extends across multiple lines.');
   verify('1, b, [c, d]');
   verify('"So-called"');
@@ -89,7 +89,7 @@ verifyResult() {
   verify('Un autre message avec un seul paramètre hello');
   verify('Caractères qui doivent être échapper, par exemple barres \\ '
       'dollars \${ (les accolades sont ok), et xml/html réservés <& et '
-      'des citations \" '
+      'des citations " '
       'avec quelques paramètres ainsi 1, 2, et 3');
   verify('Cette message prend plusiers lignes.');
   verify('1, b, [c, d]');
@@ -161,7 +161,7 @@ verifyResult() {
   verify('Eine weitere Meldung mit dem Parameter hello');
   verify('Zeichen, die Flucht benötigen, zB Schrägstriche \\ Dollar '
       '\${ (geschweiften Klammern sind ok) und xml reservierte Zeichen <& und '
-      'Zitate \" Parameter 1, 2 und 3');
+      'Zitate " Parameter 1, 2 und 3');
   verify('Dieser String erstreckt sich über mehrere '
       'Zeilen erstrecken.');
   verify('1, b, [c, d]');

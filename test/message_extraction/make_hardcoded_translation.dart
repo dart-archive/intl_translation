@@ -22,12 +22,12 @@ var french = {
   'message2': r'Un autre message avec un seul paramètre {x}',
   'alwaysTranslated': 'Cette chaîne est toujours traduit',
   'message1': "Il s'agit d'un message",
-  '\"So-called\"': '\"Soi-disant\"',
+  '"So-called"': '"Soi-disant"',
   'trickyInterpolation': r"L'interpolation est délicate "
       r'quand elle se termine une phrase comme {s}.',
   'message3': 'Caractères qui doivent être échapper, par exemple barres \\ '
       'dollars \${ (les accolades sont ok), et xml/html réservés <& et '
-      'des citations \" '
+      'des citations " '
       'avec quelques paramètres ainsi {a}, {b}, et {c}',
   'notAlwaysTranslated': 'Ce manque certaines traductions',
   'thisNameIsNotInTheOriginal': 'Could this lead to something malicious?',
@@ -93,12 +93,12 @@ var german = {
   'message2': r'Eine weitere Meldung mit dem Parameter {x}',
   'alwaysTranslated': 'Diese Zeichenkette wird immer übersetzt',
   'message1': 'Dies ist eine Nachricht',
-  '\"So-called\"': '\"Sogenannt\"',
+  '"So-called"': '"Sogenannt"',
   'trickyInterpolation': r'Interpolation ist schwierig, wenn es einen Satz '
       'wie dieser endet {s}.',
   'message3': 'Zeichen, die Flucht benötigen, zB Schrägstriche \\ Dollar '
       '\${ (geschweiften Klammern sind ok) und xml reservierte Zeichen <& und '
-      'Zitate \" Parameter {a}, {b} und {c}',
+      'Zitate " Parameter {a}, {b} und {c}',
   'YouveGotMessages_method': 'Dies ergibt sich aus einer Methode',
   'nonLambda': 'Diese Methode ist nicht eine Lambda',
   'staticMessage': 'Dies ergibt sich aus einer statischen Methode',
