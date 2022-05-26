@@ -14,8 +14,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        sdk: [2.14.0, stable, dev]
         os: [ubuntu-latest, macos-latest, windows-latest]
-        sdk: [2.12.2, stable, dev]
 
     steps:
       - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
