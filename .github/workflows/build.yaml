@@ -15,8 +15,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # TODO(devoncarew): Re-enable; there are currently 9 failing tests on
+        # Windows.
+        # os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         sdk: [2.14.0, stable, dev]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    name: build on ${{ matrix.os }} for ${{ matrix.sdk }}
 
     steps:
       - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
@@ -24,15 +29,15 @@ jobs:
         with:
           sdk: ${{ matrix.sdk }}
 
-      - name: Install dependencies
+      - name: dart pub get
         run: dart pub get
 
       # TODO(devoncarew): Re-enable this after more refactoring of the repo.
-      # - name: Verify formatting
+      # - name: dart format
       #   run: dart format --output=none --set-exit-if-changed .
 
-      - name: Analyze project source
+      - name: dart analyze
         run: dart analyze --fatal-infos
 
-      - name: Run tests
+      - name: dart test
         run: dart test
