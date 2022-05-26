@@ -1,16 +1,20 @@
 library verify_messages;
 
-import 'package:test/test.dart';
-
 import 'print_to_list.dart';
+
+void expectEquals(String actual, String expected) {
+  if (actual != expected) {
+    throw "expected '$expected' but got '$actual'";
+  }
+}
 
 void verifyResult() {
   Iterator<String> lineIterator;
 
-  void verify(String s) {
+  void verify(String str) {
     lineIterator.moveNext();
     var value = lineIterator.current;
-    expect(value, s);
+    expectEquals(value, str);
   }
 
   var expanded = lines.expand((line) => line.split('\n')).toList();
@@ -225,5 +229,8 @@ void verifyResult() {
   verify('Extraction skipped gender f');
   verify('Extraction skipped select specified Bob!');
   verify('This message should skip translation');
-  expect(lineIterator.moveNext(), isFalse);
+
+  if (lineIterator.moveNext()) {
+    throw 'too many elements: ${lineIterator.current}';
+  }
 }

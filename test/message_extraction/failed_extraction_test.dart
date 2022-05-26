@@ -21,11 +21,12 @@ const List<String> defaultFiles = [
   'part_of_sample_with_messages.dart'
 ];
 
-void runTestWithWarnings(
-    {bool warningsAreErrors,
-    int expectedExitCode,
-    bool embeddedPlurals = true,
-    List<String> sourceFiles = defaultFiles}) {
+void runTestWithWarnings({
+  bool warningsAreErrors,
+  int expectedExitCode,
+  bool embeddedPlurals = true,
+  List<String> sourceFiles = defaultFiles,
+}) {
   void verify(ProcessResult result) {
     try {
       expect(result.exitCode, expectedExitCode);
@@ -35,7 +36,7 @@ void runTestWithWarnings(
   }
 
   copyFilesToTempDirectory();
-  var program = asTestDirPath('../../bin/extract_to_arb.dart');
+  var program = 'bin/extract_to_arb.dart';
   List<String> args = ['--output-dir=$tempDir'];
   if (warningsAreErrors) {
     args.add('--warnings-are-errors');
@@ -43,11 +44,13 @@ void runTestWithWarnings(
   if (!embeddedPlurals) {
     args.add('--no-embedded-plurals');
   }
-  var files = sourceFiles.map(asTempDirPath).toList();
-  List<String> allArgs = [program, ...args, ...files];
+  List<String> allArgs = [
+    ...args,
+    ...sourceFiles,
+  ];
   var callback = expectAsync1(verify);
 
-  run(null, allArgs).then(callback);
+  run(program, allArgs).then(callback);
 }
 
 typedef ThenArgument = dynamic Function(ProcessResult _);
