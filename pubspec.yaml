@@ -16,6 +16,6 @@ dependencies:
   dart_style: ^2.0.3
   intl: ^0.17.0
   path: ^1.8.0
-  petitparser: ^4.2.0
+  petitparser: ^5.0.0
 dev_dependencies:
   test: ^1.17.10
