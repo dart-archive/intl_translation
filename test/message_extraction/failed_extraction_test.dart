@@ -13,8 +13,8 @@ import "package:test/test.dart";
 import "message_extraction_test.dart";
 
 main() {
-  test("Expect warnings but successful extraction", () {
-    runTestWithWarnings(warningsAreErrors: false, expectedExitCode: 0);
+  test("Expect warnings but successful extraction", () async {
+    await runTestWithWarnings(warningsAreErrors: false, expectedExitCode: 0);
   });
 }
 
@@ -23,11 +23,11 @@ const List<String> defaultFiles = const [
   "part_of_sample_with_messages.dart"
 ];
 
-void runTestWithWarnings(
+Future<void> runTestWithWarnings(
     {bool warningsAreErrors,
     int expectedExitCode,
     bool embeddedPlurals: true,
-    List<String> sourceFiles: defaultFiles}) {
+    List<String> sourceFiles: defaultFiles}) async {
   verify(ProcessResult result) {
     try {
       expect(result.exitCode, expectedExitCode);
@@ -36,7 +36,8 @@ void runTestWithWarnings(
     }
   }
 
-  copyFilesToTempDirectory();
+  await copyFilesToTempDirectory();
+
   var program = asTestDirPath("../../bin/extract_to_arb.dart");
   List<String> args = ["--output-dir=$tempDir"];
   if (warningsAreErrors) {

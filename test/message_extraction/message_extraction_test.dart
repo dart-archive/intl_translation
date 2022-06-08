@@ -8,6 +8,7 @@ library message_extraction_test;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
@@ -69,6 +70,7 @@ typedef ThenResult = Future<ProcessResult> Function(ProcessResult _);
 main() {
   setUp(copyFilesToTempDirectory);
   tearDown(deleteGeneratedFiles);
+
   test(
       "Test round trip message extraction, translation, code generation, "
       "and printing", () {
@@ -85,7 +87,7 @@ main() {
   });
 }
 
-void copyFilesToTempDirectory() {
+Future<void> copyFilesToTempDirectory() async {
   if (useLocalDirectory) {
     return;
   }
@@ -103,22 +105,20 @@ void copyFilesToTempDirectory() {
     asTestDirPath('mock_flutter/services.dart'),
   ];
 
-  for (var filename in files) {
-    var file = new File(filename);
+  for (var filePath in files) {
+    var file = new File(filePath);
     if (file.existsSync()) {
-      file.copySync(path.join(tempDir, path.basename(filename)));
+      file.copySync(path.join(tempDir, path.basename(filePath)));
     }
   }
 
-  // Copy our package_config.json file so the test can locate packages.
-  var sourcePackageConfig =
-      File(path.join('.dart_tool', 'package_config.json'));
-  var destPackageConfig =
-      File(path.join(tempDir, '.dart_tool', 'package_config.json'));
-  if (!destPackageConfig.parent.existsSync()) {
-    destPackageConfig.parent.createSync();
+  // Here we copy the package config file so the test can locate packages.
+  var configFile = File.fromUri(await Isolate.packageConfig);
+  var destFile = File(path.join(tempDir, '.dart_tool', 'package_config.json'));
+  if (!destFile.parent.existsSync()) {
+    destFile.parent.createSync();
   }
-  sourcePackageConfig.copySync(destPackageConfig.path);
+  configFile.copySync(destFile.path);
 }
 
 void deleteGeneratedFiles() {
