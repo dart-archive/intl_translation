@@ -8,6 +8,7 @@ library message_extraction_test;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
@@ -69,6 +70,7 @@ typedef ThenResult = Future<ProcessResult> Function(ProcessResult _);
 main() {
   setUp(copyFilesToTempDirectory);
   tearDown(deleteGeneratedFiles);
+
   test(
       "Test round trip message extraction, translation, code generation, "
       "and printing", () {
@@ -85,7 +87,7 @@ main() {
   });
 }
 
-void copyFilesToTempDirectory() {
+Future<void> copyFilesToTempDirectory() async {
   if (useLocalDirectory) {
     return;
   }
@@ -111,25 +113,20 @@ void copyFilesToTempDirectory() {
   }
 
   // TODO:devoncarew): Improve the integration testing story here.
-  // For github, copy the package_config.json file so the test can locate
-  // packages.
-  if (Directory('.dart_tool').existsSync()) {
-    var sourcePackageConfig =
-        File(path.join('.dart_tool', 'package_config.json'));
-    var destPackageConfig =
-        File(path.join(tempDir, '.dart_tool', 'package_config.json'));
-    if (!destPackageConfig.parent.existsSync()) {
-      destPackageConfig.parent.createSync();
-    }
-    sourcePackageConfig.copySync(destPackageConfig.path);
-  } else {
-    // For google3, copy the .packages file.
-    var filePath = asTestDirPath('.packages');
-    var file = new File(filePath);
-    if (file.existsSync()) {
-      file.copySync(path.join(tempDir, path.basename(filePath)));
-    }
+  // Here we copy the package config file so the test can locate packages.
+  // For github, we use package_config.json; for google3, .packages.
+  final dartTool = '.dart_tool';
+
+  var configFile = File.fromUri(await Isolate.packageConfig);
+  var destFile = File(path.joinAll([
+    tempDir,
+    if (configFile.path.contains(dartTool)) dartTool,
+    path.basename(configFile.path),
+  ]));
+  if (!destFile.parent.existsSync()) {
+    destFile.parent.createSync();
   }
+  configFile.copySync(destFile.path);
 }
 
 void deleteGeneratedFiles() {
