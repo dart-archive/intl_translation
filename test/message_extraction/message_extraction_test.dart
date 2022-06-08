@@ -124,8 +124,11 @@ void copyFilesToTempDirectory() {
     sourcePackageConfig.copySync(destPackageConfig.path);
   } else {
     // For google3, copy the .packages file.
-    var file = File(asTestDirPath('.packages'));
-    file.copySync(path.join(tempDir, path.basename(file.path)));
+    var filePath = asTestDirPath('.packages');
+    var file = new File(filePath);
+    if (file.existsSync()) {
+      file.copySync(path.join(tempDir, path.basename(filePath)));
+    }
   }
 }
 
