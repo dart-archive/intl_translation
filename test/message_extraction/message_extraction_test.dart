@@ -112,17 +112,9 @@ Future<void> copyFilesToTempDirectory() async {
     }
   }
 
-  // TODO:devoncarew): Improve the integration testing story here.
   // Here we copy the package config file so the test can locate packages.
-  // For github, we use package_config.json; for google3, .packages.
-  final dartTool = '.dart_tool';
-
   var configFile = File.fromUri(await Isolate.packageConfig);
-  var destFile = File(path.joinAll([
-    tempDir,
-    if (configFile.path.contains(dartTool)) dartTool,
-    path.basename(configFile.path),
-  ]));
+  var destFile = File(path.join(tempDir, '.dart_tool', 'package_config.json'));
   if (!destFile.parent.existsSync()) {
     destFile.parent.createSync();
   }
