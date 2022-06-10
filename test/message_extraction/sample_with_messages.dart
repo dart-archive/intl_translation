@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// ignore_for_file: type_annotate_public_apis
-
 /// This is a program with various [Intl.message] messages. It just prints
 /// all of them, and is used for testing of message extraction, translation,
 /// and code generation.
@@ -19,7 +17,7 @@ part 'part_of_sample_with_messages.dart';
 String message1() =>
     Intl.message('This is a message', name: 'message1', desc: 'foo');
 
-String message2(Object x) => Intl.message('Another message with parameter $x',
+String message2(String x) => Intl.message('Another message with parameter $x',
     name: 'mess' 'age2',
     desc: 'Description ' '2',
     args: [x],
@@ -68,7 +66,7 @@ String notAlwaysTranslated() =>
 // This is invalid and should be recognized as such, because the message has
 // to be a literal. Otherwise, interpolations would be outside of the function
 // scope.
-var someString = 'No, it has to be a literal string';
+String someString = 'No, it has to be a literal string';
 String noVariables() => Intl.message(someString,
     name: 'noVariables', desc: 'Invalid. Not a literal');
 
@@ -77,7 +75,7 @@ String noVariables() => Intl.message(someString,
 String escapable() => Intl.message('Escapable characters here: ',
     name: 'escapable', desc: 'Escapable characters');
 
-String outerPlural(n) => Intl.plural(n,
+String outerPlural(num n) => Intl.plural(n,
     zero: 'none',
     one: 'one',
     other: 'some',
@@ -85,7 +83,7 @@ String outerPlural(n) => Intl.plural(n,
     desc: 'A plural with no enclosing message',
     args: [n]);
 
-String outerGender(g) => Intl.gender(g,
+String outerGender(String g) => Intl.gender(g,
     male: 'm',
     female: 'f',
     other: 'o',
@@ -93,7 +91,7 @@ String outerGender(g) => Intl.gender(g,
     desc: 'A gender with no enclosing message',
     args: [g]);
 
-String pluralThatFailsParsing(noOfThings) => Intl.plural(noOfThings,
+String pluralThatFailsParsing(num noOfThings) => Intl.plural(noOfThings,
     one: '1 thing:',
     other: '$noOfThings things:',
     name: 'pluralThatFailsParsing',
@@ -102,11 +100,11 @@ String pluralThatFailsParsing(noOfThings) => Intl.plural(noOfThings,
 
 // A standalone gender message where we don't provide name or args. This should
 // be rejected by validation code.
-String invalidOuterGender(g) =>
+String invalidOuterGender(String g) =>
     Intl.gender(g, other: 'o', desc: 'Invalid outer gender');
 
 // A general select
-String outerSelect(currency, amount) => Intl.select(
+String outerSelect(String currency, num amount) => Intl.select(
     currency,
     {
       'CDN': '$amount Canadian dollars',
@@ -119,12 +117,12 @@ String outerSelect(currency, amount) => Intl.select(
 // An invalid select which should never appear. Unfortunately
 // it's difficult to write an automated test for this, you
 // just should be able to note a warning for it when extracting.
-String failedSelect(currency) => Intl.select(
+String failedSelect(String currency) => Intl.select(
     currency, {'this.should.fail': 'not valid', 'other': "doesn't matter"},
     name: 'failedSelect', args: [currency], desc: 'Invalid select');
 
 // A select with a plural inside the expressions.
-String nestedSelect(currency, amount) => Intl.select(
+String nestedSelect(String currency, num amount) => Intl.select(
     currency,
     {
       'CDN': Intl.plural(amount,
@@ -137,7 +135,7 @@ String nestedSelect(currency, amount) => Intl.select(
 
 // A trivial nested plural/gender where both are done directly rather than
 // in interpolations.
-String nestedOuter(number, gen) => Intl.plural(number,
+String nestedOuter(num number, String gen) => Intl.plural(number,
     other: Intl.gender(gen, male: '$number male', other: '$number other'),
     name: 'nestedOuter',
     args: [number, gen],
@@ -172,7 +170,7 @@ String extractable() => Intl.message('This message should be extractable',
 String skipMessage() => Intl.message('This message should skip extraction',
     skip: true, desc: 'Skipped message');
 
-String skipPlural(n) => Intl.plural(n,
+String skipPlural(num n) => Intl.plural(n,
     zero: 'Extraction skipped plural none',
     one: 'Extraction skipped plural one',
     other: 'Extraction skipped plural some',
@@ -181,7 +179,7 @@ String skipPlural(n) => Intl.plural(n,
     args: [n],
     skip: true);
 
-String skipGender(g) => Intl.gender(g,
+String skipGender(String g) => Intl.gender(g,
     male: 'Extraction skipped gender m',
     female: 'Extraction skipped gender f',
     other: 'Extraction skipped gender o',

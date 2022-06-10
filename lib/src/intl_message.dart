@@ -304,9 +304,10 @@ abstract class Message {
       r'$': r'\$'
     };
 
-    String _escape(String s) => escapes[s] ?? s;
-
-    var escaped = value.splitMapJoin('', onNonMatch: _escape);
+    var escaped = value.splitMapJoin(
+      '',
+      onNonMatch: (String string) => escapes[string] ?? string,
+    );
     return escaped;
   }
 
@@ -360,7 +361,7 @@ class CompositeMessage extends Message {
   @override
   List<Object> toJson() => pieces.map((each) => each.toJson()).toList();
   @override
-  String toString() => 'CompositeMessage(' + pieces.toString() + ')';
+  String toString() => 'CompositeMessage($pieces)';
   @override
   String expanded([Function transform = _nullTransform]) =>
       pieces.map((chunk) => transform(this, chunk)).join('');
@@ -576,7 +577,7 @@ class MainMessage extends ComplexMessage {
 
   String turnInterpolationBackIntoStringForm(Message message, dynamic chunk) {
     if (chunk is String) return escapeAndValidateString(chunk);
-    if (chunk is int) return r'${' + message.arguments[chunk] + '}';
+    if (chunk is int) return r'${message.arguments[chunk]}';
     if (chunk is Message) return chunk.toCode();
     throw ArgumentError.value(chunk, 'Unexpected value in Intl.message');
   }
@@ -720,7 +721,7 @@ abstract class SubMessage extends ComplexMessage {
   @override
   String expanded([Function transform = _nullTransform]) {
     String fullMessageForClause(String key) =>
-        key + '{' + transform(parent, this[key]).toString() + '}';
+        '$key{${transform(parent, this[key])}}';
     var clauses = attributeNames
         .where((key) => this[key] != null)
         .map(fullMessageForClause)

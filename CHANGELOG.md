@@ -2,6 +2,7 @@
   * Add support for Flutter locale split.
   * Allow null safe code when parsing.
   * Update analyzer dependency.
+  * Upgrade to `package:lints/recommended.yaml`.
 
 ## 0.17.10+1
   * Generate code that passes analysis with `implicit-casts: false`.

@@ -2,19 +2,15 @@ library verify_messages;
 
 import 'print_to_list.dart';
 
-void expectEquals(String actual, String expected) {
-  if (actual != expected) {
-    throw "expected '$expected' but got '$actual'";
-  }
-}
-
 void verifyResult() {
   Iterator<String> lineIterator;
 
-  void verify(String str) {
+  void verify(String expected) {
     lineIterator.moveNext();
-    var value = lineIterator.current;
-    expectEquals(value, str);
+    var actual = lineIterator.current;
+    if (expected != actual) {
+      throw "expected '$expected' but got '$actual'";
+    }
   }
 
   var expanded = lines.expand((line) => line.split('\n')).toList();
@@ -231,6 +227,6 @@ void verifyResult() {
   verify('This message should skip translation');
 
   if (lineIterator.moveNext()) {
-    throw 'too many elements: ${lineIterator.current}';
+    throw 'more messages than expected';
   }
 }

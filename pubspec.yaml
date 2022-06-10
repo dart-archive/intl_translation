@@ -10,13 +10,13 @@ environment:
   sdk: '>=2.10.0 <3.0.0'
 
 dependencies:
-  analyzer: ^3.0.0
+  analyzer: ^4.0.0
   args: ^2.0.0
   dart_style: ^2.0.0
   intl: ^0.17.0
   path: ^1.0.0
-  petitparser: ^4.0.0
+  petitparser: ^5.0.0
 
 dev_dependencies:
-  lints: ^1.0.0
+  lints: '>=1.0.0 <3.0.0'
   test: ^1.0.0

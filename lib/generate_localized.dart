@@ -166,8 +166,7 @@ class MessageGeneration {
 
   /// [generateIndividualMessageFile] for the beginning of the file,
   /// parameterized by [locale].
-  String prologue(String locale) =>
-      """
+  String prologue(String locale) => '''
 // DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
 // This is a library that provides messages for a $locale locale. All the
 // messages from the main program should be duplicated here with the same
@@ -190,8 +189,7 @@ typedef String$orNull MessageIfAbsent(
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => '$locale';
 
-""" +
-      (releaseMode ? overrideLookup() : '');
+${releaseMode ? overrideLookup() : ''}''';
 
   String overrideLookup() => """
   String$orNull lookupMessage(
@@ -351,13 +349,12 @@ abstract class DataMapMessageGeneration extends MessageGeneration {
   @override
   String get extraImports => '''
 import 'dart:convert';
+
 import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
 ''';
 
   @override
-  String prologue(String locale) =>
-      super.prologue(locale) +
-      '''
+  String prologue(String locale) => '''${super.prologue(locale)}
   String$orNull evaluateMessage(translation, List<dynamic> args) {
     return evaluateJsonTemplate(translation, args);
   }
@@ -368,16 +365,13 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
       Iterable<TranslatedMessage> usableTranslations, String locale);
 
   @override
-  String get mainPrologue =>
-      super.mainPrologue +
-      """
+  String get mainPrologue => """${super.mainPrologue}
+
 import 'package:$intlImportPath/intl.dart';
 """;
 
   @override
-  String get closing =>
-      super.closing +
-      '''
+  String get closing => '''${super.closing}
 /// Turn the JSON template into a string.
 ///
 /// We expect one of the following forms for the template.
@@ -697,12 +691,7 @@ abstract class TranslatedMessage {
 
   /// The original messages that we are a translation of. There can
   ///  be more than one original message for the same translation.
-  List<MainMessage> _originalMessages;
-
-  List<MainMessage> get originalMessages => _originalMessages;
-  set originalMessages(List<MainMessage> x) {
-    _originalMessages = x;
-  }
+  List<MainMessage> originalMessages;
 
   /// For backward compatibility, we still have the originalMessage API.
   MainMessage get originalMessage => originalMessages.first;
@@ -728,7 +717,7 @@ abstract class TranslatedMessage {
 /// We can't use a hyphen in a Dart library name, so convert the locale
 /// separator to an underscore.
 String libraryName(String x) =>
-    'messages_' + x.replaceAll('-', '_').toLowerCase();
+    'messages_${x.replaceAll('-', '_').toLowerCase()}';
 
 bool _hasArguments(MainMessage message) => message.arguments.isNotEmpty;
 

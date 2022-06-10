@@ -2,16 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.part of sample;
 
-// ignore_for_file: unnecessary_string_interpolations
-
-// Note - the above ignore is necessary for the integration tests to pass.
-
 part of sample;
 
 class Person {
-  final String name;
-  final String gender;
-
+  String name;
+  String gender;
   Person(this.name, this.gender);
 }
 
@@ -68,7 +63,7 @@ class YouveGotMessages {
   }
 
   // English doesn't do enough with genders, so this example is French.
-  String nested(List<Person> people, String place) {
+  String nested(List people, String place) {
     var names = people.map((x) => x.name).join(', ');
     var number = people.length;
     var combinedGender =
