@@ -366,7 +366,6 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
 
   @override
   String get mainPrologue => """${super.mainPrologue}
-
 import 'package:$intlImportPath/intl.dart';
 """;
 

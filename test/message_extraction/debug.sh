@@ -11,6 +11,8 @@ dart ../../bin/extract_to_arb.dart sample_with_messages.dart \
 
 dart make_hardcoded_translation.dart intl_messages.arb
 
-dart ../../bin/generate_from_arb.dart --json --generated-file-prefix=foo_ \
+dart ../../bin/generate_from_arb.dart \
+  --json --generated-file-prefix=foo_ \
+  --no-null-safety \
   sample_with_messages.dart part_of_sample_with_messages.dart \
   translation_fr.arb french2.arb translation_de_DE.arb
