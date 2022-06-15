@@ -1,6 +1,5 @@
 name: intl_translation
 version: 0.17.11
-author: Dart Team <misc@dartlang.org>
 description: >-
   Contains code to deal with internationalized/localized messages,
   date and number formatting and parsing, bi-directional text, and
@@ -11,11 +10,12 @@ environment:
   sdk: '>=2.7.0 <3.0.0'
 
 dependencies:
-  analyzer: ^2.0.0
-  args: ^2.2.0
-  dart_style: ^2.0.3
-  intl: ^0.17.0
-  path: ^1.8.0
-  petitparser: ^5.0.0
+  analyzer: '>=2.0.0 <5.0.0'
+  args: '>=2.0.0 <3.0.0'
+  dart_style: '>=2.0.0 <3.0.0'
+  intl: '>=0.0.0 <1.0.0'
+  path: '>=1.0.0 <2.0.0'
+  petitparser: '>=5.0.0 <6.0.0'
+
 dev_dependencies:
-  test: ^1.17.10
+  test: ^1.21.1
