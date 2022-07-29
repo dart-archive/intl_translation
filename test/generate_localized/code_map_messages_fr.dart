@@ -18,15 +18,17 @@ import 'dart:collection';
 
 final messages = new MessageLookup();
 
-typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
+typedef String MessageIfAbsent(String messageStr, List<Object> args);
 
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'fr';
 
-  String evaluateMessage(translation, List<dynamic> args) {
+  String evaluateMessage(Object translation, List<dynamic> args) {
     return evaluateJsonTemplate(translation, args);
   }
-  Map<String, dynamic> get messages => _constMessages;
-  static const _constMessages = <String, Object>{"Hello from application":"Bonjour de l'application"};
 
+  Map<String, dynamic> get messages => _constMessages;
+  static const _constMessages = <String, Object>{
+    "Hello from application": "Bonjour de l'application"
+  };
 }

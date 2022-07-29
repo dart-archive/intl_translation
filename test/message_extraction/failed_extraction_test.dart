@@ -2,33 +2,33 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@Timeout(const Duration(seconds: 180))
+@Timeout(Duration(seconds: 180))
 
 library failed_extraction_test;
 
-import "dart:io";
+import 'dart:io';
 
-import "package:test/test.dart";
+import 'package:test/test.dart';
 
-import "message_extraction_test.dart";
+import 'message_extraction_test.dart';
 
-main() {
-  test("Expect warnings but successful extraction", () async {
+void main() {
+  test('Expect warnings but successful extraction', () async {
     await runTestWithWarnings(warningsAreErrors: false, expectedExitCode: 0);
   });
 }
 
-const List<String> defaultFiles = const [
-  "sample_with_messages.dart",
-  "part_of_sample_with_messages.dart"
+const List<String> defaultFiles = [
+  'sample_with_messages.dart',
+  'part_of_sample_with_messages.dart'
 ];
 
 Future<void> runTestWithWarnings(
     {bool warningsAreErrors,
     int expectedExitCode,
-    bool embeddedPlurals: true,
-    List<String> sourceFiles: defaultFiles}) async {
-  verify(ProcessResult result) {
+    bool embeddedPlurals = true,
+    List<String> sourceFiles = defaultFiles}) async {
+  void verify(ProcessResult result) {
     try {
       expect(result.exitCode, expectedExitCode);
     } finally {
@@ -38,8 +38,8 @@ Future<void> runTestWithWarnings(
 
   await copyFilesToTempDirectory();
 
-  var program = asTestDirPath("../../bin/extract_to_arb.dart");
-  List<String> args = ["--output-dir=$tempDir"];
+  var program = asTestDirPath('../../bin/extract_to_arb.dart');
+  List<String> args = ['--output-dir=$tempDir'];
   if (warningsAreErrors) {
     args.add('--warnings-are-errors');
   }
@@ -47,9 +47,7 @@ Future<void> runTestWithWarnings(
     args.add('--no-embedded-plurals');
   }
   var files = sourceFiles.map(asTempDirPath).toList();
-  List<String> allArgs = [program]
-    ..addAll(args)
-    ..addAll(files);
+  List<String> allArgs = [program, ...args, ...files];
   var callback = expectAsync1(verify);
 
   run(null, allArgs).then(callback);

@@ -21,12 +21,12 @@ String evaluateJsonTemplate(dynamic input, List<dynamic> args) {
   if (input == null) return null;
   if (input is String) return input;
   if (input is int) {
-    return "${args[input]}";
+    return '${args[input]}';
   }
 
   var template = input as List<dynamic>;
   var messageName = template.first;
-  if (messageName == "Intl.plural") {
+  if (messageName == 'Intl.plural') {
      var howMany = args[template[1] as int] as num;
      return evaluateJsonTemplate(
          Intl.pluralLogic(
@@ -39,7 +39,7 @@ String evaluateJsonTemplate(dynamic input, List<dynamic> args) {
              other: template[7]),
          args);
    }
-   if (messageName == "Intl.gender") {
+   if (messageName == 'Intl.gender') {
      var gender = args[template[1] as int] as String;
      return evaluateJsonTemplate(
          Intl.genderLogic(
@@ -49,7 +49,7 @@ String evaluateJsonTemplate(dynamic input, List<dynamic> args) {
              other: template[4]),
          args);
    }
-   if (messageName == "Intl.select") {
+   if (messageName == 'Intl.select') {
      var select = args[template[1] as int] as Object;
      var choices = template[2] as Map<Object, Object>;
      return evaluateJsonTemplate(Intl.selectLogic(select, choices), args);
@@ -57,12 +57,12 @@ String evaluateJsonTemplate(dynamic input, List<dynamic> args) {
 
    // If we get this far, then we are a basic interpolation, just strings and
    // ints.
-   var output = new StringBuffer();
+   var output = StringBuffer();
    for (var entry in template) {
      if (entry is int) {
-       output.write("${args[entry]}");
+       output.write('${args[entry]}');
      } else {
-       output.write("$entry");
+       output.write('$entry');
      }
    }
    return output.toString();

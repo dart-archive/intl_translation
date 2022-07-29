@@ -1,10 +1,20 @@
-include: package:lints/core.yaml
+include: package:lints/recommended.yaml
+
+analyzer:
+  errors:
+    # Challenging with the file name patterns that this package generates.
+    file_names: ignore
+    # This can cause issues with recognizing localizable strings.
+    unnecessary_string_interpolations: ignore
 
 linter:
   rules:
-    # Disable requiring lowercase_with_underscore file names.
-    file_names: false
-
     # Enable some additional lints.
-    directives_ordering: true
-    sort_pub_dependencies: true
+    - always_declare_return_types
+    - directives_ordering
+    - prefer_single_quotes
+    - sort_pub_dependencies
+    - type_annotate_public_apis
+
+    # This is currently challenging for this package.
+    # - avoid_dynamic_calls

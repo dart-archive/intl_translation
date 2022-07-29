@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: implementation_imports
+
 /// This is for use in extracting messages from a Dart program
 /// using the Intl.message() mechanism and writing them to a file for
 /// translation. This provides only the stub of a mechanism, because it
@@ -110,7 +112,7 @@ class MessageExtraction {
     } else {
       return {};
     }
-    var visitor = new MessageFindingVisitor(this);
+    var visitor = MessageFindingVisitor(this);
     visitor.generateNameAndArgs = transformer;
     root.accept(visitor);
     return visitor.messages;
@@ -121,7 +123,7 @@ class MessageExtraction {
         content: contents, featureSet: _featureSet, throwIfDiagnostics: false);
 
     if (result.errors.isNotEmpty) {
-      print("Error in parsing $origin, no messages extracted.");
+      print('Error in parsing $origin, no messages extracted.');
       throw ArgumentError('Parsing errors in $origin');
     }
 
@@ -139,13 +141,13 @@ class MessageExtraction {
   String origin;
 
   String _reportErrorLocation(AstNode node) {
-    var result = new StringBuffer();
-    if (origin != null) result.write("    from $origin");
+    var result = StringBuffer();
+    if (origin != null) result.write('    from $origin');
     var info = root.lineInfo;
     if (info != null) {
       var line = info.getLocation(node.offset);
       result
-          .write("    line: ${line.lineNumber}, column: ${line.columnNumber}");
+          .write('    line: ${line.lineNumber}, column: ${line.columnNumber}');
     }
     return result.toString();
   }
@@ -162,7 +164,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   final MessageExtraction extraction;
 
   /// Accumulates the messages we have found, keyed by name.
-  final Map<String, MainMessage> messages = new Map<String, MainMessage>();
+  final Map<String, MainMessage> messages = <String, MainMessage>{};
 
   /// Should we generate the name and arguments from the function definition,
   /// meaning we're running in the transformer.
@@ -184,7 +186,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
   /// Return true if [node] matches the pattern we expect for Intl.message()
   bool looksLikeIntlMessage(MethodInvocation node) {
-    const validNames = const ["message", "plural", "gender", "select"];
+    const validNames = ['message', 'plural', 'gender', 'select'];
     if (!validNames.contains(node.methodName.name)) return false;
     final target = node.target;
     if (target is SimpleIdentifier) {
@@ -198,13 +200,13 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   Message _expectedInstance(String type) {
     switch (type) {
       case 'message':
-        return new MainMessage();
+        return MainMessage();
       case 'plural':
-        return new Plural();
+        return Plural();
       case 'gender':
-        return new Gender();
+        return Gender();
       case 'select':
-        return new Select();
+        return Select();
       default:
         return null;
     }
@@ -214,12 +216,12 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// reason is found, so it's presumed valid.
   String checkValidity(MethodInvocation node) {
     if (parameters == null) {
-      return "Calls to Intl must be inside a method, field declaration or "
-          "top level declaration.";
+      return 'Calls to Intl must be inside a method, field declaration or '
+          'top level declaration.';
     }
     // The containing function cannot have named parameters.
     if (parameters.any((each) => each.isNamed)) {
-      return "Named parameters on message functions are not supported.";
+      return 'Named parameters on message functions are not supported.';
     }
     var arguments = node.argumentList.arguments;
     var instance = _expectedInstance(node.methodName.name);
@@ -230,6 +232,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
   /// Record the parameters of the function or method declaration we last
   /// encountered before seeing the Intl.message call.
+  @override
   void visitMethodDeclaration(MethodDeclaration node) {
     name = node.name.name;
     parameters = node.parameters?.parameters ?? _emptyParameterList;
@@ -242,6 +245,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
   /// Record the parameters of the function or method declaration we last
   /// encountered before seeing the Intl.message call.
+  @override
   void visitFunctionDeclaration(FunctionDeclaration node) {
     name = node.name.name;
     parameters =
@@ -255,6 +259,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
   /// Record the name of field declaration we last
   /// encountered before seeing the Intl.message call.
+  @override
   void visitFieldDeclaration(FieldDeclaration node) {
     // We don't support names in list declarations,
     // e.g. String first, second = Intl.message(...);
@@ -273,6 +278,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
   /// Record the name of the top level variable declaration we last
   /// encountered before seeing the Intl.message call.
+  @override
   void visitTopLevelVariableDeclaration(TopLevelVariableDeclaration node) {
     // We don't support names in list declarations,
     // e.g. String first, second = Intl.message(...);
@@ -293,6 +299,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// If we've found one, stop recursing. This is important because we can have
   /// Intl.message(...Intl.plural...) and we don't want to treat the inner
   /// plural as if it was an outermost message.
+  @override
   void visitMethodInvocation(MethodInvocation node) {
     if (!addIntlMessage(node)) {
       super.visitMethodInvocation(node);
@@ -309,10 +316,10 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
     if (reason != null) {
       if (!extraction.suppressWarnings) {
-        var err = new StringBuffer()
-          ..write("Skipping invalid Intl.message invocation\n    <$node>\n")
+        var err = StringBuffer()
+          ..write('Skipping invalid Intl.message invocation\n    <$node>\n')
           ..writeAll(
-              ["    reason: $reason\n", extraction._reportErrorLocation(node)]);
+              ['    reason: $reason\n', extraction._reportErrorLocation(node)]);
         var errString = err.toString();
         extraction.warnings.add(errString);
         extraction.onMessage(errString);
@@ -327,13 +334,13 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   String _extractMessage(MethodInvocation node) {
     MainMessage message;
     try {
-      if (node.methodName.name == "message") {
+      if (node.methodName.name == 'message') {
         message = messageFromIntlMessageCall(node);
       } else {
         message = messageFromDirectPluralOrGenderCall(node);
       }
     } catch (e, s) {
-      return "Unexpected exception: $e, $s";
+      return 'Unexpected exception: $e, $s';
     }
     return message == null ? null : _validateMessage(message);
   }
@@ -364,7 +371,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
       var messageCode =
           message.toOriginalCode(includeDesc: false, includeExamples: false);
       if (existingCode != messageCode) {
-        return "WARNING: Duplicate message name:\n"
+        return 'WARNING: Duplicate message name:\n'
             "'${message.name}' occurs more than once in ${extraction.origin}";
       }
     } else {
@@ -382,10 +389,11 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// [messageFromIntlMessageCall] and [messageFromDirectPluralOrGenderCall].
   MainMessage _messageFromNode(
       MethodInvocation node,
-      MainMessage extract(MainMessage message, List<AstNode> arguments),
-      void setAttribute(
-          MainMessage message, String fieldName, Object fieldValue)) {
-    var message = new MainMessage();
+      MainMessage Function(MainMessage message, List<AstNode> arguments)
+          extract,
+      void Function(MainMessage message, String fieldName, Object fieldValue)
+          setAttribute) {
+    var message = MainMessage();
     message.sourcePosition = node.offset;
     message.endPosition = node.end;
     message.arguments = parameters.map((x) => x.identifier.name).toList();
@@ -400,7 +408,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     for (var namedArgument in arguments.whereType<NamedExpression>()) {
       var name = namedArgument.name.label.name;
       var exp = namedArgument.expression;
-      var evaluator = new ConstantEvaluator();
+      var evaluator = ConstantEvaluator();
       var basicValue = exp.accept(evaluator);
       var value = basicValue == ConstantEvaluator.NOT_A_CONSTANT
           ? exp.toString()
@@ -429,14 +437,14 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// Find the message pieces from a Dart interpolated string.
   List _extractFromIntlCallWithInterpolation(
       MainMessage message, List<AstNode> arguments) {
-    var interpolation = new InterpolationVisitor(message, extraction);
+    var interpolation = InterpolationVisitor(message, extraction);
     arguments.first.accept(interpolation);
     if (interpolation.pieces.any((x) => x is Plural || x is Gender) &&
         !extraction.allowEmbeddedPluralsAndGenders) {
       if (interpolation.pieces.any((x) => x is String && x.isNotEmpty)) {
-        throw new IntlMessageExtractionException(
-            "Plural and gender expressions must be at the top level, "
-            "they cannot be embedded in larger string literals.\n");
+        throw IntlMessageExtractionException(
+            'Plural and gender expressions must be at the top level, '
+            'they cannot be embedded in larger string literals.\n');
       }
     }
     return interpolation.pieces;
@@ -456,8 +464,8 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
         message.addPieces(extracted);
       } on IntlMessageExtractionException catch (e) {
         message = null;
-        var err = new StringBuffer()
-          ..writeAll(["Error ", e, "\nProcessing <", node, ">\n"])
+        var err = StringBuffer()
+          ..writeAll(['Error ', e, '\nProcessing <', node, '>\n'])
           ..write(extraction._reportErrorLocation(node));
         var errString = err.toString();
         extraction.onMessage(errString);
@@ -478,8 +486,8 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// and the parameters to the Intl.plural or Intl.gender call.
   MainMessage messageFromDirectPluralOrGenderCall(MethodInvocation node) {
     MainMessage extractFromPluralOrGender(MainMessage message, _) {
-      var visitor = new PluralAndGenderVisitor(
-          message.messagePieces, message, extraction);
+      var visitor =
+          PluralAndGenderVisitor(message.messagePieces, message, extraction);
       node.accept(visitor);
       return message;
     }
@@ -513,26 +521,31 @@ class InterpolationVisitor extends SimpleAstVisitor {
   List pieces = [];
   String get extractedMessage => pieces.join();
 
+  @override
   void visitAdjacentStrings(AdjacentStrings node) {
     node.visitChildren(this);
     super.visitAdjacentStrings(node);
   }
 
+  @override
   void visitStringInterpolation(StringInterpolation node) {
     node.visitChildren(this);
     super.visitStringInterpolation(node);
   }
 
+  @override
   void visitSimpleStringLiteral(SimpleStringLiteral node) {
     pieces.add(node.value);
     super.visitSimpleStringLiteral(node);
   }
 
+  @override
   void visitInterpolationString(InterpolationString node) {
     pieces.add(node.value);
     super.visitInterpolationString(node);
   }
 
+  @override
   void visitInterpolationExpression(InterpolationExpression node) {
     if (node.expression is SimpleIdentifier) {
       handleSimpleInterpolation(node);
@@ -543,21 +556,21 @@ class InterpolationVisitor extends SimpleAstVisitor {
   }
 
   void lookForPluralOrGender(InterpolationExpression node) {
-    var visitor = new PluralAndGenderVisitor(pieces, message, extraction);
+    var visitor = PluralAndGenderVisitor(pieces, message, extraction);
     node.accept(visitor);
     if (!visitor.foundPluralOrGender) {
-      throw new IntlMessageExtractionException(
-          "Only simple identifiers and Intl.plural/gender/select expressions "
-          "are allowed in message "
-          "interpolation expressions.\nError at $node");
+      throw IntlMessageExtractionException(
+          'Only simple identifiers and Intl.plural/gender/select expressions '
+          'are allowed in message '
+          'interpolation expressions.\nError at $node');
     }
   }
 
   void handleSimpleInterpolation(InterpolationExpression node) {
     var index = arguments.indexOf(node.expression.toString());
     if (index == -1) {
-      throw new IntlMessageExtractionException(
-          "Cannot find argument ${node.expression}");
+      throw IntlMessageExtractionException(
+          'Cannot find argument ${node.expression}');
     }
     pieces.add(index);
   }
@@ -568,7 +581,7 @@ class InterpolationVisitor extends SimpleAstVisitor {
 /// A visitor to extract information from Intl.plural/gender sends. Note that
 /// this is a SimpleAstVisitor, so it doesn't automatically recurse. So this
 /// needs to be called where we expect a plural or gender immediately below.
-class PluralAndGenderVisitor extends SimpleAstVisitor {
+class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
   /// The message extraction in which we are running.
   final MessageExtraction extraction;
 
@@ -585,7 +598,8 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
 
   PluralAndGenderVisitor(this.pieces, this.parent, this.extraction) : super();
 
-  visitInterpolationExpression(InterpolationExpression node) {
+  @override
+  void visitInterpolationExpression(InterpolationExpression node) {
     // TODO(alanknight): Provide better errors for malformed expressions.
     if (!looksLikePluralOrGender(node.expression)) return;
     var reason = checkValidity(node.expression);
@@ -596,7 +610,8 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
     super.visitInterpolationExpression(node);
   }
 
-  visitMethodInvocation(MethodInvocation node) {
+  @override
+  void visitMethodInvocation(MethodInvocation node) {
     pieces.add(messageFromMethodInvocation(node));
     super.visitMethodInvocation(node);
   }
@@ -605,12 +620,12 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
   bool looksLikePluralOrGender(Expression expression) {
     if (expression is! MethodInvocation) return false;
     final node = expression as MethodInvocation;
-    if (!["plural", "gender", "select"].contains(node.methodName.name)) {
+    if (!['plural', 'gender', 'select'].contains(node.methodName.name)) {
       return false;
     }
-    if (!(node.target is SimpleIdentifier)) return false;
+    if (node.target is! SimpleIdentifier) return false;
     SimpleIdentifier target = node.target;
-    return target.token.toString() == "Intl";
+    return target.token.toString() == 'Intl';
   }
 
   /// Returns a String describing why the node is invalid, or null if no
@@ -626,26 +641,27 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
   Message messageFromMethodInvocation(MethodInvocation node) {
     SubMessage message;
     switch (node.methodName.name) {
-      case "gender":
-        message = new Gender();
+      case 'gender':
+        message = Gender();
         break;
-      case "plural":
-        message = new Plural();
+      case 'plural':
+        message = Plural();
         break;
-      case "select":
-        message = new Select();
+      case 'select':
+        message = Select();
         break;
       default:
-        throw new IntlMessageExtractionException(
-            "Invalid plural/gender/select message ${node.methodName.name} "
-            "in $node");
+        throw IntlMessageExtractionException(
+            'Invalid plural/gender/select message ${node.methodName.name} '
+            'in $node');
     }
     message.parent = parent;
 
     var arguments = message.argumentsOfInterestFor(node);
     arguments.forEach((key, value) {
+      // `value` is often - or always? - an Expression.
       try {
-        var interpolation = new InterpolationVisitor(message, extraction);
+        var interpolation = InterpolationVisitor(message, extraction);
         value.accept(interpolation);
         // Might be null due to previous errors.
         // Continue collecting errors, but don't build message.
@@ -654,8 +670,8 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
         }
       } on IntlMessageExtractionException catch (e) {
         message = null;
-        var err = new StringBuffer()
-          ..writeAll(["Error ", e, "\nProcessing <", node, ">"])
+        var err = StringBuffer()
+          ..writeAll(['Error ', e, '\nProcessing <', node, '>'])
           ..write(extraction._reportErrorLocation(node));
         var errString = err.toString();
         extraction.onMessage(errString);
@@ -670,10 +686,10 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
     } else if (mainArg is SimpleIdentifier) {
       message.mainArgument = mainArg.name;
     } else {
-      var err = new StringBuffer()
-        ..write("Error (Invalid argument to plural/gender/select, "
-            "must be simple variable reference) "
-            "\nProcessing <$node>")
+      var err = StringBuffer()
+        ..write('Error (Invalid argument to plural/gender/select, '
+            'must be simple variable reference) '
+            '\nProcessing <$node>')
         ..write(extraction._reportErrorLocation(node));
       var errString = err.toString();
       extraction.onMessage(errString);
@@ -688,6 +704,6 @@ class PluralAndGenderVisitor extends SimpleAstVisitor {
 /// a name based on that and the meaning, if present.
 // NOTE: THIS LOGIC IS DUPLICATED IN intl AND THE TWO MUST MATCH.
 String computeMessageName(String name, String text, String meaning) {
-  if (name != null && name != "") return name;
-  return meaning == null ? text : "${text}_${meaning}";
+  if (name != null && name != '') return name;
+  return meaning == null ? text : '${text}_$meaning';
 }

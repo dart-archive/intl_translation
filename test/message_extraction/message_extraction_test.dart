@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@Timeout(const Duration(seconds: 180))
+@Timeout(Duration(seconds: 180))
 
 library message_extraction_test;
 
@@ -14,8 +14,6 @@ import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 
 import '../data_directory.dart';
-
-final dart = Platform.executable;
 
 /// Should we use deferred loading.
 bool useDeferredLoading = true;
@@ -39,20 +37,20 @@ final vmArgs = Platform.executableArguments;
 /// generated files around after a failed test. For debugging, we omit that
 /// step if [useLocalDirectory] is true. The place we move them to is saved as
 /// [tempDir].
-String get tempDir => _tempDir == null ? _tempDir = _createTempDir() : _tempDir;
+String get tempDir => _tempDir ?? (_tempDir = _createTempDir());
 String _tempDir;
 String _createTempDir() => useLocalDirectory
     ? '.'
     : Directory.systemTemp.createTempSync('message_extraction_test').path;
 
-var useLocalDirectory = false;
+bool useLocalDirectory = false;
 
 /// Translate a relative file path into this test directory. This is
 /// applied to all the arguments of [run]. It will ignore a string that
 /// is an absolute path or begins with "--", because some of the arguments
 /// might be command-line options.
 String asTestDirPath([String s]) {
-  if (s == null || s.startsWith("--") || path.isAbsolute(s)) return s;
+  if (s == null || s.startsWith('--') || path.isAbsolute(s)) return s;
   return path.join(packageDirectory, 'test', 'message_extraction', s);
 }
 
@@ -61,19 +59,19 @@ String asTestDirPath([String s]) {
 /// is an absolute path or begins with "--", because some of the arguments
 /// might be command-line options.
 String asTempDirPath([String s]) {
-  if (s == null || s.startsWith("--") || path.isAbsolute(s)) return s;
+  if (s == null || s.startsWith('--') || path.isAbsolute(s)) return s;
   return path.join(tempDir, s);
 }
 
 typedef ThenResult = Future<ProcessResult> Function(ProcessResult _);
 
-main() {
+void main() {
   setUp(copyFilesToTempDirectory);
   tearDown(deleteGeneratedFiles);
 
   test(
-      "Test round trip message extraction, translation, code generation, "
-      "and printing", () {
+      'Test round trip message extraction, translation, code generation, '
+      'and printing', () {
     var makeSureWeVerify = expectAsync1(runAndVerify);
     return extractMessages(null)
         .then((result) {
@@ -106,7 +104,7 @@ Future<void> copyFilesToTempDirectory() async {
   ];
 
   for (var filePath in files) {
-    var file = new File(filePath);
+    var file = File(filePath);
     if (file.existsSync()) {
       file.copySync(path.join(tempDir, path.basename(filePath)));
     }
@@ -124,10 +122,10 @@ Future<void> copyFilesToTempDirectory() async {
 void deleteGeneratedFiles() {
   if (useLocalDirectory) return;
   try {
-    new Directory(tempDir).deleteSync(recursive: true);
+    Directory(tempDir).deleteSync(recursive: true);
   } on Error catch (e) {
-    print("Failed to delete $tempDir");
-    print("Exception:\n$e");
+    print('Failed to delete $tempDir');
+    print('Exception:\n$e');
   }
 }
 
@@ -144,26 +142,27 @@ Future<ProcessResult> run(
       .toList();
   // Inject the script argument --output-dir in between the script and its
   // arguments.
-  List<String> args = []
-    ..addAll(vmArgs)
-    ..add(filesInTheRightDirectory.first)
-    ..addAll(["--output-dir=$tempDir"])
-    ..addAll(filesInTheRightDirectory.skip(1));
-  var result = Process.run(dart, args,
-      stdoutEncoding: new Utf8Codec(), stderrEncoding: new Utf8Codec());
+  List<String> args = [
+    ...vmArgs,
+    filesInTheRightDirectory.first,
+    '--output-dir=$tempDir',
+    ...filesInTheRightDirectory.skip(1)
+  ];
+  var result = Process.run(Platform.executable, args,
+      stdoutEncoding: Utf8Codec(), stderrEncoding: Utf8Codec());
   return result;
 }
 
-checkResult(ProcessResult previousResult) {
-  if (previousResult != null) {
-    if (previousResult.exitCode != 0) {
-      print("Error running sub-program:");
+void checkResult(ProcessResult result) {
+  if (result != null) {
+    if (result.exitCode != 0) {
+      print('Error running sub-program:');
+      print(result.stdout);
+      print(result.stderr);
+      print('exitCode=${result.exitCode}');
     }
-    print(previousResult.stdout);
-    print(previousResult.stderr);
-    print("exitCode=${previousResult.exitCode}");
-    // Fail the test.
-    expect(previousResult.exitCode, 0);
+
+    expect(result.exitCode, 0);
   }
 }
 
@@ -186,14 +185,15 @@ Future<ProcessResult> generateCodeFromTranslation(
     run(previousResult, [
       asTestDirPath('../../bin/generate_from_arb.dart'),
       deferredLoadArg,
-      '--' + (useJson ? '' : 'no-') + 'json',
-      '--' + (useFlutterLocaleSplit ? '' : 'no-') + 'flutter',
+      '--${useJson ? '' : 'no-'}json',
+      '--${useFlutterLocaleSplit ? '' : 'no-'}flutter',
       '--flutter-import-path=.', // Mocks package:flutter/services.dart
       '--generated-file-prefix=foo_',
       '--sources-list-file',
       'dart_list.txt',
       '--translations-list-file',
-      'arb_list.txt'
+      'arb_list.txt',
+      '--no-null-safety',
     ]);
 
 Future<ProcessResult> runAndVerify(ProcessResult previousResult) {
