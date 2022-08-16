@@ -3,6 +3,8 @@
 // messages from the main program should be duplicated here with the same
 // function name.
 
+// @dart=2.10
+
 import 'package:intl/intl.dart';
 import 'package:intl/message_lookup_by_library.dart';
 

@@ -3,6 +3,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// @dart=2.10
+
 /// This script uses the extract_messages.dart library to find the Intl.message
 /// calls in the target dart files and produces ARB format output. See
 /// https://code.google.com/p/arb/wiki/ApplicationResourceBundleSpecification

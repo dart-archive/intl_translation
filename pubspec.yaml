@@ -7,7 +7,7 @@ description: >-
 repository: https://github.com/dart-lang/intl_translation
 
 environment:
-  sdk: '>=2.10.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   # TODO: widen this range
