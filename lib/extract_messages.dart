@@ -4,6 +4,7 @@
 
 // @dart=2.10
 
+// ignore_for_file: deprecated_member_use, #168
 // ignore_for_file: implementation_imports
 
 /// This is for use in extracting messages from a Dart program

@@ -10,8 +10,7 @@ environment:
   sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  # TODO: widen this range
-  analyzer: '>=4.0.0 <4.4.0'
+  analyzer: ^4.0.0
   args: ^2.0.0
   dart_style: ^2.0.0
   intl: ^0.17.0
