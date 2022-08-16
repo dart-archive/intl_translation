@@ -1,0 +1,116 @@
+00:00 +0: test/intl_message_test.dart: Prefer explicit =0 to ZERO in plural
+00:00 +1: test/intl_message_test.dart: Prefer explicit =1 to ONE in plural
+00:00 +2: test/intl_message_test.dart: Prefer explicit =1 to ONE in plural, reverse order
+00:00 +3: test/intl_message_test.dart: Prefer explicit =2 to TWO in plural
+00:00 +4: test/generate_localized/code_map_test.dart: String lookups should provide translation to French
+00:00 +5: test/two_components/initialize_child_test.dart: Initialize sub-locale
+00:00 +6: test/two_components/main_app_test.dart: Component has its own messages
+00:00 +7: test/message_extraction/failed_extraction_test.dart: Expect warnings but successful extraction
+00:00 +7: test/message_extraction/examples_parsing_test.dart: Message examples are correctly extracted
+Skipping invalid Intl.message invocation
+    <Intl.message(someString, name: 'noVariables', desc: 'Invalid. Not a literal')>
+    reason: Intl.message messages must be string literals
+    from /Users/devoncarew/projects/dart-lang/intl_translation/test/message_extraction/sample_with_messages.dart    line: 70, column: 25
+Skipping invalid Intl.message invocation
+    <Intl.gender(g, other: 'o', desc: 'Invalid outer gender')>
+    reason: The 'args' argument for Intl.message must be specified for messages with parameters. Consider using rewrite_intl_messages.dart
+    from /Users/devoncarew/projects/dart-lang/intl_translation/test/message_extraction/sample_with_messages.dart    line: 104, column: 5
+Error IntlMessageExtractionException: Invalid select keyword: 'this.should.fail', must match '[a-zA-Z][a-zA-Z0-9_-]*'
+Processing <Intl.select(currency, {'this.should.fail' : 'not valid', 'other' : "doesn't matter"}, name: 'failedSelect', args: [currency], desc: 'Invalid select')>    from /Users/devoncarew/projects/dart-lang/intl_translation/test/message_extraction/sample_with_messages.dart    line: 120, column: 41
+Skipping invalid Intl.message invocation
+    <Intl.select(currency, {'this.should.fail' : 'not valid', 'other' : "doesn't matter"}, name: 'failedSelect', args: [currency], desc: 'Invalid select')>
+    reason: Unexpected exception: NoSuchMethodError: The setter 'mainArgument=' was called on null.
+Receiver: null
+Tried calling: mainArgument="currency", #0      Object.noSuchMethod (dart:core-patch/object_patch.dart:38:5)
+#1      PluralAndGenderVisitor.messageFromMethodInvocation (package:intl_translation/extract_messages.dart:687:15)
+#2      PluralAndGenderVisitor.visitMethodInvocation (package:intl_translation/extract_messages.dart:615:16)
+#3      MethodInvocationImpl.accept (package:analyzer/src/dart/ast/ast.dart:7935:50)
+#4      MessageFindingVisitor.messageFromDirectPluralOrGenderCall.extractFromPluralOrGender (package:intl_translation/extract_messages.dart:491:12)
+#5      MessageFindingVisitor._messageFromNode (package:intl_translation/extract_messages.dart:405:35)
+#6      MessageFindingVisitor.messageFromDirectPluralOrGenderCall (package:intl_translation/extract_messages.dart:501:12)
+#7      MessageFindingVisitor._extractMessage (package:intl_translation/extract_messages.dart:340:19)
+#8      MessageFindingVisitor.addIntlMessage (package:intl_translation/extract_messages.dart:315:41)
+#9      MessageFindingVisitor.visitMethodInvocation (package:intl_translation/extract_messages.dart:304:10)
+#10     MethodInvocationImpl.accept (package:analyzer/src/dart/ast/ast.dart:7935:50)
+#11     ExpressionFunctionBodyImpl.visitChildren (package:analyzer/src/dart/ast/ast.dart:3918:17)
+#12     GeneralizingAstVisitor.visitNode (package:analyzer/dart/ast/visitor.dart:482:10)
+#13     GeneralizingAstVisitor.visitFunctionBody (package:analyzer/dart/ast/visitor.dart:338:46)
+#14     GeneralizingAstVisitor.visitExpressionFunctionBody (package:analyzer/dart/ast/visitor.dart:285:7)
+#15     ExpressionFunctionBodyImpl.accept (package:analyzer/src/dart/ast/ast.dart:3910:15)
+#16     FunctionExpressionImpl.visitChildren (package:analyzer/src/dart/ast/ast.dart:5463:11)
+#17     GeneralizingAstVisitor.visitNode (package:analyzer/dart/ast/visitor.dart:482:10)
+#18     GeneralizingAstVisitor.visitCollectionElement (package:analyzer/dart/ast/visitor.dart:193:56)
+#19     GeneralizingAstVisitor.visitExpression (package:analyzer/dart/ast/visitor.dart:281:42)
+#20     GeneralizingAstVisitor.visitFunctionExpression (package:analyzer/dart/ast/visitor.dart:353:58)
+#21     FunctionExpressionImpl.accept (package:analyzer/src/dart/ast/ast.dart:5452:50)
+#22     FunctionDeclarationImpl.visitChildren (package:analyzer/src/dart/ast/ast.dart:5331:25)
+#23     GeneralizingAstVisitor.visitNode (package:analyzer/dart/ast/visitor.dart:482:10)
+#24     GeneralizingAstVisitor.visitAnnotatedNode (package:analyzer/dart/ast/visitor.dart:135:48)
+#25     GeneralizingAstVisitor.visitDeclaration (package:analyzer/dart/ast/visitor.dart:240:44)
+#26     GeneralizingAstVisitor.visitCompilationUnitMember (package:analyzer/dart/ast/visitor.dart:207:7)
+#27     GeneralizingAstVisitor.visitNamedCompilationUnitMember (package:analyzer/dart/ast/visitor.dart:463:7)
+#28     GeneralizingAstVisitor.visitFunctionDeclaration (package:analyzer/dart/ast/visitor.dart:345:12)
+#29     MessageFindingVisitor.visitFunctionDeclaration (package:intl_translation/extract_messages.dart:254:11)
+#30     FunctionDeclarationImpl.accept (package:analyzer/src/dart/ast/ast.dart:5324:50)
+#31     NodeListImpl.accept (package:analyzer/src/dart/ast/ast.dart:8431:20)
+#32     CompilationUnitImpl.visitChildren (package:analyzer/src/dart/ast/ast.dart:2318:21)
+#33     GeneralizingAstVisitor.visitNode (package:analyzer/dart/ast/visitor.dart:482:10)
+#34     GeneralizingAstVisitor.visitCompilationUnit (package:analyzer/dart/ast/visitor.dart:204:52)
+#35     CompilationUnitImpl.accept (package:analyzer/src/dart/ast/ast.dart:2311:50)
+#36     MessageExtraction.parseContent (package:intl_translation/extract_messages.dart:117:10)
+#37     MessageExtraction.parseFile (package:intl_translation/extract_messages.dart:96:12)
+#38     main.<anonymous closure> (file:///Users/devoncarew/projects/dart-lang/intl_translation/test/message_extraction/examples_parsing_test.dart:23:31)
+#39     Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:215:19)
+<asynchronous suspension>
+#40     Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:213:7)
+<asynchronous suspension>
+#41     Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:257:7)
+<asynchronous suspension>
+
+    from /Users/devoncarew/projects/dart-lang/intl_translation/test/message_extraction/sample_with_messages.dart    line: 120, column: 41
+Skipping invalid Intl.message invocation
+    <Intl.message('foo', name: badName)>
+    reason: The 'args' argument for Intl.message must be specified for messages with parameters. Consider using rewrite_intl_messages.dart
+    from /Users/devoncarew/projects/dart-lang/intl_translation/test/message_extraction/sample_with_messages.dart    line: 215, column: 25
+00:00 +8: test/message_extraction/failed_extraction_test.dart: Expect warnings but successful extraction
+00:05 +9: test/message_extraction/message_extraction_no_deferred_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:05 +10: test/message_extraction/message_extraction_no_deferred_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:05 +11: test/message_extraction/message_extraction_no_deferred_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:11 +12: test/message_extraction/message_extraction_no_deferred_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:11 +12: test/message_extraction/find_messages_test.dart: findMessages denied usages fails with message on non-literal examples Map
+Skipping invalid Intl.message invocation
+    <Intl.select(string, {'foo' : 'foo', 'bar' : 'bar'}, name: 'message', args: [string], examples: {'string' : variable})>
+    reason: Examples must be a const Map literal.
+    from     line: 4, column: 5
+00:11 +13: test/message_extraction/message_extraction_no_deferred_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:11 +13: test/message_extraction/find_messages_test.dart: findMessages denied usages fails with message on prefixed expression in interpolation
+Error IntlMessageExtractionException: Only simple identifiers and Intl.plural/gender/select expressions are allowed in message interpolation expressions.
+Error at ${object.property}
+Processing <Intl.message("${object.property}")>
+    from     line: 1, column: 27
+00:11 +14: test/message_extraction/message_extraction_no_deferred_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:11 +14: test/message_extraction/find_messages_test.dart: findMessages denied usages fails on call with name referencing variable name inside a function
+Skipping invalid Intl.message invocation
+    <Intl.message('message string', name: 'variableName')>
+    reason: The 'name' argument for Intl.message must match either the name of the containing function or <ClassName>_<methodName> (was 'variableName' but must be 'functionName'  or 'MessageTest_functionName')
+    from     line: 3, column: 39
+00:11 +15: test/message_extraction/message_extraction_no_deferred_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:11 +15: test/message_extraction/find_messages_test.dart: findMessages denied usages fails on referencing a name from listed fields declaration
+Skipping invalid Intl.message invocation
+    <Intl.message('message string', name: 'first')>
+    reason: The 'name' argument for Intl.message must match either the name of the containing function or <ClassName>_<methodName> (was 'first' but must be 'null'  or 'MessageTest_null')
+    from     line: 2, column: 32
+00:11 +16: test/message_extraction/message_extraction_no_deferred_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:11 +17: test/message_extraction/message_extraction_no_deferred_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:11 +18: test/message_extraction/message_extraction_no_deferred_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:11 +19: test/message_extraction/message_extraction_no_deferred_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:11 +20: test/message_extraction/message_extraction_no_deferred_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:11 +21: test/message_extraction/message_extraction_no_deferred_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:11 +22: test/message_extraction/message_extraction_no_deferred_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:11 +23: test/message_extraction/message_extraction_no_deferred_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:11 +24: test/message_extraction/message_extraction_no_deferred_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:11 +25: test/message_extraction/message_extraction_no_deferred_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:14 +26: test/message_extraction/message_extraction_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:14 +27: test/message_extraction/message_extraction_flutter_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:17 +28: test/message_extraction/message_extraction_json_test.dart: Test round trip message extraction, translation, code generation, and printing
+00:18 +29: All tests passed!
