@@ -3,28 +3,29 @@
 // messages from the main program should be duplicated here with the same
 // function name.
 
-// @dart=2.10
+// Ignore issues from commonly used lints in this file.
+// ignore_for_file:unnecessary_brace_in_string_interps
+// ignore_for_file:prefer_single_quotes,comment_references, directives_ordering
+// ignore_for_file:annotate_overrides,prefer_generic_function_type_aliases
+// ignore_for_file:unused_import, file_names
 
 import 'package:intl/intl.dart';
 import 'package:intl/message_lookup_by_library.dart';
 
 final messages = MessageLookup();
 
-// ignore: unused_element
-final _keepAnalysisHappy = Intl.defaultLocale;
-
-// ignore: non_constant_identifier_names
-typedef MessageIfAbsent = Function(String message_str, List args);
+typedef String? MessageIfAbsent(
+    String? messageStr, List<Object>? args);
 
 class MessageLookup extends MessageLookupByLibrary {
   @override
   String get localeName => 'fr_xyz123';
 
   @override
-  final messages = _notInlinedMessages(_notInlinedMessages);
-  static Map<String, String Function()> _notInlinedMessages(_) => {
-        'Hello from component':
-            MessageLookupByLibrary.simpleMessage('Bonjour du composant'),
-        '_message2': MessageLookupByLibrary.simpleMessage('Locale explicite')
-      };
+  final Map<String, dynamic> messages = _notInlinedMessages(_notInlinedMessages);
+
+  static Map<String, dynamic> _notInlinedMessages(_) => {
+      'Hello from component': MessageLookupByLibrary.simpleMessage('Bonjour du composant'),
+    '_message2': MessageLookupByLibrary.simpleMessage('Locale explicite')
+  };
 }

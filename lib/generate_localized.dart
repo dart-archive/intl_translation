@@ -153,11 +153,11 @@ class MessageGeneration {
             .toList()
           ..sort((a, b) => a.name.compareTo(b.name)))
         .map((original) =>
-            '    "${original.escapeAndValidateString(original.name)}" '
+            "    '${original.escapeAndValidateString(original.name)}'"
             ': ${_mapReference(original, locale)}');
     output
       ..write(entries.join(',\n'))
-      ..write(',\n  };\n}\n');
+      ..write('\n  };\n}\n');
   }
 
   /// Any additional imports the individual message files need.
@@ -168,9 +168,10 @@ class MessageGeneration {
     // being inlined into the main one, defeating the space savings. Issue
     // 24356
     return '''
+  @override
   final Map<String, dynamic> messages = _notInlinedMessages(_notInlinedMessages);
 
-  static Map<String, Function> _notInlinedMessages(_) => <String, Function> {
+  static Map<String, dynamic> _notInlinedMessages(_) => {
   ''';
   }
 
@@ -197,6 +198,7 @@ typedef String$orNull MessageIfAbsent(
     String$orNull messageStr, List<Object>$orNull args);
 
 class MessageLookup extends MessageLookupByLibrary {
+  @override
   String get localeName => '$locale';
 
 ${releaseMode ? overrideLookup() : ''}''';
@@ -297,7 +299,7 @@ Future<bool> initializeMessages(String$orNull localeName) async {
   }
   var lib = _deferredLibraries[availableLocale];
   await (lib == null ? Future.value(false) : lib());
-  initializeInternalMessageLookup(() => new CompositeMessageLookup());
+  initializeInternalMessageLookup(() => CompositeMessageLookup());
   messageLookup.addLocale(availableLocale, _findGeneratedMessagesFor);
   return Future.value(true);
 }
@@ -396,12 +398,12 @@ String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
   if (input == null) return null;
   if (input is String) return input;
   if (input is int) {
-    return "\${args[input]}";
+    return '\${args[input]}';
   }
 
   var template = input as List<dynamic>;
   var messageName = template.first;
-  if (messageName == "Intl.plural") {
+  if (messageName == 'Intl.plural') {
      var howMany = args[template[1] as int] as num;
      return evaluateJsonTemplate(
          Intl.pluralLogic(
@@ -414,7 +416,7 @@ String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
              other: template[7]),
          args);
    }
-   if (messageName == "Intl.gender") {
+   if (messageName == 'Intl.gender') {
      var gender = args[template[1] as int] as String;
      return evaluateJsonTemplate(
          Intl.genderLogic(
@@ -424,7 +426,7 @@ String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
              other: template[4]),
          args);
    }
-   if (messageName == "Intl.select") {
+   if (messageName == 'Intl.select') {
      var select = args[template[1] as int] as Object;
      var choices = template[2] as Map<Object, Object$orNull>;
      return evaluateJsonTemplate(Intl.selectLogic(select, choices), args);
@@ -435,15 +437,15 @@ String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
    var output = StringBuffer();
    for (var entry in template) {
      if (entry is int) {
-       output.write("\${args[entry]}");
+       output.write('\${args[entry]}');
      } else {
-       output.write("\$entry");
+       output.write('\$entry');
      }
    }
    return output.toString();
   }
 
- ''';
+''';
 
   @override
   String generateFlutterImportFile() {
@@ -741,8 +743,8 @@ bool _hasArguments(MainMessage message) => message.arguments.isNotEmpty;
 String _mapReference(MainMessage original, String locale) {
   if (!_hasArguments(original)) {
     // No parameters, can be printed simply.
-    return 'MessageLookupByLibrary.simpleMessage("'
-        '${original.translations[locale]}")';
+    return 'MessageLookupByLibrary.simpleMessage('
+        "'${original.translations[locale]}')";
   } else {
     return _methodNameFor(original.name);
   }
