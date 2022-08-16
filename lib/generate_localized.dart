@@ -56,7 +56,7 @@ class MessageGeneration {
   bool useDeferredLoading = true;
 
   /// Whether to generate null safe code instead of legacy code.
-  bool nullSafety = false;
+  bool nullSafety = true;
 
   /// The mode to generate in - either 'release' or 'debug'.
   ///
