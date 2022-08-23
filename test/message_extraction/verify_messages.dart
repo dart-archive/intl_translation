@@ -1,3 +1,5 @@
+// @dart=2.10
+
 library verify_messages;
 
 import 'print_to_list.dart';

@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// @dart=2.10
+
 /// This provides utilities for generating localized versions of
 /// messages. It does not stand alone, but expects to be given
 /// TranslatedMessage objects and generate code for a particular locale
@@ -54,7 +56,7 @@ class MessageGeneration {
   bool useDeferredLoading = true;
 
   /// Whether to generate null safe code instead of legacy code.
-  bool nullSafety = false;
+  bool nullSafety = true;
 
   /// The mode to generate in - either 'release' or 'debug'.
   ///
@@ -74,6 +76,12 @@ class MessageGeneration {
   StringBuffer output = StringBuffer();
 
   String get orNull => nullSafety ? '?' : '';
+
+  String get notNull => nullSafety ? '!' : '';
+
+  String get orLate => nullSafety ? 'late ' : '';
+
+  String get languageTag => nullSafety ? '' : '// @dart=2.9\n';
 
   void clearOutput() {
     output = StringBuffer();
@@ -145,7 +153,7 @@ class MessageGeneration {
             .toList()
           ..sort((a, b) => a.name.compareTo(b.name)))
         .map((original) =>
-            '    "${original.escapeAndValidateString(original.name)}" '
+            "    '${original.escapeAndValidateString(original.name)}'"
             ': ${_mapReference(original, locale)}');
     output
       ..write(entries.join(',\n'))
@@ -155,14 +163,17 @@ class MessageGeneration {
   /// Any additional imports the individual message files need.
   String get extraImports => '';
 
-  String get messagesDeclaration =>
-      // Includes some gyrations to prevent parts of the deferred libraries from
-      // being inlined into the main one, defeating the space savings. Issue
-      // 24356
-      '''
-  final messages = _notInlinedMessages(_notInlinedMessages);
-  static _notInlinedMessages(_) => <String, Function> {
-''';
+  String get messagesDeclaration {
+    // Includes some gyrations to prevent parts of the deferred libraries from
+    // being inlined into the main one, defeating the space savings. Issue
+    // 24356
+    return '''
+  @override
+  final Map<String, dynamic> messages = _notInlinedMessages(_notInlinedMessages);
+
+  static Map<String, dynamic> _notInlinedMessages(_) => {
+  ''';
+  }
 
   /// [generateIndividualMessageFile] for the beginning of the file,
   /// parameterized by [locale].
@@ -171,9 +182,9 @@ class MessageGeneration {
 // This is a library that provides messages for a $locale locale. All the
 // messages from the main program should be duplicated here with the same
 // function name.
-
+$languageTag
 // Ignore issues from commonly used lints in this file.
-// ignore_for_file:unnecessary_brace_in_string_interps, unnecessary_new
+// ignore_for_file:unnecessary_brace_in_string_interps
 // ignore_for_file:prefer_single_quotes,comment_references, directives_ordering
 // ignore_for_file:annotate_overrides,prefer_generic_function_type_aliases
 // ignore_for_file:unused_import, file_names
@@ -181,12 +192,13 @@ class MessageGeneration {
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
 $extraImports
-final messages = new MessageLookup();
+final messages = MessageLookup();
 
 typedef String$orNull MessageIfAbsent(
     String$orNull messageStr, List<Object>$orNull args);
 
 class MessageLookup extends MessageLookupByLibrary {
+  @override
   String get localeName => '$locale';
 
 ${releaseMode ? overrideLookup() : ''}''';
@@ -204,7 +216,7 @@ ${releaseMode ? overrideLookup() : ''}''';
       // If there's no message_str, then we are an internal lookup, e.g. an
       // embedded plural, and shouldn't fail.
       if (message_str == null) return null;
-      throw new UnsupportedError(
+      throw UnsupportedError(
           "No translation found for message '\$name',\\n"
           "  original text '\$message_str'");
     }
@@ -233,7 +245,7 @@ ${releaseMode ? overrideLookup() : ''}''';
       var locale = Intl.canonicalizedLocale(rawLocale);
       var loadOperation = (useDeferredLoading)
           ? "  '$locale': ${libraryName(locale)}.loadLibrary,\n"
-          : "  '$locale': () => new Future.value(null),\n";
+          : "  '$locale': () => Future.value(null),\n";
       output.write(loadOperation);
     }
     output.write('};\n');
@@ -255,9 +267,9 @@ ${releaseMode ? overrideLookup() : ''}''';
 // DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
 // This is a library that looks up messages for specific locales by
 // delegating to the appropriate library.
-
+$languageTag
 // Ignore issues from commonly used lints in this file.
-// ignore_for_file:implementation_imports, file_names, unnecessary_new
+// ignore_for_file:implementation_imports, file_names
 // ignore_for_file:unnecessary_brace_in_string_interps, directives_ordering
 // ignore_for_file:argument_type_not_assignable, invalid_assignment
 // ignore_for_file:prefer_single_quotes, prefer_generic_function_type_aliases
@@ -283,13 +295,13 @@ Future<bool> initializeMessages(String$orNull localeName) async {
     (locale) => _deferredLibraries[locale] != null,
     onFailure: (_) => null);
   if (availableLocale == null) {
-    return new Future.value(false);
+    return Future.value(false);
   }
   var lib = _deferredLibraries[availableLocale];
-  await (lib == null ? new Future.value(false) : lib());
-  initializeInternalMessageLookup(() => new CompositeMessageLookup());
+  await (lib == null ? Future.value(false) : lib());
+  initializeInternalMessageLookup(() => CompositeMessageLookup());
   messageLookup.addLocale(availableLocale, _findGeneratedMessagesFor);
-  return new Future.value(true);
+  return Future.value(true);
 }
 
 bool _messagesExistFor(String locale) {
@@ -332,7 +344,7 @@ MessageLookupByLibrary$orNull _findGeneratedMessagesFor(String locale) {
 // DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
 // This is a library that looks up messages for specific locales by
 // delegating to the appropriate library.
-
+$languageTag
 ''';
 
   /// Constant string used in [generateMainImportFile] as the end of the file.
@@ -355,7 +367,7 @@ import '${generatedFilePrefix}messages_all.dart' show evaluateJsonTemplate;
 
   @override
   String prologue(String locale) => '''${super.prologue(locale)}
-  String$orNull evaluateMessage(translation, List<dynamic> args) {
+  String$orNull evaluateMessage(dynamic translation, List<dynamic> args) {
     return evaluateJsonTemplate(translation, args);
   }
 ''';
@@ -386,12 +398,12 @@ String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
   if (input == null) return null;
   if (input is String) return input;
   if (input is int) {
-    return "\${args[input]}";
+    return '\${args[input]}';
   }
 
   var template = input as List<dynamic>;
   var messageName = template.first;
-  if (messageName == "Intl.plural") {
+  if (messageName == 'Intl.plural') {
      var howMany = args[template[1] as int] as num;
      return evaluateJsonTemplate(
          Intl.pluralLogic(
@@ -404,7 +416,7 @@ String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
              other: template[7]),
          args);
    }
-   if (messageName == "Intl.gender") {
+   if (messageName == 'Intl.gender') {
      var gender = args[template[1] as int] as String;
      return evaluateJsonTemplate(
          Intl.genderLogic(
@@ -414,7 +426,7 @@ String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
              other: template[4]),
          args);
    }
-   if (messageName == "Intl.select") {
+   if (messageName == 'Intl.select') {
      var select = args[template[1] as int] as Object;
      var choices = template[2] as Map<Object, Object$orNull>;
      return evaluateJsonTemplate(Intl.selectLogic(select, choices), args);
@@ -422,18 +434,18 @@ String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
 
    // If we get this far, then we are a basic interpolation, just strings and
    // ints.
-   var output = new StringBuffer();
+   var output = StringBuffer();
    for (var entry in template) {
      if (entry is int) {
-       output.write("\${args[entry]}");
+       output.write('\${args[entry]}');
      } else {
-       output.write("\$entry");
+       output.write('\$entry');
      }
    }
    return output.toString();
   }
 
- ''';
+''';
 
   @override
   String generateFlutterImportFile() {
@@ -448,8 +460,9 @@ String$orNull evaluateJsonTemplate(dynamic input, List<dynamic> args) {
 // DO NOT EDIT. This is code generated via package:intl/generate_localized.dart
 // This is a library that looks up messages for specific locales by
 // delegating to the appropriate library.
-
+$languageTag
 import 'dart:convert';
+
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
 import 'package:$intlImportPath/src/intl_helpers.dart';
@@ -464,15 +477,15 @@ class ResourceMessageLookup extends MessageLookupByLibrary {
   }
   final String localeName;
 
-  String evaluateMessage(translation, List<dynamic> args) {
+  String$orNull evaluateMessage(dynamic translation, List<dynamic> args) {
     return evaluateJsonTemplate(translation, args);
   }
 
-  Map<String, dynamic> messages;
+  ${orLate}Map<String, dynamic> messages;
 }
 
 /// User programs should call this before using [localeName] for messages.
-Future<bool> initializeMessages(String localeName) async {
+Future<bool> initializeMessages(String$orNull localeName) async {
   if (localeName == null) {
     return false;
   }
@@ -480,7 +493,7 @@ Future<bool> initializeMessages(String localeName) async {
   localeName = Intl.canonicalizedLocale(localeName);
 
   final localeParts = localeName.split('_');
-  initializeInternalMessageLookup(() => new CompositeMessageLookup());
+  initializeInternalMessageLookup(() => CompositeMessageLookup());
   var message = await SystemChannels.localization
       .invokeMethod('Localization.getStringResource', {
     'key': 'flutter_localization_string',
@@ -508,7 +521,7 @@ Future<bool> initializeMessages(String localeName) async {
   }
 
   messageLookup.addLocale(
-      localeName, (_) => ResourceMessageLookup(localeName, message));
+      localeName, (_) => ResourceMessageLookup(localeName$notNull, message$notNull));
   return true;
 }
 
@@ -730,8 +743,8 @@ bool _hasArguments(MainMessage message) => message.arguments.isNotEmpty;
 String _mapReference(MainMessage original, String locale) {
   if (!_hasArguments(original)) {
     // No parameters, can be printed simply.
-    return 'MessageLookupByLibrary.simpleMessage("'
-        '${original.translations[locale]}")';
+    return 'MessageLookupByLibrary.simpleMessage('
+        "'${original.translations[locale]}')";
   } else {
     return _methodNameFor(original.name);
   }

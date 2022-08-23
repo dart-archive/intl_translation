@@ -2,9 +2,11 @@
 // This is a library that looks up messages for specific locales by
 // delegating to the appropriate library.
 
+
 import 'package:intl/intl.dart';
 export 'code_map_messages_all_locales.dart'
   show initializeMessages;
+
 
 /// Turn the JSON template into a string.
 ///
@@ -17,7 +19,7 @@ export 'code_map_messages_all_locales.dart'
 ///   * ['Intl.gender', String gender, (templates for female, male, other)]
 ///   * ['Intl.select', String choice, { 'case' : template, ...} ]
 ///   * ['text alternating with ', 0 , ' indexes in the argument list']
-String evaluateJsonTemplate(dynamic input, List<dynamic> args) {
+String? evaluateJsonTemplate(dynamic input, List<dynamic> args) {
   if (input == null) return null;
   if (input is String) return input;
   if (input is int) {
@@ -51,7 +53,7 @@ String evaluateJsonTemplate(dynamic input, List<dynamic> args) {
    }
    if (messageName == 'Intl.select') {
      var select = args[template[1] as int] as Object;
-     var choices = template[2] as Map<Object, Object>;
+     var choices = template[2] as Map<Object, Object?>;
      return evaluateJsonTemplate(Intl.selectLogic(select, choices), args);
    }
 
@@ -68,4 +70,3 @@ String evaluateJsonTemplate(dynamic input, List<dynamic> args) {
    return output.toString();
   }
 
- 
