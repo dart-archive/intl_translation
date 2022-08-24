@@ -237,7 +237,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// encountered before seeing the Intl.message call.
   @override
   void visitMethodDeclaration(MethodDeclaration node) {
-    name = node.name.name;
+    name = node.name2.lexeme;
     parameters = node.parameters?.parameters ?? _emptyParameterList;
     documentation = node.documentationComment;
     super.visitMethodDeclaration(node);
@@ -250,7 +250,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// encountered before seeing the Intl.message call.
   @override
   void visitFunctionDeclaration(FunctionDeclaration node) {
-    name = node.name.name;
+    name = node.name2.lexeme;
     parameters =
         node.functionExpression.parameters?.parameters ?? _emptyParameterList;
     documentation = node.documentationComment;
@@ -267,7 +267,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     // We don't support names in list declarations,
     // e.g. String first, second = Intl.message(...);
     if (node.fields.variables.length == 1) {
-      name = node.fields.variables.first.name.name;
+      name = node.fields.variables.first.name2.lexeme;
     } else {
       name = null;
     }
@@ -286,7 +286,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     // We don't support names in list declarations,
     // e.g. String first, second = Intl.message(...);
     if (node.variables.variables.length == 1) {
-      name = node.variables.variables.first.name.name;
+      name = node.variables.variables.first.name2.lexeme;
     } else {
       name = null;
     }
@@ -399,7 +399,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     var message = MainMessage();
     message.sourcePosition = node.offset;
     message.endPosition = node.end;
-    message.arguments = parameters.map((x) => x.identifier.name).toList();
+    message.arguments = parameters.map((x) => x.name.lexeme).toList();
     if (documentation != null) {
       message.documentation
           .addAll(documentation.tokens.map((token) => token.toString()));

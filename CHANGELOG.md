@@ -4,7 +4,6 @@
   * Update analyzer dependency.
   * Upgrade to `package:lints/recommended.yaml`.
   * Initial null safety conversion.
-  * Remove petit_parser dependency
 
 ## 0.17.10+1
   * Generate code that passes analysis with `implicit-casts: false`.

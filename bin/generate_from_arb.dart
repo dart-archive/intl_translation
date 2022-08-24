@@ -27,8 +27,8 @@ import 'package:args/args.dart';
 import 'package:intl_translation/extract_messages.dart';
 import 'package:intl_translation/generate_localized.dart';
 import 'package:intl_translation/src/directory_utils.dart';
+import 'package:intl_translation/src/icu_parser.dart';
 import 'package:intl_translation/src/intl_message.dart';
-import 'package:intl_translation/src/message_parser.dart';
 import 'package:path/path.dart' as path;
 
 /// Keeps track of all the messages we have processed so far, keyed by message
@@ -159,8 +159,9 @@ void main(List<String> args) {
     loadData(arg, messagesByLocale, generation);
   }
 
-  messagesByLocale.forEach((locale, data) =>
-      generateLocaleFile(locale, data, targetDir, generation));
+  messagesByLocale.forEach((locale, data) {
+    generateLocaleFile(locale, data, targetDir, generation);
+  });
 
   var mainImportFile = File(path.join(
       targetDir, '${generation.generatedFilePrefix}messages_all.dart'));
@@ -209,7 +210,7 @@ void loadData(String filename, Map<String, List<Map>> messagesByLocale,
 void generateLocaleFile(String locale, List<Map> localeData, String targetDir,
     MessageGeneration generation) {
   List<TranslatedMessage> translations = [];
-  for (/*Map<String, String>*/ Map jsonTranslations in localeData) {
+  for (/*Map<String, String>*/ var jsonTranslations in localeData) {
     jsonTranslations.forEach((id, messageData) {
       TranslatedMessage message = recreateIntlObjects(id, messageData);
       if (message != null) {
@@ -227,10 +228,9 @@ void generateLocaleFile(String locale, List<Map> localeData, String targetDir,
 BasicTranslatedMessage recreateIntlObjects(String id, String data) {
   if (id.startsWith('@')) return null;
   if (data == null) return null;
-  MessageParser messageParser = MessageParser(data);
-  Message parsed = messageParser.pluralGenderSelectParse();
+  var parsed = pluralAndGenderParser.parse(data).value;
   if (parsed is LiteralString && parsed.string.isEmpty) {
-    parsed = messageParser.nonIcuMessageParse();
+    parsed = plainParser.parse(data).value;
   }
   return BasicTranslatedMessage(id, parsed);
 }
@@ -249,3 +249,6 @@ class BasicTranslatedMessage extends TranslatedMessage {
   //key in [messages].
   List<MainMessage> _findOriginals() => originalMessages = messages[id];
 }
+
+final pluralAndGenderParser = IcuParser().message;
+final plainParser = IcuParser().nonIcuMessage;
