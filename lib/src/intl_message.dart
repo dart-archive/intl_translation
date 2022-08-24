@@ -143,7 +143,7 @@ abstract class Message {
     NamedExpression args = arguments.firstWhere(
         (each) => each is NamedExpression && each.name.label.name == 'args',
         orElse: () => null);
-    var parameterNames = outerArgs.map((x) => x.identifier.name).toList();
+    var parameterNames = outerArgs.map((x) => x.name.lexeme).toList();
     var hasArgs = args != null;
     var hasParameters = outerArgs.isNotEmpty;
     if (!nameAndArgsGenerated && !hasArgs && hasParameters) {
@@ -251,16 +251,18 @@ abstract class Message {
   /// For a method foo in class Bar we allow either "foo" or "Bar_Foo" as the
   /// name.
   static String classPlusMethodName(MethodInvocation node, String outerName) {
-    ClassOrMixinDeclaration classNode(AstNode n) {
-      if (n == null) return null;
-      if (n is ClassOrMixinDeclaration) return n;
-      return classNode(n.parent);
+    String name;
+    for (AstNode parent = node; parent != null; parent = parent.parent) {
+      if (parent is ClassDeclaration) {
+        name = parent.name2.lexeme;
+        break;
+      } else if (parent is MixinDeclaration) {
+        name = parent.name2.lexeme;
+        break;
+      }
     }
 
-    var classDeclaration = classNode(node);
-    return classDeclaration == null
-        ? null
-        : '${classDeclaration.name.token}_$outerName';
+    return name == null ? null : '${name}_$outerName';
   }
 
   /// Turn a value, typically read from a translation file or created out of an
@@ -354,7 +356,7 @@ class CompositeMessage extends Message {
   List<Message> pieces;
 
   CompositeMessage.withParent(parent) : super(parent);
-  CompositeMessage(this.pieces, [ComplexMessage parent]) : super(parent) {
+  CompositeMessage(this.pieces, ComplexMessage parent) : super(parent) {
     for (var x in pieces) {
       x.parent = this;
     }
@@ -370,27 +372,10 @@ class CompositeMessage extends Message {
       pieces.map((chunk) => transform(this, chunk)).join('');
 }
 
-class PairMessage<T extends Message, S extends Message> extends Message {
-  final T first;
-  final S second;
-
-  PairMessage(this.first, this.second, [Message parent]) : super(parent);
-
-  @override
-  String expanded([Function transform = _nullTransform]) =>
-      [first, second].map((chunk) => transform(this, chunk)).join('');
-
-  @override
-  String toCode() => [first, second].map((each) => each.toCode()).join('');
-
-  @override
-  Object toJson() => [first, second].map((each) => each.toJson()).toList();
-}
-
 /// Represents a simple constant string with no dynamic elements.
 class LiteralString extends Message {
   String string;
-  LiteralString(this.string, [Message parent]) : super(parent);
+  LiteralString(this.string, Message parent) : super(parent);
   @override
   String toCode() => escapeAndValidateString(string);
   @override
@@ -413,8 +398,7 @@ class VariableSubstitution extends Message {
   /// may have been used as all upper-case in the translation tool, so we
   /// save it separately and look it up case-insensitively once the parent
   /// (and its arguments) are definitely available.
-  VariableSubstitution.named(String name, [Message parent]) : super(parent) {
-    _variableName = name;
+  VariableSubstitution.named(String name, Message parent) : super(parent) {
     _variableNameUpper = name.toUpperCase();
   }
 
@@ -444,12 +428,8 @@ class VariableSubstitution extends Message {
 
   /// The name of the variable in the parameter list of the containing function.
   /// Used when generating code for the interpolation.
-  String get variableName {
-    return arguments != null && index != null
-        ? arguments[index]
-        : _variableName;
-  }
-
+  String get variableName =>
+      _variableName ?? (_variableName = arguments[index]);
   String _variableName;
   // Although we only allow simple variable references, we always enclose them
   // in curly braces so that there's no possibility of ambiguity with
@@ -459,7 +439,7 @@ class VariableSubstitution extends Message {
   @override
   int toJson() => index;
   @override
-  String toString() => 'VariableSubstitution(${index ?? _variableName})';
+  String toString() => 'VariableSubstitution($index)';
   @override
   String expanded([Function transform = _nullTransform]) =>
       transform(this, index);
@@ -717,22 +697,7 @@ abstract class SubMessage extends ComplexMessage {
   /// as a list of [key, value] where value may in turn be a list.
   SubMessage.from(this.mainArgument, List clauses, parent) : super(parent) {
     for (var clause in clauses) {
-      String key;
-      Object value;
-      if (clause is List && clause[0] is String && clause.length == 2) {
-        //If trying to parse a string
-        key = clause[0];
-        value = (clause[1] is List) ? clause[1] : [(clause[1])];
-      } else if (clause is PairMessage<LiteralString, Message>) {
-        //If trying to parse a message
-        key = clause.first.string;
-        Message second = clause.second;
-        value = second is CompositeMessage ? second.pieces : [second];
-      } else {
-        throw Exception(
-            'The clauses argument supplied must be a list of pairs, i.e. list of lists of length 2 or PairMessages.');
-      }
-      this[key] = value;
+      this[clause.first] = (clause.last is List) ? clause.last : [clause.last];
     }
   }
 
