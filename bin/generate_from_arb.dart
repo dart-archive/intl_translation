@@ -225,12 +225,14 @@ void generateLocaleFile(String locale, List<Map> localeData, String targetDir,
 /// things that are messages, we expect [id] not to start with "@" and
 /// [data] to be a String. For metadata we expect [id] to start with "@"
 /// and [data] to be a Map or null. For metadata we return null.
-BasicTranslatedMessage recreateIntlObjects(String id, String data) {
+BasicTranslatedMessage recreateIntlObjects(String id, dynamic data) {
   if (id.startsWith('@')) return null;
   if (data == null) return null;
   var parsed = pluralAndGenderParser.parse(data).value;
   if (parsed is LiteralString && parsed.string.isEmpty) {
     parsed = plainParser.parse(data).value;
+  } else {
+    return null;
   }
   return BasicTranslatedMessage(id, parsed);
 }
