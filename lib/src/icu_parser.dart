@@ -24,7 +24,7 @@ class IcuParser {
   Parser get quotedCurly => (string("'{'") | string("'}'")).map((x) => x[1]);
 
   Parser get icuEscapedText => quotedCurly | twoSingleQuotes;
-  Parser get curly => (openCurly | closeCurly);
+  Parser get curly => openCurly | closeCurly;
   Parser get notAllowedInIcuText => curly | char('<');
   Parser get icuText => notAllowedInIcuText.neg();
   Parser get notAllowedInNormalText => char('{');
@@ -87,13 +87,16 @@ class IcuParser {
 
   /// The primary entry point for parsing. Accepts a string and produces
   /// a parsed representation of it as a Message.
-  Parser get message => (pluralOrGenderOrSelect | empty)
-      .map((chunk) => Message.from(chunk, null));
+  Parser get message {
+    return (pluralOrGenderOrSelect | empty)
+        .map((chunk) => Message.from(chunk, null));
+  }
 
   /// Represents an ordinary message, i.e. not a plural/gender/select, although
   /// it may have parameters.
-  Parser get nonIcuMessage =>
-      (simpleText | empty).map((chunk) => Message.from(chunk, null));
+  Parser get nonIcuMessage {
+    return (simpleText | empty).map((chunk) => Message.from(chunk, null));
+  }
 
   Parser get stuff => (pluralOrGenderOrSelect | empty)
       .map((chunk) => Message.from(chunk, null));
@@ -103,4 +106,28 @@ class IcuParser {
     // infinite recursion.
     interiorText.set(contents.plus() | empty);
   }
+}
+
+void main(List<String> args) {
+  var parse = IcuParser().nonIcuMessage.parse("{gender_of_host, select, "
+      "female {"
+      "{num_guests, plural, offset:1 "
+      "=0 {{host} does not give a party.}"
+      "=1 {{host} invites {guest} to her party.}"
+      "=2 {{host} invites {guest} and one other person to her party.}"
+      "other {{host} invites {guest} and # other people to her party.}}}"
+      "male {"
+      "{num_guests, plural, offset:1 "
+      "=0 {{host} does not give a party.}"
+      "=1 {{host} invites {guest} to his party.}"
+      "=2 {{host} invites {guest} and one other person to his party.}"
+      "other {{host} invites {guest} and # other people to his party.}}}"
+      "other {"
+      "{num_guests, plural, offset:1 "
+      "=0 {{host} does not give a party.}"
+      "=1 {{host} invites {guest} to their party.}"
+      "=2 {{host} invites {guest} and one other person to their party.}"
+      "other {{host} invites {guest} and # other people to their party.}}}}");
+  print(parse.value);
+  return;
 }
