@@ -177,7 +177,7 @@ class IcuParser {
         at,
       );
 
-  Parser<Plural> intlPlural(int at) =>
+  Parser<Message> intlPlural(int at) =>
       plural(at)?.mapResult((parsers) => Plural.from(
             parsers[0] as String,
             parsers[3],
@@ -214,7 +214,7 @@ class IcuParser {
         at,
       );
 
-  Parser<Gender> intlGender(int at) => gender(at)
+  Parser<Message> intlGender(int at) => gender(at)
       ?.mapResult((values) => Gender.from(values.first, values[3], null));
 
   Parser<String> selectLiteral(int at) => char(at, 'select');
@@ -241,10 +241,10 @@ class IcuParser {
         at,
       );
 
-  Parser<Select> intlSelect(int at) => select(at)
+  Parser<Message> intlSelect(int at) => select(at)
       ?.mapResult((values) => Select.from(values.first, values[3], null));
 
-  Parser<dynamic> pluralOrGenderOrSelect(int at) =>
+  Parser<Message> pluralOrGenderOrSelect(int at) =>
       (intlPlural(at) ?? intlGender(at)) ?? intlSelect(at);
 
   Parser<dynamic> contents(int at) =>
@@ -257,7 +257,7 @@ class IcuParser {
 
   Parser<String> empty(int at) => Parser<String>('', at);
 
-  Parser<VariableSubstitution> parameter(int at) => and([
+  Parser<Message> parameter(int at) => and([
         (s) => openCurly(s),
         (s) => id(s),
         (s) => closeCurly(s),
