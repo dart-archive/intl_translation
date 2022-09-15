@@ -11,8 +11,6 @@
 library icu_parser;
 
 import 'package:intl_translation/src/intl_message.dart';
-import 'package:petitparser/petitparser.dart';
-import 'package:intl_translation/src/icu_parser.dart' as oldparser;
 
 /// This defines a grammar for ICU MessageFormat syntax. Usage is
 ///       new IcuParser.message.parse().value;
@@ -24,25 +22,26 @@ class Parser {
 
   Parser(this.result, this.end);
 
-  Parser extract(List<int> indices) {
+  Parser extract(int index) {
+    if (result is List) {
+      List resultList = result as List;
+      return Parser(resultList[index], end);
+    }
+    throw Exception('May only be called on a List');
+  }
+
+  Parser pick(List<int> indices) {
     if (result is List) {
       List resultList = result as List;
       if (indices.length > 1) {
         return Parser(indices.map((index) => resultList[index]).toList(), end);
-      } else if (indices.length == 1) {
-        return Parser(resultList[indices[0]], end);
       }
     }
-    throw Exception('Wrong type or args given');
+    throw Exception('May only be called on a List');
   }
 
   Parser mapResult(dynamic Function(dynamic res) callable) =>
       Parser(callable(result), end);
-
-  @override
-  String toString() {
-    return result.toString();
-  }
 
   Message toMessage() => Message.from(result, null);
 }
@@ -171,9 +170,10 @@ class IcuParser {
           (s) => comma(s),
         ],
         at,
-      )?.extract([1]);
+      )?.extract(1);
 
   Parser pluralLiteral(int at) => char(at, 'plural');
+  Parser selectLiteral(int at) => char(at, 'select');
 
   Parser pluralClause(int at) => and(
         [
@@ -185,7 +185,7 @@ class IcuParser {
           (s) => trimStart(s),
         ],
         at,
-      )?.extract([1, 3]);
+      )?.pick([1, 3]);
 
   Parser plural(int at) => and([
         (s) => preface(s),
@@ -196,11 +196,7 @@ class IcuParser {
       ], at);
 
   Parser intlPlural(int at) => plural(at)?.mapResult(
-        (parsers) => Plural.from(parsers[0].toString(), parsers[3], null),
-      );
-
-  Parser selectLiteral(int at) =>
-      char(at, 'select'); //does plural work the same way as char?
+      (parsers) => Plural.from(parsers[0] as String, parsers[3], null));
 
   Parser genderClause(int at) => plus(
       (s1) => and(
@@ -213,7 +209,7 @@ class IcuParser {
               (s) => trimStart(s),
             ],
             s1,
-          )?.extract([1, 3]),
+          )?.pick([1, 3]),
       at);
 
   Parser gender(int at) => and([
@@ -235,10 +231,10 @@ class IcuParser {
             (s) => interiorText(s),
             (s) => closeCurly(s),
           ], s1)
-              ?.extract([0, 2]),
+              ?.pick([0, 2]),
       at);
 
-  Parser generalSelect(int at) => and([
+  Parser select(int at) => and([
         (s) => preface(s),
         (s) => selectLiteral(s),
         (s) => comma(s),
@@ -246,7 +242,7 @@ class IcuParser {
         (s) => closeCurly(s),
       ], at);
 
-  Parser intlSelect(int at) => generalSelect(at)
+  Parser intlSelect(int at) => select(at)
       ?.mapResult((values) => Select.from(values.first, values[3], null));
 
   Parser pluralOrGenderOrSelect(int at) =>
@@ -287,96 +283,4 @@ class IcuParser {
       (pluralOrGenderOrSelect(0) ?? empty(0)).toMessage();
 
   Message nonIcuMessageParse() => nonIcuMessage(0);
-}
-
-void main(List args) {
-  testNonIcu();
-}
-
-void testChar() {
-  var input = 'abc';
-  var char2 = 't';
-  var parser = IcuParser(input).char(0, char2);
-  print(parser?.result);
-  var parse = char(char2).parse(input);
-  print(parse);
-}
-
-void testNumber() {
-  var input = '   023213123   ';
-  var parser = IcuParser(input).number(0);
-  print(parser?.result);
-  var parse = oldparser.IcuParser().number.parse(input);
-  print(parse);
-}
-
-void testId() {
-  var input = '  dsadas_das_sadas___dsadas  ';
-  var parser = IcuParser(input).id(0);
-  print('${parser?.result}//');
-  var parse = oldparser.IcuParser().id.parse(input);
-  print('${parse.value}//');
-}
-
-void testKeywords() {
-  var input = 'female';
-  var parser = IcuParser(input).genderKeyword(0);
-  print('${parser?.result}//');
-  var parse = oldparser.IcuParser().genderKeyword.parse(input);
-  print('${parse.value}//');
-}
-
-void testPreface() {
-  var input = '{test_name ,  ';
-  var parse = oldparser.IcuParser().preface.parse(input);
-  print('${parse.value}//');
-  var parser = IcuParser(input).preface(0);
-  print('${parser?.result}//');
-}
-
-void testInterior() {
-  var input = 'interior';
-  var parse = oldparser.IcuParser().interiorText.parse(input);
-  print('${parse.value}//');
-  var parser = IcuParser(input).interiorText(0);
-  print('${parser.result}//');
-}
-
-void testPluralKeyword() {
-  var input = '  =0  ';
-  var parse = oldparser.IcuParser().pluralKeyword.parse(input);
-  print('${parse.value}//');
-  var parser = IcuParser(input).pluralKeyword(0);
-  print('${parser.result}//');
-}
-
-void testPluralClause() {
-  var input = '  =0  {interior}  ';
-  var parse = oldparser.IcuParser().pluralClause.parse(input);
-  print('${parse.value}//');
-  var parser = IcuParser(input).pluralClause(0);
-  print('${parser.result}//');
-}
-
-void testIntlPlural() {
-  var input = '{test_name , plural , one{interior} }';
-  var parse = oldparser.IcuParser().intlPlural.parse(input);
-  print('${parse.value}//');
-  var parser = IcuParser(input).intlPlural(0);
-  print('${parser}//');
-}
-
-void testNonIcu() {
-  var input = r'''fr
-Il s'agit d'un message
-Un autre message avec un seul paramètre {x}
-Cette message prend plusiers lignes.
-interessant (fr): '<>{}= +-_$()&^%$#@!~`'
-{a}, {b}, {c}
-Cette chaîne est toujours traduit
-L'interpolation est délicate quand elle se termine une phrase comme {s}.''';
-  var parse = oldparser.IcuParser().nonIcuMessage.parse(input);
-  print(parse.value);
-  var parser = IcuParser(input).nonIcuMessage(0);
-  print(parser);
 }
