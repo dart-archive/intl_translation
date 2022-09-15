@@ -31,10 +31,36 @@ class Parser<T> {
 class IcuParser {
   final String input;
 
+  static RegExp quotedBracketOpen = RegExp(r"'({)'");
+  static RegExp quotedBracketClose = RegExp(r"'(})'");
+  static RegExp doubleQuotes = RegExp(r"'(')");
+  static RegExp numberRegex = RegExp(r'\s*([0-9]+)\s*');
+  static RegExp nonICURegex = RegExp(r'[^\{\}\<]');
+  static RegExp idRegex = RegExp(r'\s*([a-zA-Z][a-zA-Z_0-9]*)\s*');
+  static RegExp nonOpenBracketRegex = RegExp(r'[^\{]+');
+  static RegExp commaWithWhitespace = RegExp(r'\s*(,)\s*');
+  static Map<String, RegExp> pluralKeywords = {
+    for (var v in [
+      '=0',
+      '=1',
+      '=2',
+      'zero',
+      'one',
+      'two',
+      'few',
+      'many',
+      'other'
+    ])
+      v: RegExp('\\s*$v\\s*')
+  };
+  static Map<String, RegExp> genderKeywords = {
+    for (var v in ['female', 'male', 'other']) v: RegExp('\\s*$v\\s*')
+  };
+
   Parser<String> char(int at, String t) =>
       input.startsWith(t, at) ? Parser(t, at + t.length) : null;
 
-  Parser<List<S>> plus<S>(Parser<S> Function(int s) callable, int at) {
+  Parser<List<S>> oneOrMore<S>(Parser<S> Function(int s) callable, int at) {
     int newAt = -1;
     List<Parser<S>> results = [];
     while (newAt != at) {
@@ -46,8 +72,7 @@ class IcuParser {
       }
     }
     return results.isNotEmpty
-        ? Parser<List<S>>(
-            results.map((parser) => parser.result).toList(), newAt)
+        ? Parser<List<S>>(results.map((p) => p.result).toList(), newAt)
         : null;
   }
 
@@ -67,11 +92,11 @@ class IcuParser {
     return Parser<List<S>>(resParser.map((p) => p.result).toList(), newAt);
   }
 
-  Parser<String> asKeywords(List keywords, int at) {
-    for (var keyword in keywords) {
-      var match = RegExp('\\s*$keyword\\s*').matchAsPrefix(input, at);
+  Parser<String> asKeywords(Map<String, RegExp> keywordsToRegex, int at) {
+    for (var entry in keywordsToRegex.entries) {
+      var match = entry.value.matchAsPrefix(input, at);
       if (match != null) {
-        return Parser<String>(keyword, match.end);
+        return Parser<String>(entry.key, match.end);
       }
     }
     return null;
@@ -84,24 +109,25 @@ class IcuParser {
   Parser<String> closeCurly(int at) => char(at, '}');
 
   Parser<String> icuEscapedText(int at) {
-    Match match = RegExp(r"'({)'").matchAsPrefix(input, at) ??
-        RegExp(r"'(})'").matchAsPrefix(input, at) ??
-        RegExp(r"'(')").matchAsPrefix(input, at);
+    Match match = quotedBracketOpen.matchAsPrefix(input, at) ??
+        quotedBracketClose.matchAsPrefix(input, at) ??
+        doubleQuotes.matchAsPrefix(input, at);
     return match != null ? Parser<String>(match?.group(1), match.end) : null;
   }
 
-  Parser<String> icuText(int at) =>
-      at < input.length && RegExp(r'[^\{\}\<]').matchAsPrefix(input, at) != null
-          ? Parser<String>(input[at], at + 1)
-          : null;
+  Parser<String> icuText(int at) {
+    return at < input.length && nonICURegex.matchAsPrefix(input, at) != null
+        ? Parser<String>(input[at], at + 1)
+        : null;
+  }
 
   Parser<String> messageText(int at) =>
-      plus<String>((s) => icuEscapedText(s) ?? icuText(s), at)
+      oneOrMore<String>((s) => icuEscapedText(s) ?? icuText(s), at)
           ?.mapResult<String>((res) => res?.join());
 
   Parser<String> nonIcuMessageText(int at) {
     if (at < input.length) {
-      var match = RegExp(r'[^\{]+').matchAsPrefix(input, at);
+      Match match = nonOpenBracketRegex.matchAsPrefix(input, at);
       if (match != null) {
         return Parser<String>(match.group(0), match.end);
       }
@@ -110,38 +136,21 @@ class IcuParser {
   }
 
   Parser<String> number(int at) {
-    Match match = RegExp(r'\s*([0-9]+)\s*').matchAsPrefix(input, at);
+    Match match = numberRegex.matchAsPrefix(input, at);
     return match != null
         ? Parser(int.parse(match.group(1)).toString(), match.end)
         : null;
   }
 
   Parser<String> id(int at) {
-    Match match =
-        RegExp(r'\s*([a-zA-Z][a-zA-Z_0-9]*)\s*').matchAsPrefix(input, at);
+    Match match = idRegex.matchAsPrefix(input, at);
     return match != null ? Parser(match.group(1), match.end) : null;
   }
 
-  Parser<String> comma(int at) {
-    Match match = RegExp(r'\s*(,)\s*').matchAsPrefix(input, at);
-    return match != null ? Parser(',', match.end) : null;
-  }
-
-  static const List pluralKeywords = [
-    '=0',
-    '=1',
-    '=2',
-    'zero',
-    'one',
-    'two',
-    'few',
-    'many',
-    'other'
-  ];
-
-  Parser<String> pluralKeyword(int at) => asKeywords(pluralKeywords, at);
-
-  Parser interiorText(int at) => plus((s) => contents(s), at) ?? empty(at);
+  Parser<String> comma(int at) =>
+      commaWithWhitespace.matchAsPrefix(input, at) != null
+          ? Parser(',', at + 1)
+          : null;
 
   Parser<String> preface(int at) => and<String>(
         [
@@ -152,12 +161,10 @@ class IcuParser {
         at,
       )?.mapResult<String>((res) => res[1]);
 
-  Parser<String> pluralLiteral(int at) => char(at, 'plural');
-
   Parser<List<dynamic>> pluralClause(int at) => and<dynamic>(
         [
           (s) => trimStart(s),
-          (s) => pluralKeyword(s),
+          (s) => asKeywords(IcuParser.pluralKeywords, s),
           (s) => openCurly(s),
           (s) => interiorText(s),
           (s) => closeCurly(s),
@@ -169,9 +176,9 @@ class IcuParser {
   Parser<List<dynamic>> plural(int at) => and(
         [
           (s) => preface(s),
-          (s) => pluralLiteral(s),
+          (s) => char(s, 'plural'),
           (s) => comma(s),
-          (s) => plus((s1) => pluralClause(s1), s),
+          (s) => oneOrMore((s1) => pluralClause(s1), s),
           (s) => closeCurly(s),
         ],
         at,
@@ -184,11 +191,9 @@ class IcuParser {
             null,
           ));
 
-  static const List genderKeywords = ['female', 'male', 'other'];
-
   Parser<String> genderKeyword(int at) => asKeywords(genderKeywords, at);
 
-  Parser<List<dynamic>> genderClause(int at) => plus(
+  Parser<List<dynamic>> genderClause(int at) => oneOrMore(
         (s1) => and(
           [
             (s) => trimStart(s),
@@ -219,7 +224,7 @@ class IcuParser {
 
   Parser<String> selectLiteral(int at) => char(at, 'select');
 
-  Parser<List<dynamic>> selectClause(int at) => plus(
+  Parser<List<dynamic>> selectClause(int at) => oneOrMore(
         (s1) => and([
           (s) => id(s),
           (s) => openCurly(s),
@@ -250,7 +255,9 @@ class IcuParser {
   Parser<dynamic> contents(int at) =>
       (pluralOrGenderOrSelect(at) ?? parameter(at)) ?? messageText(at);
 
-  Parser<dynamic> simpleText(int at) => plus(
+  Parser interiorText(int at) => oneOrMore((s) => contents(s), at) ?? empty(at);
+
+  Parser<dynamic> simpleText(int at) => oneOrMore(
         (s) => (nonIcuMessageText(s) ?? parameter(s)) ?? openCurly(s),
         at,
       );
