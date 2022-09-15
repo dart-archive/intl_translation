@@ -228,11 +228,10 @@ void generateLocaleFile(String locale, List<Map> localeData, String targetDir,
 BasicTranslatedMessage recreateIntlObjects(String id, String data) {
   if (id.startsWith('@')) return null;
   if (data == null) return null;
-  var parsed = IcuParser(data).pluralAndGenderParse();
-  // var parsed = pluralAndGenderParser.parse(data).value;
+  IcuParser icuParser = IcuParser(data);
+  Message parsed = icuParser.pluralAndGenderParse();
   if (parsed is LiteralString && parsed.string.isEmpty) {
-    parsed = IcuParser(data).nonIcuMessageParse();
-    // parsed = plainParser.parse(data).value;
+    parsed = icuParser.nonIcuMessageParse();
   }
   return BasicTranslatedMessage(id, parsed);
 }
@@ -251,6 +250,3 @@ class BasicTranslatedMessage extends TranslatedMessage {
   //key in [messages].
   List<MainMessage> _findOriginals() => originalMessages = messages[id];
 }
-
-// final pluralAndGenderParser = IcuParser().message;
-// final plainParser = IcuParser().nonIcuMessage;
