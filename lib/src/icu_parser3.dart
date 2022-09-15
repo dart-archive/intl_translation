@@ -36,25 +36,22 @@ class Parser {
     throw Exception('Wrong type or args given');
   }
 
-  R map<R>(R Function(dynamic res, int end) callable) => callable(result, end);
+  Parser mapResult(dynamic Function(dynamic res) callable) =>
+      Parser(callable(result), end);
 
   @override
   String toString() {
     return result.toString();
   }
+
+  Message toMessage() => Message.from(result, null);
 }
 
 class IcuParser {
   final String input;
 
   Parser char(int at, String t) =>
-      t.length + at <= input.length && input.startsWith(t, at)
-          ? Parser(t, at + t.length)
-          : null;
-  Parser neg(int at, Parser Function(int s) callable) =>
-      at < input.length && callable(at) == null
-          ? Parser(input[at], at + 1)
-          : null;
+      input.startsWith(t, at) ? Parser(t, at + t.length) : null;
 
   Parser plus(Parser Function(int s) callable, int at) {
     int newAt = -1;
@@ -105,44 +102,29 @@ class IcuParser {
   Parser openCurly(int at) => char(at, '{');
   Parser closeCurly(int at) => char(at, '}');
 
-  Parser quotedCurly(int at) {
-    var openBr = char(at, "'{'");
-    if (openBr != null) return Parser('{', openBr.end);
-    var closedBr = char(at, "'}'");
-    if (closedBr != null) return Parser('{', closedBr.end);
-    return null;
+  Parser icuEscapedText(int at) {
+    Match match = RegExp(r"'({)'").matchAsPrefix(input, at) ??
+        RegExp(r"'(})'").matchAsPrefix(input, at) ??
+        RegExp(r"'(')").matchAsPrefix(input, at);
+    return match != null ? Parser(match?.group(1), match.end) : null;
   }
 
-  Parser icuEscapedText(int at) => quotedCurly(at) ?? twoSingleQuotes(at);
-  Parser curly(int at) => openCurly(at) ?? closeCurly(at);
-  Parser notAllowedInIcuText(int at) => curly(at) ?? char(at, '<');
+  Parser icuText(int at) =>
+      at < input.length && RegExp(r'[^\{\}\<]').matchAsPrefix(input, at) != null
+          ? Parser(input[at], at + 1)
+          : null;
 
-  Parser icuText(int at) => neg(at, (s) => notAllowedInIcuText(s));
+  Parser messageText(int at) => plus((s) => icuEscapedText(s) ?? icuText(s), at)
+      ?.mapResult((res) => res.map((r) => r as String)?.join());
 
-  Parser notAllowedInNormalText(int at) => char(at, '{');
-
-  Parser normalText(int at) => neg(at, (s) => notAllowedInNormalText(s));
-
-  Parser messageText(int at) {
-    var plus2 = plus((s) => icuEscapedText(s) ?? icuText(s), at);
-    return plus2 != null
-        ? Parser(plus2.result?.map((r) => r as String)?.join(), plus2.end)
-        : null;
-  }
-
-  Parser nonIcuMessageText(int at) =>
-      plus((s) => normalText(s), at)?.map((res, end) => Parser(
-            res.reduce((e1, e2) => e1.toString() + e2.toString()),
-            end,
-          ));
-
-  Parser twoSingleQuotes(int at) {
-    Parser char2 = char(at, "''");
-    if (char2 != null) {
-      return Parser("'", char2.end);
-    } else {
-      return null;
+  Parser nonIcuMessageText(int at) {
+    if (at < input.length) {
+      var match = RegExp(r'[^\{]+').matchAsPrefix(input, at);
+      if (match != null) {
+        return Parser(match.group(0), match.end);
+      }
     }
+    return null;
   }
 
   Parser number(int at) {
@@ -160,7 +142,7 @@ class IcuParser {
 
   Parser comma(int at) {
     Match match = RegExp(r'\s*(,)\s*').matchAsPrefix(input, at);
-    return match != null ? Parser(match.group(1), match.end) : null;
+    return match != null ? Parser(',', match.end) : null;
   }
 
   static const List pluralKeywords = [
@@ -180,8 +162,7 @@ class IcuParser {
 
   Parser pluralKeyword(int at) => asKeywords(pluralKeywords, at);
 
-  Parser interiorText(int at) =>
-      plus((s) => contents(s), at) ?? empty(at); //TODO
+  Parser interiorText(int at) => plus((s) => contents(s), at) ?? empty(at);
 
   Parser preface(int at) => and(
         [
@@ -214,10 +195,9 @@ class IcuParser {
         (s) => closeCurly(s),
       ], at);
 
-  Parser intlPlural(int at) => plural(at)?.map((parsers, end) => Parser(
-        Plural.from(parsers[0].toString(), parsers[3], null),
-        end,
-      ));
+  Parser intlPlural(int at) => plural(at)?.mapResult(
+        (parsers) => Plural.from(parsers[0].toString(), parsers[3], null),
+      );
 
   Parser selectLiteral(int at) =>
       char(at, 'select'); //does plural work the same way as char?
@@ -244,10 +224,9 @@ class IcuParser {
         (s) => closeCurly(s),
       ], at);
 
-  Parser intlGender(int at) => gender(at)?.map((values, end) => Parser(
-        Gender.from(values.first, values[3], null),
-        end,
-      ));
+  Parser intlGender(int at) => gender(at)?.mapResult(
+        (values) => Gender.from(values.first, values[3], null),
+      );
 
   Parser selectClause(int at) => plus(
       (s1) => and([
@@ -267,15 +246,13 @@ class IcuParser {
         (s) => closeCurly(s),
       ], at);
 
-  Parser intlSelect(int at) => generalSelect(at)?.map((values, end) => Parser(
-        Select.from(values.first, values[3], null),
-        end,
-      ));
+  Parser intlSelect(int at) => generalSelect(at)
+      ?.mapResult((values) => Select.from(values.first, values[3], null));
 
   Parser pluralOrGenderOrSelect(int at) =>
       (intlPlural(at) ?? intlGender(at)) ?? intlSelect(at);
 
-  dynamic contents(int at) =>
+  Parser contents(int at) =>
       (pluralOrGenderOrSelect(at) ?? parameter(at)) ?? messageText(at);
 
   Parser simpleText(int at) => plus(
@@ -285,35 +262,29 @@ class IcuParser {
 
   Parser empty(int at) => Parser('', at);
 
-  Parser parameter(int at) {
-    Parser and2 = and([
-      (s) => openCurly(s),
-      (s) => id(s),
-      (s) => closeCurly(s),
-    ], at);
-    return and2?.map((result, end) => Parser(
-          VariableSubstitution.named(result[1], null),
-          end,
-        ));
-  }
+  Parser parameter(int at) => and([
+        (s) => openCurly(s),
+        (s) => id(s),
+        (s) => closeCurly(s),
+      ], at)
+          ?.mapResult((result) => VariableSubstitution.named(result[1], null));
 
   /// The primary entry point for parsing. Accepts a string and produces
   /// a parsed representation of it as a Message.
-  Message message(int at) => (pluralOrGenderOrSelect(at) ?? empty(at))
-      ?.map((r, _) => Message.from(r, null));
+  Message message(int at) =>
+      (pluralOrGenderOrSelect(at) ?? empty(at))?.toMessage();
 
   /// Represents an ordinary message, i.e. not a plural/gender/select, although
   /// it may have parameters.
-  Message nonIcuMessage(int at) =>
-      (simpleText(at) ?? empty(at))?.map((r, _) => Message.from(r, null));
+  Message nonIcuMessage(int at) => (simpleText(at) ?? empty(at))?.toMessage();
 
   Message stuff(int at) =>
       Message.from(pluralOrGenderOrSelect(at) ?? empty(at), null);
 
   IcuParser(this.input);
 
-  Message pluralAndGenderParse() => (pluralOrGenderOrSelect(0) ?? empty(0))
-      .map((res, end) => Message.from(res, null));
+  Message pluralAndGenderParse() =>
+      (pluralOrGenderOrSelect(0) ?? empty(0)).toMessage();
 
   Message nonIcuMessageParse() => nonIcuMessage(0);
 }
