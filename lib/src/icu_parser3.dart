@@ -12,10 +12,6 @@ library icu_parser;
 
 import 'package:intl_translation/src/intl_message.dart';
 
-/// This defines a grammar for ICU MessageFormat syntax. Usage is
-///       new IcuParser.message.parse().value;
-/// The "parse" method will return a Success or Failure object which responds
-/// to "value".
 class Parser<T> {
   final T result;
   final int end;
