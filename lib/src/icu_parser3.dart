@@ -22,15 +22,6 @@ class Parser<T> {
 
   Parser(this.result, this.end);
 
-  // Parser<List<S>> pick<S>(List<int> indices) {
-  //   if (T == List) {
-  //     List resultList = result as List;
-  //     return Parser<List<S>>(
-  //         indices.map((index) => resultList[index] as S).toList(), end);
-  //   }
-  //   throw Exception('May only be called on a List');
-  // }
-
   Parser<S> mapResult<S>(S Function(T res) callable) =>
       Parser<S>(callable(result), end);
 
@@ -86,9 +77,8 @@ class IcuParser {
     return null;
   }
 
-  Parser<String> trimStart(int at) {
-    return Parser<String>(input, RegExp(r'\s*').matchAsPrefix(input, at).end);
-  }
+  Parser<String> trimStart(int at) =>
+      Parser<String>(input, RegExp(r'\s*').matchAsPrefix(input, at).end);
 
   Parser<String> openCurly(int at) => char(at, '{');
   Parser<String> closeCurly(int at) => char(at, '}');
@@ -148,9 +138,6 @@ class IcuParser {
     'many',
     'other'
   ];
-  static const List genderKeywords = ['female', 'male', 'other'];
-
-  Parser<String> genderKeyword(int at) => asKeywords(genderKeywords, at);
 
   Parser<String> pluralKeyword(int at) => asKeywords(pluralKeywords, at);
 
@@ -166,7 +153,6 @@ class IcuParser {
       )?.mapResult<String>((res) => res[1]);
 
   Parser<String> pluralLiteral(int at) => char(at, 'plural');
-  Parser<String> selectLiteral(int at) => char(at, 'select');
 
   Parser<List<dynamic>> pluralClause(int at) => and<dynamic>(
         [
@@ -180,60 +166,80 @@ class IcuParser {
         at,
       )?.mapResult((res) => [res[1], res[3]]);
 
-  Parser<List<dynamic>> plural(int at) => and([
-        (s) => preface(s),
-        (s) => pluralLiteral(s),
-        (s) => comma(s),
-        (s) => plus((s1) => pluralClause(s1), s),
-        (s) => closeCurly(s),
-      ], at);
-
-  Parser<Plural> intlPlural(int at) => plural(at)?.mapResult(
-      (parsers) => Plural.from(parsers[0] as String, parsers[3], null));
-
-  Parser<List<dynamic>> genderClause(int at) => plus(
-      (s1) => and(
-            [
-              (s) => trimStart(s),
-              (s) => genderKeyword(s),
-              (s) => openCurly(s),
-              (s) => interiorText(s),
-              (s) => closeCurly(s),
-              (s) => trimStart(s),
-            ],
-            s1,
-          )?.mapResult((res) => [res[1], res[3]]),
-      at);
-
-  Parser<List<dynamic>> gender(int at) => and([
-        (s) => preface(s),
-        (s) => selectLiteral(s),
-        (s) => comma(s),
-        (s) => genderClause(s),
-        (s) => closeCurly(s),
-      ], at);
-
-  Parser<Gender> intlGender(int at) => gender(at)?.mapResult(
-        (values) => Gender.from(values.first, values[3], null),
+  Parser<List<dynamic>> plural(int at) => and(
+        [
+          (s) => preface(s),
+          (s) => pluralLiteral(s),
+          (s) => comma(s),
+          (s) => plus((s1) => pluralClause(s1), s),
+          (s) => closeCurly(s),
+        ],
+        at,
       );
 
-  Parser<List<dynamic>> selectClause(int at) => plus(
-      (s1) => and([
-            (s) => id(s),
+  Parser<Plural> intlPlural(int at) =>
+      plural(at)?.mapResult((parsers) => Plural.from(
+            parsers[0] as String,
+            parsers[3],
+            null,
+          ));
+
+  static const List genderKeywords = ['female', 'male', 'other'];
+
+  Parser<String> genderKeyword(int at) => asKeywords(genderKeywords, at);
+
+  Parser<List<dynamic>> genderClause(int at) => plus(
+        (s1) => and(
+          [
+            (s) => trimStart(s),
+            (s) => genderKeyword(s),
             (s) => openCurly(s),
             (s) => interiorText(s),
             (s) => closeCurly(s),
-          ], s1)
-              ?.mapResult((res) => [res[0], res[2]]),
-      at);
+            (s) => trimStart(s),
+          ],
+          s1,
+        )?.mapResult((res) => [res[1], res[3]]),
+        at,
+      );
 
-  Parser<List<dynamic>> select(int at) => and([
-        (s) => preface(s),
-        (s) => selectLiteral(s),
-        (s) => comma(s),
-        (s) => selectClause(s),
-        (s) => closeCurly(s),
-      ], at);
+  Parser<List<dynamic>> gender(int at) => and(
+        [
+          (s) => preface(s),
+          (s) => selectLiteral(s),
+          (s) => comma(s),
+          (s) => genderClause(s),
+          (s) => closeCurly(s),
+        ],
+        at,
+      );
+
+  Parser<Gender> intlGender(int at) => gender(at)
+      ?.mapResult((values) => Gender.from(values.first, values[3], null));
+
+  Parser<String> selectLiteral(int at) => char(at, 'select');
+
+  Parser<List<dynamic>> selectClause(int at) => plus(
+        (s1) => and([
+          (s) => id(s),
+          (s) => openCurly(s),
+          (s) => interiorText(s),
+          (s) => closeCurly(s),
+        ], s1)
+            ?.mapResult((res) => [res[0], res[2]]),
+        at,
+      );
+
+  Parser<List<dynamic>> select(int at) => and(
+        [
+          (s) => preface(s),
+          (s) => selectLiteral(s),
+          (s) => comma(s),
+          (s) => selectClause(s),
+          (s) => closeCurly(s),
+        ],
+        at,
+      );
 
   Parser<Select> intlSelect(int at) => select(at)
       ?.mapResult((values) => Select.from(values.first, values[3], null));
@@ -261,11 +267,11 @@ class IcuParser {
   /// The primary entry point for parsing. Accepts a string and produces
   /// a parsed representation of it as a Message.
   Message message(int at) =>
-      (pluralOrGenderOrSelect(at) ?? empty(at))?.toMessage();
+      (pluralOrGenderOrSelect(at) ?? empty(at)).toMessage();
 
   /// Represents an ordinary message, i.e. not a plural/gender/select, although
   /// it may have parameters.
-  Message nonIcuMessage(int at) => (simpleText(at) ?? empty(at))?.toMessage();
+  Message nonIcuMessage(int at) => (simpleText(at) ?? empty(at)).toMessage();
 
   Message stuff(int at) =>
       Message.from(pluralOrGenderOrSelect(at) ?? empty(at), null);
