@@ -264,12 +264,14 @@ class IcuParser {
 
   Parser<String> empty(int at) => Parser<String>('', at);
 
-  Parser<Message> parameter(int at) => and([
-        (s) => openCurly(s),
-        (s) => id(s),
-        (s) => closeCurly(s),
-      ], at)
-          ?.mapResult((result) => VariableSubstitution.named(result[1], null));
+  Parser<Message> parameter(int at) => and(
+        [
+          (s) => openCurly(s),
+          (s) => id(s),
+          (s) => closeCurly(s),
+        ],
+        at,
+      )?.mapResult((result) => VariableSubstitution.named(result[1], null));
 
   /// The primary entry point for parsing. Accepts a string and produces
   /// a parsed representation of it as a Message.
