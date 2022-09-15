@@ -36,7 +36,7 @@ class Parser {
     throw Exception('Wrong type or args given');
   }
 
-  R map<R>(R Function(dynamic, int) callable) => callable(result, end);
+  R map<R>(R Function(dynamic res, int end) callable) => callable(result, end);
 
   @override
   String toString() {
@@ -130,11 +130,11 @@ class IcuParser {
         : null;
   }
 
-  Parser nonIcuMessageText(int at) {
-    Parser plus2 = plus((s) => normalText(s), at);
-    return plus2?.result
-        ?.reduce((e1, e2) => Parser(e1.toString() + e2.toString(), plus2.end));
-  }
+  Parser nonIcuMessageText(int at) =>
+      plus((s) => normalText(s), at)?.map((res, end) => Parser(
+            res.reduce((e1, e2) => e1.toString() + e2.toString()),
+            end,
+          ));
 
   Parser twoSingleQuotes(int at) {
     Parser char2 = char(at, "''");
@@ -312,9 +312,8 @@ class IcuParser {
 
   IcuParser(this.input);
 
-  Message pluralAndGenderParse() {
-    return Message.from(pluralOrGenderOrSelect(0) ?? '', null);
-  }
+  Message pluralAndGenderParse() => (pluralOrGenderOrSelect(0) ?? empty(0))
+      .map((res, end) => Message.from(res, null));
 
   Message nonIcuMessageParse() => nonIcuMessage(0);
 }
@@ -397,25 +396,14 @@ void testIntlPlural() {
 }
 
 void testNonIcu() {
-  var input = '{gender_of_host, select, '
-      'female {'
-      '{num_guests, plural, offset:1 '
-      '=0 {{host} does not give a party.}'
-      '=1 {{host} invites {guest} to her party.}'
-      '=2 {{host} invites {guest} and one other person to her party.}'
-      'other {{host} invites {guest} and # other people to her party.}}}'
-      'male {'
-      '{num_guests, plural, offset:1 '
-      '=0 {{host} does not give a party.}'
-      '=1 {{host} invites {guest} to his party.}'
-      '=2 {{host} invites {guest} and one other person to his party.}'
-      'other {{host} invites {guest} and # other people to his party.}}}'
-      'other {'
-      '{num_guests, plural, offset:1 '
-      '=0 {{host} does not give a party.}'
-      '=1 {{host} invites {guest} to their party.}'
-      '=2 {{host} invites {guest} and one other person to their party.}'
-      'other {{host} invites {guest} and # other people to their party.}}}}';
+  var input = r'''fr
+Il s'agit d'un message
+Un autre message avec un seul paramètre {x}
+Cette message prend plusiers lignes.
+interessant (fr): '<>{}= +-_$()&^%$#@!~`'
+{a}, {b}, {c}
+Cette chaîne est toujours traduit
+L'interpolation est délicate quand elle se termine une phrase comme {s}.''';
   var parse = oldparser.IcuParser().nonIcuMessage.parse(input);
   print(parse.value);
   var parser = IcuParser(input).nonIcuMessage(0);
