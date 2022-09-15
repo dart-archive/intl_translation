@@ -12,6 +12,7 @@ library icu_parser;
 
 import 'package:intl_translation/src/intl_message.dart';
 
+///Holds a parsed piece of the input
 class Parser<T> {
   final T result;
   final int end;
@@ -53,7 +54,7 @@ class IcuParser {
     for (var v in ['female', 'male', 'other']) v: RegExp('\\s*$v\\s*')
   };
 
-  Parser<String> char(int at, String t) =>
+  Parser<String> matchString(int at, String t) =>
       input.startsWith(t, at) ? Parser(t, at + t.length) : null;
 
   Parser<List<S>> oneOrMore<S>(Parser<S> Function(int s) callable, int at) {
@@ -101,8 +102,8 @@ class IcuParser {
   Parser<String> trimStart(int at) =>
       Parser<String>(input, RegExp(r'\s*').matchAsPrefix(input, at).end);
 
-  Parser<String> openCurly(int at) => char(at, '{');
-  Parser<String> closeCurly(int at) => char(at, '}');
+  Parser<String> openCurly(int at) => matchString(at, '{');
+  Parser<String> closeCurly(int at) => matchString(at, '}');
 
   Parser<String> icuEscapedText(int at) {
     Match match = quotedBracketOpen.matchAsPrefix(input, at) ??
@@ -172,7 +173,7 @@ class IcuParser {
   Parser<List<dynamic>> plural(int at) => and(
         [
           (s) => preface(s),
-          (s) => char(s, 'plural'),
+          (s) => matchString(s, 'plural'),
           (s) => comma(s),
           (s) => oneOrMore((s1) => pluralClause(s1), s),
           (s) => closeCurly(s),
@@ -218,7 +219,7 @@ class IcuParser {
   Parser<Message> intlGender(int at) => gender(at)
       ?.mapResult((values) => Gender.from(values.first, values[3], null));
 
-  Parser<String> selectLiteral(int at) => char(at, 'select');
+  Parser<String> selectLiteral(int at) => matchString(at, 'select');
 
   Parser<List<dynamic>> selectClause(int at) => oneOrMore(
         (s1) => and([
