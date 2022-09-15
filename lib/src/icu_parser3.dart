@@ -27,6 +27,7 @@ class Parser<T> {
 
 class IcuParser {
   final String input;
+  const IcuParser(this.input);
 
   static RegExp quotedBracketOpen = RegExp(r"'({)'");
   static RegExp quotedBracketClose = RegExp(r"'(})'");
@@ -281,8 +282,6 @@ class IcuParser {
 
   Message stuff(int at) =>
       Message.from(pluralOrGenderOrSelect(at) ?? empty(at), null);
-
-  IcuParser(this.input);
 
   Message pluralAndGenderParse() =>
       (pluralOrGenderOrSelect(0) ?? empty(0)).toMessage();
