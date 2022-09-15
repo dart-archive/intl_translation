@@ -22,16 +22,14 @@ class Parser<T> {
 
   Parser(this.result, this.end);
 
-  Parser<List<S>> pick<S>(List<int> indices) {
-    if (T == List) {
-      List resultList = result as List;
-      if (indices.length > 1) {
-        return Parser<List<S>>(
-            indices.map((index) => resultList[index]).toList(), end);
-      }
-    }
-    throw Exception('May only be called on a List');
-  }
+  // Parser<List<S>> pick<S>(List<int> indices) {
+  //   if (T == List) {
+  //     List resultList = result as List;
+  //     return Parser<List<S>>(
+  //         indices.map((index) => resultList[index] as S).toList(), end);
+  //   }
+  //   throw Exception('May only be called on a List');
+  // }
 
   Parser<S> mapResult<S>(S Function(T res) callable) =>
       Parser<S>(callable(result), end);
@@ -180,7 +178,7 @@ class IcuParser {
           (s) => trimStart(s),
         ],
         at,
-      )?.pick([1, 3]);
+      )?.mapResult((res) => [res[1], res[3]]);
 
   Parser<List<dynamic>> plural(int at) => and([
         (s) => preface(s),
@@ -204,7 +202,7 @@ class IcuParser {
               (s) => trimStart(s),
             ],
             s1,
-          )?.pick([1, 3]),
+          )?.mapResult((res) => [res[1], res[3]]),
       at);
 
   Parser<List<dynamic>> gender(int at) => and([
@@ -226,7 +224,7 @@ class IcuParser {
             (s) => interiorText(s),
             (s) => closeCurly(s),
           ], s1)
-              ?.pick([0, 2]),
+              ?.mapResult((res) => [res[0], res[2]]),
       at);
 
   Parser<List<dynamic>> select(int at) => and([
