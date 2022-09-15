@@ -16,32 +16,25 @@ import 'package:intl_translation/src/intl_message.dart';
 ///       new IcuParser.message.parse().value;
 /// The "parse" method will return a Success or Failure object which responds
 /// to "value".
-class Parser {
-  final dynamic result;
+class Parser<T> {
+  final T result;
   final int end;
 
   Parser(this.result, this.end);
 
-  Parser extract(int index) {
-    if (result is List) {
-      List resultList = result as List;
-      return Parser(resultList[index], end);
-    }
-    throw Exception('May only be called on a List');
-  }
-
-  Parser pick(List<int> indices) {
-    if (result is List) {
+  Parser<List<S>> pick<S>(List<int> indices) {
+    if (T == List) {
       List resultList = result as List;
       if (indices.length > 1) {
-        return Parser(indices.map((index) => resultList[index]).toList(), end);
+        return Parser<List<S>>(
+            indices.map((index) => resultList[index]).toList(), end);
       }
     }
     throw Exception('May only be called on a List');
   }
 
-  Parser mapResult(dynamic Function(dynamic res) callable) =>
-      Parser(callable(result), end);
+  Parser<S> mapResult<S>(S Function(T res) callable) =>
+      Parser<S>(callable(result), end);
 
   Message toMessage() => Message.from(result, null);
 }
@@ -49,31 +42,32 @@ class Parser {
 class IcuParser {
   final String input;
 
-  Parser char(int at, String t) =>
+  Parser<String> char(int at, String t) =>
       input.startsWith(t, at) ? Parser(t, at + t.length) : null;
 
-  Parser plus(Parser Function(int s) callable, int at) {
+  Parser<List<S>> plus<S>(Parser<S> Function(int s) callable, int at) {
     int newAt = -1;
-    List<Parser> results = [];
+    List<Parser<S>> results = [];
     while (newAt != at) {
       newAt = at;
-      var parser = callable(newAt);
+      Parser<S> parser = callable(newAt);
       if (parser != null) {
         at = parser.end;
         results.add(parser);
       }
     }
     return results.isNotEmpty
-        ? Parser(results.map((parser) => parser.result).toList(), newAt)
+        ? Parser<List<S>>(
+            results.map((parser) => parser.result).toList(), newAt)
         : null;
   }
 
-  Parser and(List<Parser Function(int s)> callables, int at) {
+  Parser<List<S>> and<S>(List<Parser<S> Function(int s)> callables, int at) {
     int newAt = at;
-    List<Parser> resParser = [];
+    List<Parser<S>> resParser = [];
     for (int i = 0; i < callables.length; i++) {
       var callable = callables[i];
-      Parser parser = callable.call(newAt);
+      Parser<S> parser = callable.call(newAt);
       if (parser != null) {
         resParser.add(parser);
         newAt = parser.end;
@@ -81,65 +75,66 @@ class IcuParser {
         return null;
       }
     }
-    return Parser(resParser.map((p) => p.result).toList(), newAt);
+    return Parser<List<S>>(resParser.map((p) => p.result).toList(), newAt);
   }
 
-  Parser asKeywords(List keywords, int at) {
+  Parser<String> asKeywords(List keywords, int at) {
     for (var keyword in keywords) {
       var match = RegExp('\\s*$keyword\\s*').matchAsPrefix(input, at);
       if (match != null) {
-        return Parser(keyword, match.end);
+        return Parser<String>(keyword, match.end);
       }
     }
     return null;
   }
 
-  Parser trimStart(int at) {
-    return Parser(input, RegExp(r'\s*').matchAsPrefix(input, at).end);
+  Parser<String> trimStart(int at) {
+    return Parser<String>(input, RegExp(r'\s*').matchAsPrefix(input, at).end);
   }
 
-  Parser openCurly(int at) => char(at, '{');
-  Parser closeCurly(int at) => char(at, '}');
+  Parser<String> openCurly(int at) => char(at, '{');
+  Parser<String> closeCurly(int at) => char(at, '}');
 
-  Parser icuEscapedText(int at) {
+  Parser<String> icuEscapedText(int at) {
     Match match = RegExp(r"'({)'").matchAsPrefix(input, at) ??
         RegExp(r"'(})'").matchAsPrefix(input, at) ??
         RegExp(r"'(')").matchAsPrefix(input, at);
-    return match != null ? Parser(match?.group(1), match.end) : null;
+    return match != null ? Parser<String>(match?.group(1), match.end) : null;
   }
 
-  Parser icuText(int at) =>
+  Parser<String> icuText(int at) =>
       at < input.length && RegExp(r'[^\{\}\<]').matchAsPrefix(input, at) != null
-          ? Parser(input[at], at + 1)
+          ? Parser<String>(input[at], at + 1)
           : null;
 
-  Parser messageText(int at) => plus((s) => icuEscapedText(s) ?? icuText(s), at)
-      ?.mapResult((res) => res.map((r) => r as String)?.join());
+  Parser<String> messageText(int at) =>
+      plus<String>((s) => icuEscapedText(s) ?? icuText(s), at)
+          ?.mapResult<String>((res) => res?.join());
 
-  Parser nonIcuMessageText(int at) {
+  Parser<String> nonIcuMessageText(int at) {
     if (at < input.length) {
       var match = RegExp(r'[^\{]+').matchAsPrefix(input, at);
       if (match != null) {
-        return Parser(match.group(0), match.end);
+        return Parser<String>(match.group(0), match.end);
       }
     }
     return null;
   }
 
-  Parser number(int at) {
+  Parser<String> number(int at) {
     Match match = RegExp(r'\s*([0-9]+)\s*').matchAsPrefix(input, at);
     return match != null
         ? Parser(int.parse(match.group(1)).toString(), match.end)
         : null;
   }
 
-  Parser id(int at) {
+  Parser<String> id(int at) {
     Match match =
         RegExp(r'\s*([a-zA-Z][a-zA-Z_0-9]*)\s*').matchAsPrefix(input, at);
     return match != null ? Parser(match.group(1), match.end) : null;
   }
 
-  Parser comma(int at) {
+  Parser<String> comma(int at) {
     Match match = RegExp(r'\s*(,)\s*').matchAsPrefix(input, at);
     return match != null ? Parser(',', match.end) : null;
   }
@@ -157,25 +152,25 @@ class IcuParser {
   ];
   static const List genderKeywords = ['female', 'male', 'other'];
 
-  Parser genderKeyword(int at) => asKeywords(genderKeywords, at);
+  Parser<String> genderKeyword(int at) => asKeywords(genderKeywords, at);
 
-  Parser pluralKeyword(int at) => asKeywords(pluralKeywords, at);
+  Parser<String> pluralKeyword(int at) => asKeywords(pluralKeywords, at);
 
   Parser interiorText(int at) => plus((s) => contents(s), at) ?? empty(at);
 
-  Parser preface(int at) => and(
+  Parser<String> preface(int at) => and<String>(
         [
           (s) => openCurly(s),
           (s) => id(s),
           (s) => comma(s),
         ],
         at,
-      )?.extract(1);
+      )?.mapResult<String>((res) => res[1]);
 
-  Parser pluralLiteral(int at) => char(at, 'plural');
-  Parser selectLiteral(int at) => char(at, 'select');
+  Parser<String> pluralLiteral(int at) => char(at, 'plural');
+  Parser<String> selectLiteral(int at) => char(at, 'select');
 
-  Parser pluralClause(int at) => and(
+  Parser<List<dynamic>> pluralClause(int at) => and<dynamic>(
         [
           (s) => trimStart(s),
           (s) => pluralKeyword(s),
@@ -187,7 +182,7 @@ class IcuParser {
         at,
       )?.pick([1, 3]);
 
-  Parser plural(int at) => and([
+  Parser<List<dynamic>> plural(int at) => and([
         (s) => preface(s),
         (s) => pluralLiteral(s),
         (s) => comma(s),
@@ -195,10 +190,10 @@ class IcuParser {
         (s) => closeCurly(s),
       ], at);
 
-  Parser intlPlural(int at) => plural(at)?.mapResult(
+  Parser<Plural> intlPlural(int at) => plural(at)?.mapResult(
       (parsers) => Plural.from(parsers[0] as String, parsers[3], null));
 
-  Parser genderClause(int at) => plus(
+  Parser<List<dynamic>> genderClause(int at) => plus(
       (s1) => and(
             [
               (s) => trimStart(s),
@@ -212,7 +207,7 @@ class IcuParser {
           )?.pick([1, 3]),
       at);
 
-  Parser gender(int at) => and([
+  Parser<List<dynamic>> gender(int at) => and([
         (s) => preface(s),
         (s) => selectLiteral(s),
         (s) => comma(s),
@@ -220,11 +215,11 @@ class IcuParser {
         (s) => closeCurly(s),
       ], at);
 
-  Parser intlGender(int at) => gender(at)?.mapResult(
+  Parser<Gender> intlGender(int at) => gender(at)?.mapResult(
         (values) => Gender.from(values.first, values[3], null),
       );
 
-  Parser selectClause(int at) => plus(
+  Parser<List<dynamic>> selectClause(int at) => plus(
       (s1) => and([
             (s) => id(s),
             (s) => openCurly(s),
@@ -234,7 +229,7 @@ class IcuParser {
               ?.pick([0, 2]),
       at);
 
-  Parser select(int at) => and([
+  Parser<List<dynamic>> select(int at) => and([
         (s) => preface(s),
         (s) => selectLiteral(s),
         (s) => comma(s),
@@ -242,23 +237,23 @@ class IcuParser {
         (s) => closeCurly(s),
       ], at);
 
-  Parser intlSelect(int at) => select(at)
+  Parser<Select> intlSelect(int at) => select(at)
       ?.mapResult((values) => Select.from(values.first, values[3], null));
 
-  Parser pluralOrGenderOrSelect(int at) =>
+  Parser<dynamic> pluralOrGenderOrSelect(int at) =>
       (intlPlural(at) ?? intlGender(at)) ?? intlSelect(at);
 
-  Parser contents(int at) =>
+  Parser<dynamic> contents(int at) =>
       (pluralOrGenderOrSelect(at) ?? parameter(at)) ?? messageText(at);
 
-  Parser simpleText(int at) => plus(
+  Parser<dynamic> simpleText(int at) => plus(
         (s) => (nonIcuMessageText(s) ?? parameter(s)) ?? openCurly(s),
         at,
       );
 
-  Parser empty(int at) => Parser('', at);
+  Parser<String> empty(int at) => Parser<String>('', at);
 
-  Parser parameter(int at) => and([
+  Parser<VariableSubstitution> parameter(int at) => and([
         (s) => openCurly(s),
         (s) => id(s),
         (s) => closeCurly(s),
