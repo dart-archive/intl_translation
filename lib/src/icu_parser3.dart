@@ -12,6 +12,22 @@ library icu_parser;
 
 import 'package:intl_translation/src/intl_message.dart';
 
+class IcuMessageParser {
+  final _IcuParser _parser;
+
+  IcuMessageParser(String input) : _parser = _IcuParser(input);
+
+  Message pluralAndGenderParse() => Message.from(
+        (_parser.pluralOrGenderOrSelect(0) ?? _parser.empty(0)).result,
+        null,
+      );
+
+  Message nonIcuMessageParse() => Message.from(
+        (_parser.simpleText(0) ?? _parser.empty(0)).result,
+        null,
+      );
+}
+
 ///Holds a parsed piece of the input
 class Parser<T> {
   final T result;
@@ -21,13 +37,11 @@ class Parser<T> {
 
   Parser<S> mapResult<S>(S Function(T res) callable) =>
       Parser<S>(callable(result), end);
-
-  Message toMessage() => Message.from(result, null);
 }
 
-class IcuParser {
+class _IcuParser {
   final String input;
-  const IcuParser(this.input);
+  const _IcuParser(this.input);
 
   static RegExp quotedBracketOpen = RegExp(r"'({)'");
   static RegExp quotedBracketClose = RegExp(r"'(})'");
@@ -37,22 +51,23 @@ class IcuParser {
   static RegExp idRegex = RegExp(r'\s*([a-zA-Z][a-zA-Z_0-9]*)\s*');
   static RegExp nonOpenBracketRegex = RegExp(r'[^\{]+');
   static RegExp commaWithWhitespace = RegExp(r'\s*(,)\s*');
-  static Map<String, RegExp> pluralKeywords = {
-    for (var v in [
-      '=0',
-      '=1',
-      '=2',
-      'zero',
-      'one',
-      'two',
-      'few',
-      'many',
-      'other'
-    ])
-      v: RegExp('\\s*$v\\s*')
+  static List<String> pluralKeywords = [
+    '=0',
+    '=1',
+    '=2',
+    'zero',
+    'one',
+    'two',
+    'few',
+    'many',
+    'other'
+  ];
+  static Map<String, RegExp> pluralKeywordsToRegex = {
+    for (var v in pluralKeywords) v: RegExp('\\s*$v\\s*')
   };
-  static Map<String, RegExp> genderKeywords = {
-    for (var v in ['female', 'male', 'other']) v: RegExp('\\s*$v\\s*')
+  static List<String> genderKeywords = ['female', 'male', 'other'];
+  static Map<String, RegExp> genderKeywordsToRegex = {
+    for (var v in genderKeywords) v: RegExp('\\s*$v\\s*')
   };
 
   Parser<String> matchString(int at, String t) =>
@@ -91,33 +106,38 @@ class IcuParser {
   }
 
   Parser<String> asKeywords(Map<String, RegExp> keywordsToRegex, int at) {
-    for (var entry in keywordsToRegex.entries) {
-      var match = entry.value.matchAsPrefix(input, at);
-      if (match != null) {
-        return Parser<String>(entry.key, match.end);
+    if (at < input.length) {
+      for (var entry in keywordsToRegex.entries) {
+        var match = entry.value.matchAsPrefix(input, at);
+        if (match != null) {
+          return Parser<String>(entry.key, match.end);
+        }
       }
     }
     return null;
   }
 
-  Parser<String> trimStart(int at) =>
-      Parser<String>(input, RegExp(r'\s*').matchAsPrefix(input, at).end);
+  Parser<String> trimStart(int at) => at < input.length
+      ? Parser<String>(input, RegExp(r'\s*').matchAsPrefix(input, at).end)
+      : null;
 
   Parser<String> openCurly(int at) => matchString(at, '{');
   Parser<String> closeCurly(int at) => matchString(at, '}');
 
   Parser<String> icuEscapedText(int at) {
-    Match match = quotedBracketOpen.matchAsPrefix(input, at) ??
-        quotedBracketClose.matchAsPrefix(input, at) ??
-        doubleQuotes.matchAsPrefix(input, at);
-    return match != null ? Parser<String>(match?.group(1), match.end) : null;
+    if (at < input.length) {
+      Match match = quotedBracketOpen.matchAsPrefix(input, at) ??
+          quotedBracketClose.matchAsPrefix(input, at) ??
+          doubleQuotes.matchAsPrefix(input, at);
+      return match != null ? Parser<String>(match?.group(1), match.end) : null;
+    }
+    return null;
   }
 
-  Parser<String> icuText(int at) {
-    return at < input.length && nonICURegex.matchAsPrefix(input, at) != null
-        ? Parser<String>(input[at], at + 1)
-        : null;
-  }
+  Parser<String> icuText(int at) =>
+      at < input.length && nonICURegex.matchAsPrefix(input, at) != null
+          ? Parser<String>(input[at], at + 1)
+          : null;
 
   Parser<String> messageText(int at) =>
       oneOrMore<String>((s) => icuEscapedText(s) ?? icuText(s), at)
@@ -141,12 +161,15 @@ class IcuParser {
   }
 
   Parser<String> id(int at) {
-    Match match = idRegex.matchAsPrefix(input, at);
-    return match != null ? Parser(match.group(1), match.end) : null;
+    if (at < input.length) {
+      Match match = idRegex.matchAsPrefix(input, at);
+      return match != null ? Parser(match.group(1), match.end) : null;
+    }
+    return null;
   }
 
   Parser<String> comma(int at) =>
-      commaWithWhitespace.matchAsPrefix(input, at) != null
+      at < input.length && commaWithWhitespace.matchAsPrefix(input, at) != null
           ? Parser(',', at + 1)
           : null;
 
@@ -162,7 +185,7 @@ class IcuParser {
   Parser<List<dynamic>> pluralClause(int at) => and<dynamic>(
         [
           (s) => trimStart(s),
-          (s) => asKeywords(IcuParser.pluralKeywords, s),
+          (s) => asKeywords(_IcuParser.pluralKeywordsToRegex, s),
           (s) => openCurly(s),
           (s) => interiorText(s),
           (s) => closeCurly(s),
@@ -189,7 +212,7 @@ class IcuParser {
             null,
           ));
 
-  Parser<String> genderKeyword(int at) => asKeywords(genderKeywords, at);
+  Parser<String> genderKeyword(int at) => asKeywords(genderKeywordsToRegex, at);
 
   Parser<List<dynamic>> genderClause(int at) => oneOrMore(
         (s1) => and(
@@ -270,21 +293,4 @@ class IcuParser {
         ],
         at,
       )?.mapResult((result) => VariableSubstitution.named(result[1], null));
-
-  /// The primary entry point for parsing. Accepts a string and produces
-  /// a parsed representation of it as a Message.
-  Message message(int at) =>
-      (pluralOrGenderOrSelect(at) ?? empty(at)).toMessage();
-
-  /// Represents an ordinary message, i.e. not a plural/gender/select, although
-  /// it may have parameters.
-  Message nonIcuMessage(int at) => (simpleText(at) ?? empty(at)).toMessage();
-
-  Message stuff(int at) =>
-      Message.from(pluralOrGenderOrSelect(at) ?? empty(at), null);
-
-  Message pluralAndGenderParse() =>
-      (pluralOrGenderOrSelect(0) ?? empty(0)).toMessage();
-
-  Message nonIcuMessageParse() => nonIcuMessage(0);
 }
