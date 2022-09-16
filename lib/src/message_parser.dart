@@ -30,10 +30,10 @@ class MessageParser {
 
 ///Holds a parsed piece of the input
 class Parsed<T> {
-  ///The result of parsing this piece of the message
+  ///Holds the result of parsing this piece of the message
   final T result;
 
-  ///The position of the parser after parsing this piece of the message
+  ///Holds the position of the parser after parsing this piece of the message
   final int at;
 
   Parsed(this.result, this.at);
@@ -43,12 +43,15 @@ class Parsed<T> {
       Parsed<S>(callable(result), at);
 }
 
-///Methods for actually parsing a message. The parser goes through the message
-///in a DFS kind of way. Whenever a branch fails to parse, it returns null.
+///Methods for actually parsing a message.
+///
+///The parser goes through the message in a DFS kind of way. Whenever a branch
+///fails to parse, it returns null.
 class _ParserUtil {
   final String input;
   const _ParserUtil(this.input);
 
+  //Precompiled regexes
   static RegExp quotedBracketOpen = RegExp(r"'({)'");
   static RegExp quotedBracketClose = RegExp(r"'(})'");
   static RegExp doubleQuotes = RegExp(r"'(')");
