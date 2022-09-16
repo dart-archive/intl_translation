@@ -8,7 +8,7 @@
 
 /// Contains a parser for ICU format plural/gender/select format for localized
 /// messages. See extract_to_arb.dart and make_hardcoded_translation.dart.
-library icu_parser;
+library icu_message_parser;
 
 import 'package:intl_translation/src/intl_message.dart';
 

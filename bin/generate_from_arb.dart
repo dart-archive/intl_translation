@@ -27,7 +27,7 @@ import 'package:args/args.dart';
 import 'package:intl_translation/extract_messages.dart';
 import 'package:intl_translation/generate_localized.dart';
 import 'package:intl_translation/src/directory_utils.dart';
-import 'package:intl_translation/src/icu_parser3.dart';
+import 'package:intl_translation/src/icu_message_parser.dart';
 import 'package:intl_translation/src/intl_message.dart';
 import 'package:path/path.dart' as path;
 
