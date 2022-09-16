@@ -27,7 +27,7 @@ import 'package:args/args.dart';
 import 'package:intl_translation/extract_messages.dart';
 import 'package:intl_translation/generate_localized.dart';
 import 'package:intl_translation/src/directory_utils.dart';
-import 'package:intl_translation/src/icu_message_parser.dart';
+import 'package:intl_translation/src/message_parser.dart';
 import 'package:intl_translation/src/intl_message.dart';
 import 'package:path/path.dart' as path;
 
@@ -228,10 +228,10 @@ void generateLocaleFile(String locale, List<Map> localeData, String targetDir,
 BasicTranslatedMessage recreateIntlObjects(String id, String data) {
   if (id.startsWith('@')) return null;
   if (data == null) return null;
-  IcuMessageParser icuMessageParser = IcuMessageParser(data);
-  Message parsed = icuMessageParser.pluralAndGenderParse();
+  MessageParser messageParser = MessageParser(data);
+  Message parsed = messageParser.pluralAndGenderParse();
   if (parsed is LiteralString && parsed.string.isEmpty) {
-    parsed = icuMessageParser.nonIcuMessageParse();
+    parsed = messageParser.nonIcuMessageParse();
   }
   return BasicTranslatedMessage(id, parsed);
 }

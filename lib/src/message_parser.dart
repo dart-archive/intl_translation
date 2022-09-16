@@ -8,14 +8,14 @@
 
 /// Contains a parser for ICU format plural/gender/select format for localized
 /// messages. See extract_to_arb.dart and make_hardcoded_translation.dart.
-library icu_message_parser;
+library message_parser;
 
 import 'package:intl_translation/src/intl_message.dart';
 
-class IcuMessageParser {
-  final _IcuParser _parser;
+class MessageParser {
+  final _ParserUtil _parser;
 
-  IcuMessageParser(String input) : _parser = _IcuParser(input);
+  MessageParser(String input) : _parser = _ParserUtil(input);
 
   Message pluralAndGenderParse() => Message.from(
         (_parser.pluralOrGenderOrSelect(0) ?? _parser.empty(0)).result,
@@ -29,19 +29,25 @@ class IcuMessageParser {
 }
 
 ///Holds a parsed piece of the input
-class Parser<T> {
+class Parsed<T> {
+  ///The result of parsing this piece of the message
   final T result;
-  final int end;
 
-  Parser(this.result, this.end);
+  ///The position of the parser after parsing this piece of the message
+  final int at;
 
-  Parser<S> mapResult<S>(S Function(T res) callable) =>
-      Parser<S>(callable(result), end);
+  Parsed(this.result, this.at);
+
+  ///Helper method to simplify null checks
+  Parsed<S> mapResult<S>(S Function(T res) callable) =>
+      Parsed<S>(callable(result), at);
 }
 
-class _IcuParser {
+///Methods for actually parsing a message. The parser goes through the message
+///in a DFS kind of way. Whenever a branch fails to parse, it returns null.
+class _ParserUtil {
   final String input;
-  const _IcuParser(this.input);
+  const _ParserUtil(this.input);
 
   static RegExp quotedBracketOpen = RegExp(r"'({)'");
   static RegExp quotedBracketClose = RegExp(r"'(})'");
@@ -70,110 +76,123 @@ class _IcuParser {
     for (var v in genderKeywords) v: RegExp('\\s*$v\\s*')
   };
 
-  Parser<String> matchString(int at, String t) =>
-      input.startsWith(t, at) ? Parser(t, at + t.length) : null;
-
-  Parser<List<S>> oneOrMore<S>(Parser<S> Function(int s) callable, int at) {
+  ///Corresponds to a [+] operator in a regex, matching at least one occurence
+  ///of the [callable].
+  static Parsed<List<T>> oneOrMore<T>(
+    Parsed<T> Function(int s) callable,
+    int at,
+  ) {
     int newAt = -1;
-    List<Parser<S>> results = [];
+    List<Parsed<T>> results = [];
     while (newAt != at) {
       newAt = at;
-      Parser<S> parser = callable(newAt);
+      Parsed<T> parser = callable(newAt);
       if (parser != null) {
-        at = parser.end;
+        at = parser.at;
         results.add(parser);
       }
     }
     return results.isNotEmpty
-        ? Parser<List<S>>(results.map((p) => p.result).toList(), newAt)
+        ? Parsed<List<T>>(results.map((p) => p.result).toList(), newAt)
         : null;
   }
 
-  Parser<List<S>> and<S>(List<Parser<S> Function(int s)> callables, int at) {
+  ///Corresponds to an [AND] operator, matching all [callables] or failing, i.e.
+  ///returning [null].
+  static Parsed<List<T>> and<T>(
+    List<Parsed<T> Function(int s)> callables,
+    int at,
+  ) {
     int newAt = at;
-    List<Parser<S>> resParser = [];
+    List<Parsed<T>> resParser = [];
     for (int i = 0; i < callables.length; i++) {
       var callable = callables[i];
-      Parser<S> parser = callable.call(newAt);
+      Parsed<T> parser = callable.call(newAt);
       if (parser != null) {
         resParser.add(parser);
-        newAt = parser.end;
+        newAt = parser.at;
       } else {
         return null;
       }
     }
-    return Parser<List<S>>(resParser.map((p) => p.result).toList(), newAt);
+    return Parsed<List<T>>(resParser.map((p) => p.result).toList(), newAt);
   }
 
-  Parser<String> asKeywords(Map<String, RegExp> keywordsToRegex, int at) {
+  ///Match a simple string
+  Parsed<String> matchString(int at, String t) =>
+      input.startsWith(t, at) ? Parsed(t, at + t.length) : null;
+
+  ///Match any of the given keywords
+  Parsed<String> asKeywords(Map<String, RegExp> keywordsToRegex, int at) {
     if (at < input.length) {
       for (var entry in keywordsToRegex.entries) {
         var match = entry.value.matchAsPrefix(input, at);
         if (match != null) {
-          return Parser<String>(entry.key, match.end);
+          return Parsed<String>(entry.key, match.end);
         }
       }
     }
     return null;
   }
 
-  Parser<String> trimStart(int at) => at < input.length
-      ? Parser<String>(input, RegExp(r'\s*').matchAsPrefix(input, at).end)
+  ///Parse whitespace
+  Parsed<String> trimAt(int at) => at < input.length
+      ? Parsed<String>(input, RegExp(r'\s*').matchAsPrefix(input, at).end)
       : null;
 
-  Parser<String> openCurly(int at) => matchString(at, '{');
-  Parser<String> closeCurly(int at) => matchString(at, '}');
+  Parsed<String> openCurly(int at) => matchString(at, '{');
+  Parsed<String> closeCurly(int at) => matchString(at, '}');
 
-  Parser<String> icuEscapedText(int at) {
+  Parsed<String> icuEscapedText(int at) {
     if (at < input.length) {
       Match match = quotedBracketOpen.matchAsPrefix(input, at) ??
           quotedBracketClose.matchAsPrefix(input, at) ??
           doubleQuotes.matchAsPrefix(input, at);
-      return match != null ? Parser<String>(match?.group(1), match.end) : null;
+      return match != null ? Parsed<String>(match?.group(1), match.end) : null;
     }
     return null;
   }
 
-  Parser<String> icuText(int at) =>
+  Parsed<String> icuText(int at) =>
       at < input.length && nonICURegex.matchAsPrefix(input, at) != null
-          ? Parser<String>(input[at], at + 1)
+          ? Parsed<String>(input[at], at + 1)
           : null;
 
-  Parser<String> messageText(int at) =>
+  Parsed<String> messageText(int at) =>
       oneOrMore<String>((s) => icuEscapedText(s) ?? icuText(s), at)
           ?.mapResult<String>((res) => res?.join());
 
-  Parser<String> nonIcuMessageText(int at) {
+  Parsed<String> nonIcuMessageText(int at) {
     if (at < input.length) {
       Match match = nonOpenBracketRegex.matchAsPrefix(input, at);
       if (match != null) {
-        return Parser<String>(match.group(0), match.end);
+        return Parsed<String>(match.group(0), match.end);
       }
     }
     return null;
   }
 
-  Parser<String> number(int at) {
+  Parsed<String> number(int at) {
     Match match = numberRegex.matchAsPrefix(input, at);
     return match != null
-        ? Parser(int.parse(match.group(1)).toString(), match.end)
+        ? Parsed(int.parse(match.group(1)).toString(), match.end)
         : null;
   }
 
-  Parser<String> id(int at) {
+  Parsed<String> id(int at) {
     if (at < input.length) {
       Match match = idRegex.matchAsPrefix(input, at);
-      return match != null ? Parser(match.group(1), match.end) : null;
+      return match != null ? Parsed(match.group(1), match.end) : null;
     }
     return null;
   }
 
-  Parser<String> comma(int at) =>
+  Parsed<String> comma(int at) =>
       at < input.length && commaWithWhitespace.matchAsPrefix(input, at) != null
-          ? Parser(',', at + 1)
+          ? Parsed(',', at + 1)
           : null;
 
-  Parser<String> preface(int at) => and<String>(
+  Parsed<String> preface(int at) => and<String>(
         [
           (s) => openCurly(s),
           (s) => id(s),
@@ -182,19 +201,19 @@ class _IcuParser {
         at,
       )?.mapResult<String>((res) => res[1]);
 
-  Parser<List<dynamic>> pluralClause(int at) => and<dynamic>(
+  Parsed<List<dynamic>> pluralClause(int at) => and<dynamic>(
         [
-          (s) => trimStart(s),
-          (s) => asKeywords(_IcuParser.pluralKeywordsToRegex, s),
+          (s) => trimAt(s),
+          (s) => asKeywords(_ParserUtil.pluralKeywordsToRegex, s),
           (s) => openCurly(s),
           (s) => interiorText(s),
           (s) => closeCurly(s),
-          (s) => trimStart(s),
+          (s) => trimAt(s),
         ],
         at,
       )?.mapResult((res) => [res[1], res[3]]);
 
-  Parser<List<dynamic>> plural(int at) => and(
+  Parsed<List<dynamic>> plural(int at) => and(
         [
           (s) => preface(s),
           (s) => matchString(s, 'plural'),
@@ -205,31 +224,31 @@ class _IcuParser {
         at,
       );
 
-  Parser<Message> intlPlural(int at) =>
+  Parsed<Message> intlPlural(int at) =>
       plural(at)?.mapResult((parsers) => Plural.from(
             parsers[0] as String,
             parsers[3],
             null,
           ));
 
-  Parser<String> genderKeyword(int at) => asKeywords(genderKeywordsToRegex, at);
+  Parsed<String> genderKeyword(int at) => asKeywords(genderKeywordsToRegex, at);
 
-  Parser<List<dynamic>> genderClause(int at) => oneOrMore(
+  Parsed<List<dynamic>> genderClause(int at) => oneOrMore(
         (s1) => and(
           [
-            (s) => trimStart(s),
+            (s) => trimAt(s),
             (s) => genderKeyword(s),
             (s) => openCurly(s),
             (s) => interiorText(s),
             (s) => closeCurly(s),
-            (s) => trimStart(s),
+            (s) => trimAt(s),
           ],
           s1,
         )?.mapResult((res) => [res[1], res[3]]),
         at,
       );
 
-  Parser<List<dynamic>> gender(int at) => and(
+  Parsed<List<dynamic>> gender(int at) => and(
         [
           (s) => preface(s),
           (s) => selectLiteral(s),
@@ -240,12 +259,12 @@ class _IcuParser {
         at,
       );
 
-  Parser<Message> intlGender(int at) => gender(at)
+  Parsed<Message> intlGender(int at) => gender(at)
       ?.mapResult((values) => Gender.from(values.first, values[3], null));
 
-  Parser<String> selectLiteral(int at) => matchString(at, 'select');
+  Parsed<String> selectLiteral(int at) => matchString(at, 'select');
 
-  Parser<List<dynamic>> selectClause(int at) => oneOrMore(
+  Parsed<List<dynamic>> selectClause(int at) => oneOrMore(
         (s1) => and([
           (s) => id(s),
           (s) => openCurly(s),
@@ -256,7 +275,7 @@ class _IcuParser {
         at,
       );
 
-  Parser<List<dynamic>> select(int at) => and(
+  Parsed<List<dynamic>> select(int at) => and(
         [
           (s) => preface(s),
           (s) => selectLiteral(s),
@@ -267,25 +286,25 @@ class _IcuParser {
         at,
       );
 
-  Parser<Message> intlSelect(int at) => select(at)
+  Parsed<Message> intlSelect(int at) => select(at)
       ?.mapResult((values) => Select.from(values.first, values[3], null));
 
-  Parser<Message> pluralOrGenderOrSelect(int at) =>
+  Parsed<Message> pluralOrGenderOrSelect(int at) =>
       (intlPlural(at) ?? intlGender(at)) ?? intlSelect(at);
 
-  Parser<dynamic> contents(int at) =>
+  Parsed<dynamic> contents(int at) =>
       (pluralOrGenderOrSelect(at) ?? parameter(at)) ?? messageText(at);
 
-  Parser interiorText(int at) => oneOrMore((s) => contents(s), at) ?? empty(at);
+  Parsed interiorText(int at) => oneOrMore((s) => contents(s), at) ?? empty(at);
 
-  Parser<dynamic> simpleText(int at) => oneOrMore(
+  Parsed<dynamic> simpleText(int at) => oneOrMore(
         (s) => (nonIcuMessageText(s) ?? parameter(s)) ?? openCurly(s),
         at,
       );
 
-  Parser<String> empty(int at) => Parser<String>('', at);
+  Parsed<String> empty(int at) => Parsed<String>('', at);
 
-  Parser<Message> parameter(int at) => and(
+  Parsed<Message> parameter(int at) => and(
         [
           (s) => openCurly(s),
           (s) => id(s),
