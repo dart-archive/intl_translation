@@ -2,14 +2,13 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart=2.10
-
 // ignore_for_file: avoid_dynamic_calls
 
 /// Contains a parser for ICU format plural/gender/select format for localized
 /// messages. See extract_to_arb.dart and make_hardcoded_translation.dart.
 library message_parser;
 
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:intl_translation/src/intl_message.dart';
 
 class MessageParser {
@@ -17,15 +16,11 @@ class MessageParser {
 
   MessageParser(String input) : _parser = _ParserUtil(input);
 
-  Message pluralAndGenderParse() => Message.from(
-        (_parser.pluralOrGenderOrSelect(0) ?? _parser.empty(0)).result,
-        null,
-      );
+  Message pluralAndGenderParse() =>
+      (_parser.pluralOrGenderOrSelect(0) ?? _parser.empty(0)).result;
 
-  Message nonIcuMessageParse() => Message.from(
-        (_parser.simpleText(0) ?? _parser.empty(0)).result,
-        null,
-      );
+  Message nonIcuMessageParse() =>
+      (_parser.simpleText(0) ?? _parser.empty(0)).result;
 }
 
 ///Holds a parsed piece of the input
@@ -81,15 +76,15 @@ class _ParserUtil {
 
   ///Corresponds to a [+] operator in a regex, matching at least one occurence
   ///of the [callable].
-  static At<CompositeMessage> oneOrMore(
-    At Function(int s) callable,
+  static At<CompositeMessage>? oneOrMore(
+    At? Function(int s) callable,
     int at,
   ) {
     int newAt = -1;
     List<At> results = [];
     while (newAt != at) {
       newAt = at;
-      At parser = callable(newAt);
+      At? parser = callable(newAt);
       if (parser != null) {
         at = parser.at;
         results.add(parser);
@@ -102,15 +97,15 @@ class _ParserUtil {
 
   ///Corresponds to an [AND] operator, matching all [callables] or failing, i.e.
   ///returning [null].
-  static At<CompositeMessage> and(
-    List<At Function(int s)> callables,
+  static At<CompositeMessage>? and(
+    List<At? Function(int s)> callables,
     int at,
   ) {
     int newAt = at;
     List<At> resParser = [];
     for (int i = 0; i < callables.length; i++) {
       var callable = callables[i];
-      At parser = callable.call(newAt);
+      At? parser = callable.call(newAt);
       if (parser != null) {
         resParser.add(parser);
         newAt = parser.at;
@@ -122,12 +117,12 @@ class _ParserUtil {
   }
 
   ///Match a simple string
-  At<LiteralString> matchString(int at, String t) => input.startsWith(t, at)
+  At<LiteralString>? matchString(int at, String t) => input.startsWith(t, at)
       ? At(LiteralString(t, null), at + t.length)
       : null;
 
   ///Match any of the given keywords
-  At<LiteralString> asKeywords(Map<String, RegExp> keywordsToRegex, int at) {
+  At<LiteralString>? asKeywords(Map<String, RegExp> keywordsToRegex, int at) {
     if (at < input.length) {
       for (var entry in keywordsToRegex.entries) {
         var match = entry.value.matchAsPrefix(input, at);
@@ -140,57 +135,18 @@ class _ParserUtil {
   }
 
   ///Parse whitespace
-  At<LiteralString> trimAt(int at) => at < input.length
-      ? At(LiteralString(input), RegExp(r'\s*').matchAsPrefix(input, at).end)
+  At<LiteralString>? trimAt(int at) => at < input.length
+      ? At(LiteralString(input), RegExp(r'\s*').matchAsPrefix(input, at)!.end)
       : null;
 
-  At<LiteralString> openCurly(int at) => matchString(at, '{');
-  At<LiteralString> closeCurly(int at) => matchString(at, '}');
+  At<LiteralString>? openCurly(int at) => matchString(at, '{');
+  At<LiteralString>? closeCurly(int at) => matchString(at, '}');
 
-  At<LiteralString> icuEscapedText(int at) {
+  At<LiteralString>? icuEscapedText(int at) {
     if (at < input.length) {
-      Match match = quotedBracketOpen.matchAsPrefix(input, at) ??
+      Match? match = quotedBracketOpen.matchAsPrefix(input, at) ??
           quotedBracketClose.matchAsPrefix(input, at) ??
           doubleQuotes.matchAsPrefix(input, at);
-      return match != null
-          ? At(LiteralString(match?.group(1)), match.end)
-          : null;
-    }
-    return null;
-  }
-
-  At<LiteralString> icuText(int at) =>
-      at < input.length && nonICURegex.matchAsPrefix(input, at) != null
-          ? At(LiteralString(input[at]), at + 1)
-          : null;
-
-  At<LiteralString> messageText(int at) =>
-      oneOrMore((s) => icuEscapedText(s) ?? icuText(s), at)?.mapResult(
-          (compMsg) => LiteralString(compMsg.pieces
-              .whereType<LiteralString>()
-              .map((e) => e.string)
-              .join()));
-
-  At<LiteralString> nonIcuMessageText(int at) {
-    if (at < input.length) {
-      Match match = nonOpenBracketRegex.matchAsPrefix(input, at);
-      if (match != null) {
-        return At(LiteralString(match.group(0)), match.end);
-      }
-    }
-    return null;
-  }
-
-  At<LiteralString> number(int at) {
-    Match match = numberRegex.matchAsPrefix(input, at);
-    return match != null
-        ? At(LiteralString(int.parse(match.group(1)).toString()), match.end)
-        : null;
-  }
-
-  At<LiteralString> id(int at) {
-    if (at < input.length) {
-      Match match = idRegex.matchAsPrefix(input, at);
       return match != null
           ? At(LiteralString(match.group(1)), match.end)
           : null;
@@ -198,12 +154,51 @@ class _ParserUtil {
     return null;
   }
 
-  At<LiteralString> comma(int at) =>
+  At<LiteralString>? icuText(int at) =>
+      at < input.length && nonICURegex.matchAsPrefix(input, at) != null
+          ? At(LiteralString(input[at]), at + 1)
+          : null;
+
+  At<LiteralString>? messageText(int at) =>
+      oneOrMore((s) => icuEscapedText(s) ?? icuText(s), at)?.mapResult(
+          (compMsg) => LiteralString(compMsg.pieces
+              .whereType<LiteralString>()
+              .map((e) => e.string)
+              .join()));
+
+  At<LiteralString>? nonIcuMessageText(int at) {
+    if (at < input.length) {
+      Match? match = nonOpenBracketRegex.matchAsPrefix(input, at);
+      if (match != null) {
+        return At(LiteralString(match.group(0)), match.end);
+      }
+    }
+    return null;
+  }
+
+  At<LiteralString>? number(int at) {
+    Match? match = numberRegex.matchAsPrefix(input, at);
+    return match != null && match.group(1) != null
+        ? At(LiteralString(int.parse(match.group(1)!).toString()), match.end)
+        : null;
+  }
+
+  At<LiteralString>? id(int at) {
+    if (at < input.length) {
+      Match? match = idRegex.matchAsPrefix(input, at);
+      return match != null
+          ? At(LiteralString(match.group(1)), match.end)
+          : null;
+    }
+    return null;
+  }
+
+  At<LiteralString>? comma(int at) =>
       at < input.length && commaWithWhitespace.matchAsPrefix(input, at) != null
           ? At(LiteralString(','), at + 1)
           : null;
 
-  At<LiteralString> preface(int at) => and(
+  At<LiteralString>? preface(int at) => and(
         [
           (s) => openCurly(s),
           (s) => id(s),
@@ -212,7 +207,7 @@ class _ParserUtil {
         at,
       )?.mapResult((compMsg) => compMsg.pieces[1] as LiteralString);
 
-  At<PairMessage<LiteralString, Message>> pluralClausePairs(int at) => and(
+  At<PairMessage<LiteralString, Message>>? pluralClausePairs(int at) => and(
         [
           (s) => trimAt(s),
           (s) => asKeywords(pluralKeywordsToRegex, s),
@@ -228,7 +223,7 @@ class _ParserUtil {
         return PairMessage<LiteralString, Message>(pluralKeyword, interiorText);
       });
 
-  At<Plural> intlPlural(int at) => and(
+  At<Plural>? intlPlural(int at) => and(
         [
           (s) => preface(s),
           (s) => matchString(s, 'plural'),
@@ -243,10 +238,10 @@ class _ParserUtil {
             null,
           ));
 
-  At<LiteralString> genderKeyword(int at) =>
+  At<LiteralString>? genderKeyword(int at) =>
       asKeywords(genderKeywordsToRegex, at);
 
-  At<CompositeMessage> genderClause(int at) => oneOrMore(
+  At<CompositeMessage>? genderClause(int at) => oneOrMore(
         (s1) => and(
           [
             (s) => trimAt(s),
@@ -264,7 +259,7 @@ class _ParserUtil {
         at,
       );
 
-  At<Gender> intlGender(int at) => and(
+  At<Gender>? intlGender(int at) => and(
         [
           (s) => preface(s),
           (s) => selectLiteral(s),
@@ -279,9 +274,9 @@ class _ParserUtil {
             null,
           ));
 
-  At<LiteralString> selectLiteral(int at) => matchString(at, 'select');
+  At<LiteralString>? selectLiteral(int at) => matchString(at, 'select');
 
-  At<CompositeMessage> selectClause(int at) => oneOrMore(
+  At<CompositeMessage>? selectClause(int at) => oneOrMore(
         (s1) => and([
           (s) => id(s),
           (s) => openCurly(s),
@@ -295,7 +290,7 @@ class _ParserUtil {
         at,
       );
 
-  At<Select> intlSelect(int at) => and(
+  At<Select>? intlSelect(int at) => and(
         [
           (s) => preface(s),
           (s) => selectLiteral(s),
@@ -310,22 +305,22 @@ class _ParserUtil {
             null,
           ));
 
-  At<Message> pluralOrGenderOrSelect(int at) =>
+  At<Message>? pluralOrGenderOrSelect(int at) =>
       (intlPlural(at) ?? intlGender(at)) ?? intlSelect(at);
 
-  At<dynamic> contents(int at) =>
+  At<Message>? contents(int at) =>
       (pluralOrGenderOrSelect(at) ?? parameter(at)) ?? messageText(at);
 
   At interiorText(int at) => oneOrMore((s) => contents(s), at) ?? empty(at);
 
-  At<Message> simpleText(int at) => oneOrMore(
+  At<Message>? simpleText(int at) => oneOrMore(
         (s) => nonIcuMessageText(s) ?? parameter(s) ?? openCurly(s),
         at,
       );
 
   At<LiteralString> empty(int at) => At(LiteralString(''), at);
 
-  At<VariableSubstitution> parameter(int at) => and(
+  At<VariableSubstitution>? parameter(int at) => and(
         [
           (s) => openCurly(s),
           (s) => id(s),
