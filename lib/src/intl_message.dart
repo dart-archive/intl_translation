@@ -712,7 +712,7 @@ abstract class SubMessage extends ComplexMessage {
   /// as a list of [key, value] where value may in turn be a list.
   SubMessage.from(this.mainArgument, List clauses, parent) : super(parent) {
     for (var clause in clauses) {
-      if (clause is List<String> && clause.length == 2) {
+      if (clause is List && clause[0] is String && clause.length == 2) {
         parseFromString(clause[0], clause[1]);
       } else if (clause is PairMessage<LiteralString, Message>) {
         parseFromMessages(clause.first, clause.second);
