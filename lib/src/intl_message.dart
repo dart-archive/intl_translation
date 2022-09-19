@@ -712,14 +712,22 @@ abstract class SubMessage extends ComplexMessage {
   /// as a list of [key, value] where value may in turn be a list.
   SubMessage.from(this.mainArgument, List clauses, parent) : super(parent) {
     for (var clause in clauses) {
+      String key;
+      Object value;
       if (clause is List && clause[0] is String && clause.length == 2) {
-        parseFromString(clause[0], clause[1]);
+        ///If trying to parse a string
+        key = clause[0];
+        value = (clause[1] is List) ? clause[1] : [(clause[1])];
       } else if (clause is PairMessage<LiteralString, Message>) {
-        parseFromMessages(clause.first, clause.second);
+        ///If trying to parse a message
+        key = clause.first.string;
+        Message second = clause.second;
+        value = second is CompositeMessage ? second.pieces : [second];
       } else {
         throw Exception(
-            'The clauses argument supplied must be a list of pairs, i.e. list of lists of length 2.');
+            'The clauses argument supplied must be a list of pairs, i.e. list of lists of length 2 or PairMessages.');
       }
+      this[key] = value;
     }
   }
 
@@ -786,14 +794,6 @@ abstract class SubMessage extends ComplexMessage {
       json.add(this[arg]?.toJson());
     }
     return json;
-  }
-
-  void parseFromString(String key, Object value) {
-    this[key] = (value is List) ? value : [value];
-  }
-
-  void parseFromMessages(LiteralString key, Message value) {
-    this[key.string] = value is CompositeMessage ? value.pieces : [value];
   }
 }
 
