@@ -118,10 +118,7 @@ class _ParserUtil {
         return null;
       }
     }
-    return At(
-      CompositeMessage(resParser.map((p) => p.result).toList()),
-      newAt,
-    );
+    return At(CompositeMessage(resParser.map((p) => p.result).toList()), newAt);
   }
 
   ///Match a simple string
@@ -242,7 +239,7 @@ class _ParserUtil {
         at,
       )?.mapResult((compMsg) => Plural.from(
             (compMsg.pieces[0] as LiteralString).string,
-            List.from((compMsg.pieces[3] as CompositeMessage).pieces),
+            (compMsg.pieces[3] as CompositeMessage).pieces,
             null,
           ));
 
@@ -278,7 +275,7 @@ class _ParserUtil {
         at,
       )?.mapResult((compMsg) => Gender.from(
             (compMsg.pieces[0] as LiteralString).string,
-            List.from((compMsg.pieces[3] as CompositeMessage).pieces),
+            (compMsg.pieces[3] as CompositeMessage).pieces,
             null,
           ));
 
@@ -309,7 +306,7 @@ class _ParserUtil {
         at,
       )?.mapResult((compMsg) => Select.from(
             (compMsg.pieces[0] as LiteralString).string,
-            List.from((compMsg.pieces[3] as CompositeMessage).pieces),
+            (compMsg.pieces[3] as CompositeMessage).pieces,
             null,
           ));
 
@@ -322,7 +319,7 @@ class _ParserUtil {
   At interiorText(int at) => oneOrMore((s) => contents(s), at) ?? empty(at);
 
   At<Message> simpleText(int at) => oneOrMore(
-        (s) => (nonIcuMessageText(s) ?? parameter(s)) ?? openCurly(s),
+        (s) => nonIcuMessageText(s) ?? parameter(s) ?? openCurly(s),
         at,
       );
 
