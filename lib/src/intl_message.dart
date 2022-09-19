@@ -354,7 +354,7 @@ class CompositeMessage extends Message {
   List<Message> pieces;
 
   CompositeMessage.withParent(parent) : super(parent);
-  CompositeMessage(this.pieces, ComplexMessage parent) : super(parent) {
+  CompositeMessage(this.pieces, [ComplexMessage parent]) : super(parent) {
     for (var x in pieces) {
       x.parent = this;
     }
@@ -370,10 +370,27 @@ class CompositeMessage extends Message {
       pieces.map((chunk) => transform(this, chunk)).join('');
 }
 
+class PairMessage<T extends Message, S extends Message> extends Message {
+  final T first;
+  final S second;
+
+  PairMessage(this.first, this.second, [Message parent]) : super(parent);
+
+  @override
+  String expanded([Function transform]) =>
+      [first, second].map((chunk) => transform(this, chunk)).join('');
+
+  @override
+  String toCode() => [first, second].map((each) => each.toCode()).join('');
+
+  @override
+  Object toJson() => [first, second].map((each) => each.toJson()).toList();
+}
+
 /// Represents a simple constant string with no dynamic elements.
 class LiteralString extends Message {
   String string;
-  LiteralString(this.string, Message parent) : super(parent);
+  LiteralString(this.string, [Message parent]) : super(parent);
   @override
   String toCode() => escapeAndValidateString(string);
   @override
@@ -695,7 +712,14 @@ abstract class SubMessage extends ComplexMessage {
   /// as a list of [key, value] where value may in turn be a list.
   SubMessage.from(this.mainArgument, List clauses, parent) : super(parent) {
     for (var clause in clauses) {
-      this[clause.first] = (clause.last is List) ? clause.last : [clause.last];
+      if (clause is List<String> && clause.length == 2) {
+        parseFromString(clause[0], clause[1]);
+      } else if (clause is PairMessage<LiteralString, Message>) {
+        parseFromMessages(clause.first, clause.second);
+      } else {
+        throw Exception(
+            'The clauses argument supplied must be a list of pairs, i.e. list of lists of length 2.');
+      }
     }
   }
 
@@ -762,6 +786,14 @@ abstract class SubMessage extends ComplexMessage {
       json.add(this[arg]?.toJson());
     }
     return json;
+  }
+
+  void parseFromString(String key, Object value) {
+    this[key] = (value is List) ? value : [value];
+  }
+
+  void parseFromMessages(LiteralString key, Message value) {
+    this[key.string] = value is CompositeMessage ? value.pieces : [value];
   }
 }
 
