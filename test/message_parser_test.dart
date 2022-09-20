@@ -5,10 +5,8 @@ import 'package:test/test.dart';
 
 void main() {
   test('Gender', () {
-    String input = '''{gender_of_host, select,
-  female {test}
-  male {test2}
-  other {test3}}''';
+    String input =
+        '''{gender_of_host, select, female {test} male {test2} other {test3}}''';
     Message parsedMessage = MessageParser(input).pluralAndGenderParse();
     Message expectedMessage = Gender.from(
       'gender_of_host',
