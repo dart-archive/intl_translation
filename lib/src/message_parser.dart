@@ -14,7 +14,7 @@ class MessageParser {
 
   MessageParser(String input) : _parser = _ParserUtil(input);
 
-  Message pluralAndGenderParse() =>
+  Message pluralGenderSelectParse() =>
       (_parser.pluralOrGenderOrSelect(0) ?? _parser.empty(0)).result;
 
   Message nonIcuMessageParse() =>

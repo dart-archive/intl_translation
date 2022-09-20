@@ -228,7 +228,7 @@ BasicTranslatedMessage recreateIntlObjects(String id, String data) {
   if (id.startsWith('@')) return null;
   if (data == null) return null;
   MessageParser messageParser = MessageParser(data);
-  Message parsed = messageParser.pluralAndGenderParse();
+  Message parsed = messageParser.pluralGenderSelectParse();
   if (parsed is LiteralString && parsed.string.isEmpty) {
     parsed = messageParser.nonIcuMessageParse();
   }

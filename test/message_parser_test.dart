@@ -7,7 +7,7 @@ void main() {
   test('Gender', () {
     String input =
         '''{gender_of_host, select, female {test} male {test2} other {test3}}''';
-    Message parsedMessage = MessageParser(input).pluralAndGenderParse();
+    Message parsedMessage = MessageParser(input).pluralGenderSelectParse();
     Message expectedMessage = Gender.from(
       'gender_of_host',
       [
@@ -26,7 +26,7 @@ void main() {
       =1 {Anna invites Bob to her party.}
       =2 {Anna invites Bob and one other person to her party.}
       other {Anna invites Bob and 2 other people to her party.}}''';
-    Message parsedMessage = MessageParser(input).pluralAndGenderParse();
+    Message parsedMessage = MessageParser(input).pluralGenderSelectParse();
     Message expectedMessage = Plural.from(
       'num_guests',
       [
@@ -44,7 +44,7 @@ void main() {
     String input = '''{selector, select,
       type1 {Anna does not give a party.}
       type2 {Anna invites Bob to her party.}}''';
-    Message parsedMessage = MessageParser(input).pluralAndGenderParse();
+    Message parsedMessage = MessageParser(input).pluralGenderSelectParse();
     Message expectedMessage = Select.from(
       'selector',
       [
@@ -62,7 +62,7 @@ void main() {
       =1 {{host} invites {guest} to her party.}
       =2 {{host} invites {guest} and one other person to her party.}
       other {{host} invites {guest} and # other people to her party.}}''';
-    Message parsedMessage = MessageParser(input).pluralAndGenderParse();
+    Message parsedMessage = MessageParser(input).pluralGenderSelectParse();
     Message expectedMessage = Plural.from(
       'num_guests',
       [
