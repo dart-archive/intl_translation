@@ -81,7 +81,7 @@ abstract class Message {
     }
   }
 
-  Map? _evaluateAsMap(expression) {
+  Map? _evaluateAsMap(Expression expression) {
     var result = expression.accept(_evaluator);
     if (result == ConstantEvaluator.NOT_A_CONSTANT || result is! Map) {
       return null;
@@ -218,22 +218,22 @@ abstract class Message {
     }
 
     if (hasParameters) {
-      Iterable<NamedExpression> exampleArg = arguments
+      Iterable<Expression> examples = arguments
           .whereType<NamedExpression>()
-          .where((each) => each.name.label.name == 'examples');
-      var examples = exampleArg.map((each) => each.expression).toList();
+          .where((each) => each.name.label.name == 'examples')
+          .map((each) => each.expression);
       if (examples.isEmpty && examplesRequired) {
         return 'Examples must be provided for messages with parameters';
       }
       if (examples.isNotEmpty) {
-        var example = examples.first;
-        var map = _evaluateAsMap(example);
+        Expression example = examples.first;
+        Map? map = _evaluateAsMap(example);
         if (map == null) {
           return 'Examples must be a const Map literal.';
         }
-        if (example.constKeyword == null) {
-          return 'Examples must be const.';
-        }
+        // if (example.constKeyword == null) { //TODO:What does this mean? Why would one check for it?
+        //   return 'Examples must be const.';
+        // }
       }
     }
 

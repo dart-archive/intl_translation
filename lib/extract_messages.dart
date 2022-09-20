@@ -359,7 +359,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// false if we didn't, so should continue recursing.
   bool addIntlMessage(MethodInvocation node) {
     if (!looksLikeIntlMessage(node)) return false;
-    var reason = checkValidity(node) ?? _extractMessage(node);
+    String? reason = checkValidity(node) ?? _extractMessage(node);
 
     if (reason != null) {
       if (!extraction.suppressWarnings) {
