@@ -18,36 +18,36 @@ import 'package:intl_translation/src/directory_utils.dart';
 import 'package:path/path.dart' as path;
 
 void main(List<String> args) {
-  String targetDir;
-  String outputFilename;
+  String targetDir = '.';
+  String outputFilename = 'intl_messages.arb';
   String? sourcesListFile;
-  bool? transformer;
-  var parser = ArgParser();
-  var extraction = MessageExtraction();
+  bool transformer = false;
+  ArgParser parser = ArgParser();
+  MessageExtraction extract = MessageExtraction();
   String? locale;
   parser.addFlag('suppress-last-modified',
       defaultsTo: false,
-      callback: (x) => extraction.suppressLastModified = x,
+      callback: (x) => extract = extract.copyWith(suppressLastModified: x),
       help: 'Suppress @@last_modified entry.');
   parser.addFlag('suppress-warnings',
       defaultsTo: false,
-      callback: (x) => extraction.suppressWarnings = x,
+      callback: (x) => extract = extract.copyWith(suppressWarnings: x),
       help: 'Suppress printing of warnings.');
   parser.addFlag('suppress-meta-data',
       defaultsTo: false,
-      callback: (x) => extraction.suppressMetaData = x,
+      callback: (x) => extract = extract.copyWith(suppressMetaData: x),
       help: 'Suppress writing meta information');
   parser.addFlag('warnings-are-errors',
       defaultsTo: false,
-      callback: (x) => extraction.warningsAreErrors = x,
+      callback: (x) => extract = extract.copyWith(warningsAreErrors: x),
       help: 'Treat all warnings as errors, stop processing ');
   parser.addFlag('embedded-plurals',
       defaultsTo: true,
-      callback: (x) => extraction.allowEmbeddedPluralsAndGenders = x,
+      callback: (x) =>
+          extract = extract.copyWith(allowEmbeddedPluralsAndGenders: x),
       help: 'Allow plurals and genders to be embedded as part of a larger '
           'string, otherwise they must be at the top level.');
   parser.addFlag('transformer',
-      defaultsTo: false,
       callback: (x) => transformer = x,
       help: 'Assume that the transformer is in use, so name and args '
           "don't need to be specified for messages.");
@@ -57,11 +57,10 @@ void main(List<String> args) {
       help: 'Specify the locale set inside the arb file.');
   parser.addFlag('with-source-text',
       defaultsTo: false,
-      callback: (x) => extraction.includeSourceText = x,
+      callback: (x) => extract = extract.copyWith(includeSourceText: x),
       help: 'Include source_text in meta information.');
   parser.addOption(
     'output-dir',
-    defaultsTo: '.',
     callback: (value) {
       if (value != null) targetDir = value;
     },
@@ -69,21 +68,24 @@ void main(List<String> args) {
   );
   parser.addOption(
     'output-file',
-    defaultsTo: 'intl_messages.arb',
     callback: (value) {
       if (value != null) outputFilename = value;
     },
     help: 'Specify the output file.',
   );
-  parser.addOption('sources-list-file',
-      callback: (value) => sourcesListFile = value,
-      help: 'A file that lists the Dart files to read, one per line.'
-          'The paths in the file can be absolute or relative to the '
-          'location of this file.');
-  parser.addFlag('require_descriptions',
-      defaultsTo: false,
-      help: "Fail for messages that don't have a description.",
-      callback: (val) => extraction.descriptionRequired = val);
+  parser.addOption(
+    'sources-list-file',
+    callback: (value) => sourcesListFile = value,
+    help: 'A file that lists the Dart files to read, one per line.'
+        'The paths in the file can be absolute or relative to the '
+        'location of this file.',
+  );
+  parser.addFlag(
+    'require_descriptions',
+    defaultsTo: false,
+    help: "Fail for messages that don't have a description.",
+    callback: (val) => extract = extract.copyWith(descriptionRequired: val),
+  );
 
   parser.parse(args);
   if (args.isEmpty) {
@@ -92,30 +94,31 @@ void main(List<String> args) {
     print(parser.usage);
     exit(0);
   }
-  var allMessages = {};
+  Map<String, dynamic> allMessages = {};
   if (locale != null) {
-    allMessages['@@locale'] = locale;
+    allMessages['@@locale'] = locale!;
   }
-  if (!extraction.suppressLastModified) {
+  if (!extract.suppressLastModified) {
     allMessages['@@last_modified'] = DateTime.now().toIso8601String();
   }
 
-  var dartFiles = args.where((x) => x.endsWith('.dart')).toList();
-  dartFiles.addAll(linesFromFile(sourcesListFile));
-  for (var arg in dartFiles) {
-    var messages = extraction.parseFile(File(arg), transformer);
-    messages.forEach(
-      (k, v) => allMessages.addAll(
-        toARB(v,
-            includeSourceText: extraction.includeSourceText,
-            supressMetadata: extraction.suppressMetaData)!,
-      ),
-    );
+  List<String> dartFiles = [
+    ...args.where((x) => x.endsWith('.dart')),
+    ...linesFromFile(sourcesListFile)
+  ];
+  for (String arg in dartFiles) {
+    extract.parseFile(File(arg), transformer).forEach(
+          (k, v) => allMessages.addAll(
+            toARB(v,
+                includeSourceText: extract.includeSourceText,
+                supressMetadata: extract.suppressMetaData),
+          ),
+        );
   }
-  var file = File(path.join(targetDir!, outputFilename));
-  var encoder = JsonEncoder.withIndent('  ');
+  File file = File(path.join(targetDir, outputFilename));
+  JsonEncoder encoder = JsonEncoder.withIndent('  ');
   file.writeAsStringSync(encoder.convert(allMessages));
-  if (extraction.hasWarnings && extraction.warningsAreErrors) {
+  if (extract.hasWarnings && extract.warningsAreErrors) {
     exit(1);
   }
 }

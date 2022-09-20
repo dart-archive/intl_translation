@@ -41,26 +41,64 @@ final _featureSet = FeatureSet.latestLanguageVersion();
 ///  This encapsulates all the state required for message extraction so that
 ///  it can be run inside a persistent process.
 class MessageExtraction {
+  MessageExtraction({
+    this.onMessage = print,
+    this.suppressLastModified = false,
+    this.suppressWarnings = false,
+    this.suppressMetaData = false,
+    this.warningsAreErrors = false,
+    this.allowEmbeddedPluralsAndGenders = true,
+    this.examplesRequired = false,
+    this.descriptionRequired = false,
+    this.includeSourceText = false,
+  }) : warnings = [];
+
+  MessageExtraction copyWith({
+    OnMessage? onMessage,
+    bool? suppressLastModified,
+    bool? suppressWarnings,
+    bool? suppressMetaData,
+    bool? warningsAreErrors,
+    List<String>? warnings,
+    bool? allowEmbeddedPluralsAndGenders,
+    bool? examplesRequired,
+    bool? descriptionRequired,
+    bool? includeSourceText,
+  }) {
+    return MessageExtraction(
+      onMessage: onMessage ?? this.onMessage,
+      suppressLastModified: suppressLastModified ?? this.suppressLastModified,
+      suppressWarnings: suppressWarnings ?? this.suppressWarnings,
+      suppressMetaData: suppressMetaData ?? this.suppressMetaData,
+      warningsAreErrors: warningsAreErrors ?? this.warningsAreErrors,
+      allowEmbeddedPluralsAndGenders:
+          allowEmbeddedPluralsAndGenders ?? this.allowEmbeddedPluralsAndGenders,
+      examplesRequired: examplesRequired ?? this.examplesRequired,
+      descriptionRequired: descriptionRequired ?? this.descriptionRequired,
+      includeSourceText: includeSourceText ?? this.includeSourceText,
+    );
+  }
+
   /// What to do when a message is encountered, defaults to [print].
-  OnMessage onMessage = print;
+  final OnMessage onMessage;
 
   /// If this is true, the @@last_modified entry is not output.
-  bool suppressLastModified = false;
+  final bool suppressLastModified;
 
   /// If this is true, print warnings for skipped messages. Otherwise, warnings
   /// are suppressed.
-  bool suppressWarnings = false;
+  final bool suppressWarnings;
 
   /// If this is true, no translation meta data is written
-  bool suppressMetaData = false;
+  final bool suppressMetaData;
 
   /// If this is true, then treat all warnings as errors.
-  bool warningsAreErrors = false;
+  final bool warningsAreErrors;
 
   /// This accumulates a list of all warnings/errors we have found. These are
   /// saved as strings right now, so all that can really be done is print and
   /// count them.
-  List<String> warnings = [];
+  final List<String> warnings;
 
   /// Were there any warnings or errors in extracting messages.
   bool get hasWarnings => warnings.isNotEmpty;
@@ -72,15 +110,15 @@ class MessageExtraction {
   ///     'There are ${Intl.plural(...)} items'.
   /// is legal if [allowEmbeddedPluralsAndGenders] is true, but illegal
   /// if [allowEmbeddedPluralsAndGenders] is false.
-  bool allowEmbeddedPluralsAndGenders = true;
+  final bool allowEmbeddedPluralsAndGenders;
 
   /// Are examples required on all messages.
-  bool examplesRequired = false;
+  final bool examplesRequired;
 
-  bool descriptionRequired = false;
+  final bool descriptionRequired;
 
   /// Whether to include source_text in messages
-  bool includeSourceText = false;
+  final bool includeSourceText;
 
   /// How messages with the same name are resolved.
   ///
@@ -92,7 +130,7 @@ class MessageExtraction {
   ///
   /// If [transformer] is true, assume the transformer will supply any "name"
   /// and "args" parameters required in Intl.message calls.
-  Map<String, MainMessage> parseFile(File file, [bool? transformer = false]) {
+  Map<String, MainMessage> parseFile(File file, [bool transformer = false]) {
     String contents = file.readAsStringSync();
     return parseContent(contents, file.path, transformer);
   }
@@ -103,23 +141,26 @@ class MessageExtraction {
   ///
   /// If [transformer] is true, assume the transformer will supply any "name"
   /// and "args" parameters required in Intl.message calls.
-  Map<String, MainMessage> parseContent(String fileContent, String filepath,
-      [bool? transformer = false]) {
+  Map<String, MainMessage> parseContent(
+    String fileContent,
+    String filepath,
+    bool transformer,
+  ) {
     String contents = fileContent;
     origin = filepath;
     // Optimization to avoid parsing files we're sure don't contain any messages.
     if (contents.contains('Intl.')) {
-      root = _parseCompilationUnit(contents, origin);
+      root = _parseCompilationUnit(contents, origin!);
     } else {
       return {};
     }
-    var visitor = MessageFindingVisitor(this);
+    MessageFindingVisitor visitor = MessageFindingVisitor(this);
     visitor.generateNameAndArgs = transformer;
     root.accept(visitor);
     return visitor.messages;
   }
 
-  CompilationUnit _parseCompilationUnit(String contents, String? origin) {
+  CompilationUnit _parseCompilationUnit(String contents, String origin) {
     var result = parseString(
         content: contents, featureSet: _featureSet, throwIfDiagnostics: false);
 
@@ -224,11 +265,16 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     if (parameters!.any((each) => each.isNamed)) {
       return 'Named parameters on message functions are not supported.';
     }
-    var arguments = node.argumentList.arguments;
-    var instance = _expectedInstance(node.methodName.name)!;
-    return instance.checkValidity(node, arguments, name, parameters!,
-        nameAndArgsGenerated: generateNameAndArgs!,
-        examplesRequired: extraction.examplesRequired);
+    NodeList<Expression> arguments = node.argumentList.arguments;
+    Message instance = _expectedInstance(node.methodName.name)!;
+    return instance.checkValidity(
+      node,
+      arguments,
+      name,
+      parameters!,
+      nameAndArgsGenerated: generateNameAndArgs!,
+      examplesRequired: extraction.examplesRequired,
+    );
   }
 
   /// Record the parameters of the function or method declaration we last
@@ -333,7 +379,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
   /// Try to extract a message. On failure, return a String error message.
   String? _extractMessage(MethodInvocation node) {
-    MainMessage message;
+    MainMessage? message;
     try {
       if (node.methodName.name == 'message') {
         message = messageFromIntlMessageCall(node);
@@ -419,7 +465,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     // We only rewrite messages with parameters, otherwise we use the literal
     // string as the name and no arguments are necessary.
     if (!message.hasName) {
-      if (generateNameAndArgs! && message.arguments!.isNotEmpty) {
+      if (generateNameAndArgs! && message.arguments.isNotEmpty) {
         // Always try for class_method if this is a class method and
         // generating names/args.
         message.name = Message.classPlusMethodName(node, name) ?? name;
@@ -454,23 +500,23 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// Create a MainMessage from [node] using the name and
   /// parameters of the last function/method declaration we encountered
   /// and the parameters to the Intl.message call.
-  MainMessage messageFromIntlMessageCall(MethodInvocation node) {
-    MainMessage extractFromIntlCall(
+  MainMessage? messageFromIntlMessageCall(MethodInvocation node) {
+    MainMessage? extractFromIntlCall(
         MainMessage message, List<AstNode> arguments) {
       try {
         // The pieces of the message, either literal strings, or integers
         // representing the index of the argument to be substituted.
         List extracted;
         extracted = _extractFromIntlCallWithInterpolation(message, arguments);
-        message.addPieces(extracted as List<Object>);
+        message.addPieces(List.from(extracted));
       } on IntlMessageExtractionException catch (e) {
-        message = null;
         var err = StringBuffer()
           ..writeAll(['Error ', e, '\nProcessing <', node, '>\n'])
           ..write(extraction._reportErrorLocation(node));
         var errString = err.toString();
         extraction.onMessage(errString);
         extraction.warnings.add(errString);
+        return null;
       }
       return message;
     }
@@ -485,7 +531,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// Create a MainMessage from [node] using the name and
   /// parameters of the last function/method declaration we encountered
   /// and the parameters to the Intl.plural or Intl.gender call.
-  MainMessage messageFromDirectPluralOrGenderCall(MethodInvocation node) {
+  MainMessage? messageFromDirectPluralOrGenderCall(MethodInvocation node) {
     MainMessage extractFromPluralOrGender(MainMessage message, _) {
       var visitor =
           PluralAndGenderVisitor(message.messagePieces, message, extraction);
@@ -660,11 +706,12 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
     }
     message.parent = parent;
 
-    var arguments = message.argumentsOfInterestFor(node);
+    Map<String, dynamic> arguments = message.argumentsOfInterestFor(node);
     arguments.forEach((key, value) {
       // `value` is often - or always? - an Expression.
       try {
-        var interpolation = InterpolationVisitor(message, extraction);
+        InterpolationVisitor interpolation =
+            InterpolationVisitor(message, extraction);
         value.accept(interpolation);
         // Might be null due to previous errors.
         // Continue collecting errors, but don't build message.
@@ -673,21 +720,20 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
         }
       } on IntlMessageExtractionException catch (e) {
         message = null;
-        var err = StringBuffer()
+        StringBuffer err = StringBuffer()
           ..writeAll(['Error ', e, '\nProcessing <', node, '>'])
           ..write(extraction._reportErrorLocation(node));
-        var errString = err.toString();
+        String errString = err.toString();
         extraction.onMessage(errString);
         extraction.warnings.add(errString);
       }
     });
-
     var mainArg = node.argumentList.arguments
         .firstWhere((each) => each is! NamedExpression);
     if (mainArg is SimpleStringLiteral) {
-      message!.mainArgument = mainArg.toString();
+      message?.mainArgument = mainArg.toString();
     } else if (mainArg is SimpleIdentifier) {
-      message!.mainArgument = mainArg.name;
+      message?.mainArgument = mainArg.name;
     } else {
       var err = StringBuffer()
         ..write('Error (Invalid argument to plural/gender/select, '

@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-
-
 /// Code to rewrite Intl.message calls adding the name and args parameters
 /// automatically, primarily used by the transformer.
 import 'package:analyzer/dart/analysis/utilities.dart';

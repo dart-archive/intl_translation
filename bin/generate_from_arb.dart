@@ -3,8 +3,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-
-
 /// A main program that takes as input a source Dart file and a number
 /// of ARB files representing translations of messages from the corresponding
 /// Dart file. See extract_to_arb.dart and make_hardcoded_translation.dart.
@@ -31,20 +29,16 @@ import 'package:intl_translation/src/intl_message.dart';
 import 'package:intl_translation/src/message_parser.dart';
 import 'package:path/path.dart' as path;
 
-/// Keeps track of all the messages we have processed so far, keyed by message
-/// name.
-late Map<String, List<MainMessage>> messages;
-
 const jsonDecoder = JsonCodec();
 
 void main(List<String> args) {
-  String? targetDir;
+  String targetDir = '.';
   var parser = ArgParser();
   var extraction = MessageExtraction();
   var generation = MessageGeneration();
   String? sourcesListFile;
   String? translationsListFile;
-  bool? transformer;
+  bool transformer = false;
   var useJsonFlag = false;
   var useCodeMapFlag = false;
   var useFlutterLocaleSplit = false;
@@ -71,12 +65,15 @@ void main(List<String> args) {
           'package:flutter.');
   parser.addFlag('suppress-warnings',
       defaultsTo: false,
-      callback: (x) => extraction.suppressWarnings = x,
+      callback: (x) => extraction = extraction.copyWith(suppressWarnings: x),
       help: 'Suppress printing of warnings.');
-  parser.addOption('output-dir',
-      defaultsTo: '.',
-      callback: (x) => targetDir = x,
-      help: 'Specify the output directory.');
+  parser.addOption(
+    'output-dir',
+    callback: (x) {
+      if (x != null) targetDir = x;
+    },
+    help: 'Specify the output directory.',
+  );
   parser.addOption('generated-file-prefix',
       defaultsTo: '',
       callback: (x) => generation.generatedFilePrefix = x,
@@ -106,16 +103,19 @@ void main(List<String> args) {
           'The paths in the file can be absolute or relative to the '
           'location of this file.');
   parser.addFlag('transformer',
-      defaultsTo: false,
       callback: (x) => transformer = x,
       help: 'Assume that the transformer is in use, so name and args '
           "don't need to be specified for messages.");
 
   parser.parse(args);
-  var dartFiles = args.where((x) => x.endsWith('dart')).toList();
-  var jsonFiles = args.where((x) => x.endsWith('.arb')).toList();
-  dartFiles.addAll(linesFromFile(sourcesListFile));
-  jsonFiles.addAll(linesFromFile(translationsListFile));
+  List<String> dartFiles = [
+    ...args.where((x) => x.endsWith('dart')),
+    ...linesFromFile(sourcesListFile)
+  ];
+  List<String> jsonFiles = [
+    ...args.where((x) => x.endsWith('.arb')),
+    ...linesFromFile(translationsListFile)
+  ];
   if (dartFiles.isEmpty || jsonFiles.isEmpty) {
     print('Usage: generate_from_arb [options]'
         ' file1.dart file2.dart ...'
@@ -141,49 +141,54 @@ void main(List<String> args) {
   // text. The intent is to deprecate the transformer, but if this is an issue
   // for real projects we could provide a command-line flag to indicate which
   // sort of automated name we're using.
-  extraction.suppressWarnings = true;
-  var allMessages =
+  extraction = extraction.copyWith(suppressWarnings: true);
+  Iterable<Map<String, MainMessage>> allMessages =
       dartFiles.map((each) => extraction.parseFile(File(each), transformer));
 
-  messages = {};
-  for (var eachMap in allMessages) {
-    eachMap.forEach(
-        (key, value) => messages.putIfAbsent(key, () => []).add(value));
+  /// Keeps track of all the messages we have processed so far, keyed by message
+  /// name.
+  Map<String, List<MainMessage>> messages = {};
+  for (Map<String, MainMessage> eachMap in allMessages) {
+    eachMap.forEach((k, v) => messages.putIfAbsent(k, () => []).add(v));
   }
-  var messagesByLocale = <String, List<Map>>{};
+  Map<String, List<Map<String, String>>> messagesByLocale =
+      <String, List<Map<String, String>>>{};
 
   // In order to group these by locale, to support multiple input files,
   // we're reading all the data eagerly, which could be a memory
   // issue for very large projects.
-  for (var arg in jsonFiles) {
+  for (String arg in jsonFiles) {
     loadData(arg, messagesByLocale, generation);
   }
 
   messagesByLocale.forEach((locale, data) =>
-      generateLocaleFile(locale, data, targetDir!, generation));
+      generateLocaleFile(locale, data, targetDir, generation, messages));
 
-  var mainImportFile = File(path.join(
-      targetDir!, '${generation.generatedFilePrefix}messages_all.dart'));
+  File mainImportFile = File(path.join(
+      targetDir, '${generation.generatedFilePrefix}messages_all.dart'));
   mainImportFile.writeAsStringSync(
       generation.generateMainImportFile(flutter: useFlutterLocaleSplit));
 
-  var localesImportFile = File(path.join(
-      targetDir!, '${generation.generatedFilePrefix}messages_all_locales.dart'));
+  File localesImportFile = File(path.join(
+      targetDir, '${generation.generatedFilePrefix}messages_all_locales.dart'));
   localesImportFile.writeAsStringSync(generation.generateLocalesImportFile());
 
   if (useFlutterLocaleSplit) {
     var flutterImportFile = File(path.join(
-        targetDir!, '${generation.generatedFilePrefix}messages_flutter.dart'));
+        targetDir, '${generation.generatedFilePrefix}messages_flutter.dart'));
     flutterImportFile.writeAsStringSync(generation.generateFlutterImportFile());
   }
 }
 
-void loadData(String filename, Map<String, List<Map>> messagesByLocale,
-    MessageGeneration generation) {
-  var file = File(filename);
-  var src = file.readAsStringSync();
-  var data = jsonDecoder.decode(src) as Map<String, Object>;
-  var locale = data['@@locale'] ?? data['_locale'];
+void loadData(
+  String filename,
+  Map<String, List<Map<String, String>>> messagesByLocale,
+  MessageGeneration generation,
+) {
+  File file = File(filename);
+  String src = file.readAsStringSync();
+  Map<String, String> data = Map.castFrom(jsonDecoder.decode(src));
+  Object? locale = data['@@locale'] ?? data['_locale'];
   if (locale == null) {
     // Get the locale from the end of the file name. This assumes that the file
     // name doesn't contain any underscores except to begin the language tag
@@ -206,12 +211,18 @@ void loadData(String filename, Map<String, List<Map>> messagesByLocale,
 /// locale. If that attribute is missing, we try to get the locale from the
 /// last section of the file name. Each ARB file produces a Map of message
 /// translations, and there can be multiple such maps in [localeData].
-void generateLocaleFile(String locale, List<Map> localeData, String targetDir,
-    MessageGeneration generation) {
+void generateLocaleFile(
+    String locale,
+    List<Map<String, String>> localeData,
+    String targetDir,
+    MessageGeneration generation,
+    Map<String, List<MainMessage>> messages) {
   List<TranslatedMessage> translations = [];
-  for (/*Map<String, String>*/ Map jsonTranslations in localeData) {
+  for (/*Map<String, String>*/ Map<String, String> jsonTranslations
+      in localeData) {
     jsonTranslations.forEach((id, messageData) {
-      TranslatedMessage? message = recreateIntlObjects(id, messageData);
+      TranslatedMessage? message =
+          recreateIntlObjects(id, messageData, messages);
       if (message != null) {
         translations.add(message);
       }
@@ -224,7 +235,8 @@ void generateLocaleFile(String locale, List<Map> localeData, String targetDir,
 /// things that are messages, we expect [id] not to start with "@" and
 /// [data] to be a String. For metadata we expect [id] to start with "@"
 /// and [data] to be a Map or null. For metadata we return null.
-BasicTranslatedMessage? recreateIntlObjects(String id, String data) {
+BasicTranslatedMessage? recreateIntlObjects(
+    String id, String? data, Map<String, List<MainMessage>> messages) {
   if (id.startsWith('@')) return null;
   if (data == null) return null;
   MessageParser messageParser = MessageParser(data);
@@ -232,13 +244,15 @@ BasicTranslatedMessage? recreateIntlObjects(String id, String data) {
   if (parsed is LiteralString && parsed.string.isEmpty) {
     parsed = messageParser.nonIcuMessageParse();
   }
-  return BasicTranslatedMessage(id, parsed);
+  return BasicTranslatedMessage(id, parsed, messages);
 }
 
 /// A TranslatedMessage that just uses the name as the id and knows how to look
 /// up its original messages in our [messages].
 class BasicTranslatedMessage extends TranslatedMessage {
-  BasicTranslatedMessage(String name, translated) : super(name, translated);
+  final Map<String, List<MainMessage>> messages;
+  BasicTranslatedMessage(String name, translated, this.messages)
+      : super(name, translated);
 
   @override
   List<MainMessage>? get originalMessages => (super.originalMessages == null)
