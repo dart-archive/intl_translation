@@ -377,7 +377,7 @@ class PairMessage<T extends Message, S extends Message> extends Message {
   PairMessage(this.first, this.second, [Message parent]) : super(parent);
 
   @override
-  String expanded([Function transform]) =>
+  String expanded([Function transform = _nullTransform]) =>
       [first, second].map((chunk) => transform(this, chunk)).join('');
 
   @override
@@ -715,11 +715,11 @@ abstract class SubMessage extends ComplexMessage {
       String key;
       Object value;
       if (clause is List && clause[0] is String && clause.length == 2) {
-        ///If trying to parse a string
+        //If trying to parse a string
         key = clause[0];
         value = (clause[1] is List) ? clause[1] : [(clause[1])];
       } else if (clause is PairMessage<LiteralString, Message>) {
-        ///If trying to parse a message
+        //If trying to parse a message
         key = clause.first.string;
         Message second = clause.second;
         value = second is CompositeMessage ? second.pieces : [second];
