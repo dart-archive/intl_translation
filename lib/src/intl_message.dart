@@ -413,7 +413,8 @@ class VariableSubstitution extends Message {
   /// may have been used as all upper-case in the translation tool, so we
   /// save it separately and look it up case-insensitively once the parent
   /// (and its arguments) are definitely available.
-  VariableSubstitution.named(String name, Message parent) : super(parent) {
+  VariableSubstitution.named(String name, [Message parent]) : super(parent) {
+    _variableName = name;
     _variableNameUpper = name.toUpperCase();
   }
 
@@ -443,8 +444,12 @@ class VariableSubstitution extends Message {
 
   /// The name of the variable in the parameter list of the containing function.
   /// Used when generating code for the interpolation.
-  String get variableName =>
-      _variableName ?? (_variableName = arguments[index]);
+  String get variableName {
+    return arguments != null && index != null
+        ? arguments[index]
+        : _variableName;
+  }
+
   String _variableName;
   // Although we only allow simple variable references, we always enclose them
   // in curly braces so that there's no possibility of ambiguity with
@@ -454,7 +459,7 @@ class VariableSubstitution extends Message {
   @override
   int toJson() => index;
   @override
-  String toString() => 'VariableSubstitution($index)';
+  String toString() => 'VariableSubstitution(${index ?? _variableName})';
   @override
   String expanded([Function transform = _nullTransform]) =>
       transform(this, index);

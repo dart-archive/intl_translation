@@ -133,9 +133,9 @@ class _ParserUtil {
   }
 
   /// Parse whitespace
-  At<LiteralString>? trimAt(int at) => at < input.length
+  At<LiteralString> trimAt(int at) => at < input.length
       ? At(LiteralString(input), RegExp(r'\s*').matchAsPrefix(input, at)!.end)
-      : null;
+      : At(LiteralString(''), at);
 
   At<LiteralString>? openCurly(int at) => matchString(at, '{');
   At<LiteralString>? closeCurly(int at) => matchString(at, '}');
@@ -199,7 +199,7 @@ class _ParserUtil {
   At<LiteralString>? comma(int at) {
     Match? match = commaWithWhitespace.matchAsPrefix(input, at);
     return at < input.length && match != null
-        ? At(LiteralString(','), at + 1)
+        ? At(LiteralString(','), match.end)
         : null;
   }
 
@@ -355,7 +355,7 @@ class _ParserUtil {
       at,
     )?.mapResult((compMsg) {
       LiteralString id = (compMsg.pieces[1] as LiteralString);
-      return VariableSubstitution.named(id.string, null);
+      return VariableSubstitution.named(id.string);
     });
   }
 }
