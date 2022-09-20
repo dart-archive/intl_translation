@@ -3,7 +3,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart=2.10
+
 
 /// A main program that takes as input a source Dart file and a number
 /// of ARB files representing translations of messages from the corresponding
@@ -33,18 +33,18 @@ import 'package:path/path.dart' as path;
 
 /// Keeps track of all the messages we have processed so far, keyed by message
 /// name.
-Map<String, List<MainMessage>> messages;
+late Map<String, List<MainMessage>> messages;
 
 const jsonDecoder = JsonCodec();
 
 void main(List<String> args) {
-  String targetDir;
+  String? targetDir;
   var parser = ArgParser();
   var extraction = MessageExtraction();
   var generation = MessageGeneration();
-  String sourcesListFile;
-  String translationsListFile;
-  bool transformer;
+  String? sourcesListFile;
+  String? translationsListFile;
+  bool? transformer;
   var useJsonFlag = false;
   var useCodeMapFlag = false;
   var useFlutterLocaleSplit = false;
@@ -160,20 +160,20 @@ void main(List<String> args) {
   }
 
   messagesByLocale.forEach((locale, data) =>
-      generateLocaleFile(locale, data, targetDir, generation));
+      generateLocaleFile(locale, data, targetDir!, generation));
 
   var mainImportFile = File(path.join(
-      targetDir, '${generation.generatedFilePrefix}messages_all.dart'));
+      targetDir!, '${generation.generatedFilePrefix}messages_all.dart'));
   mainImportFile.writeAsStringSync(
       generation.generateMainImportFile(flutter: useFlutterLocaleSplit));
 
   var localesImportFile = File(path.join(
-      targetDir, '${generation.generatedFilePrefix}messages_all_locales.dart'));
+      targetDir!, '${generation.generatedFilePrefix}messages_all_locales.dart'));
   localesImportFile.writeAsStringSync(generation.generateLocalesImportFile());
 
   if (useFlutterLocaleSplit) {
     var flutterImportFile = File(path.join(
-        targetDir, '${generation.generatedFilePrefix}messages_flutter.dart'));
+        targetDir!, '${generation.generatedFilePrefix}messages_flutter.dart'));
     flutterImportFile.writeAsStringSync(generation.generateFlutterImportFile());
   }
 }
@@ -194,7 +194,7 @@ void loadData(String filename, Map<String, List<Map>> messagesByLocale,
     print('No @@locale or _locale field found in $name, '
         "assuming '$locale' based on the file name.");
   }
-  messagesByLocale.putIfAbsent(locale, () => []).add(data);
+  messagesByLocale.putIfAbsent(locale as String, () => []).add(data);
   generation.allLocales.add(locale);
 }
 
@@ -211,7 +211,7 @@ void generateLocaleFile(String locale, List<Map> localeData, String targetDir,
   List<TranslatedMessage> translations = [];
   for (/*Map<String, String>*/ Map jsonTranslations in localeData) {
     jsonTranslations.forEach((id, messageData) {
-      TranslatedMessage message = recreateIntlObjects(id, messageData);
+      TranslatedMessage? message = recreateIntlObjects(id, messageData);
       if (message != null) {
         translations.add(message);
       }
@@ -224,7 +224,7 @@ void generateLocaleFile(String locale, List<Map> localeData, String targetDir,
 /// things that are messages, we expect [id] not to start with "@" and
 /// [data] to be a String. For metadata we expect [id] to start with "@"
 /// and [data] to be a Map or null. For metadata we return null.
-BasicTranslatedMessage recreateIntlObjects(String id, String data) {
+BasicTranslatedMessage? recreateIntlObjects(String id, String data) {
   if (id.startsWith('@')) return null;
   if (data == null) return null;
   MessageParser messageParser = MessageParser(data);
@@ -241,11 +241,11 @@ class BasicTranslatedMessage extends TranslatedMessage {
   BasicTranslatedMessage(String name, translated) : super(name, translated);
 
   @override
-  List<MainMessage> get originalMessages => (super.originalMessages == null)
+  List<MainMessage>? get originalMessages => (super.originalMessages == null)
       ? _findOriginals()
       : super.originalMessages;
 
   // We know that our [id] is the name of the message, which is used as the
   //key in [messages].
-  List<MainMessage> _findOriginals() => originalMessages = messages[id];
+  List<MainMessage>? _findOriginals() => originalMessages = messages[id];
 }

@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart=2.10
+
 
 /// Code to rewrite Intl.message calls adding the name and args parameters
 /// automatically, primarily used by the transformer.
@@ -18,13 +18,13 @@ import 'package:intl_translation/src/intl_message.dart';
 String rewriteMessages(String source, String sourceName,
     {bool useStringSubstitution = false}) {
   var messages = findMessages(source, sourceName);
-  messages.sort((a, b) => a.sourcePosition.compareTo(b.sourcePosition));
+  messages.sort((a, b) => a.sourcePosition!.compareTo(b.sourcePosition!));
 
-  var start = 0;
+  int? start = 0;
   var newSource = StringBuffer();
   for (var message in messages) {
-    if (message.arguments.isNotEmpty) {
-      newSource.write(source.substring(start, message.sourcePosition));
+    if (message.arguments!.isNotEmpty) {
+      newSource.write(source.substring(start!, message.sourcePosition));
       if (useStringSubstitution) {
         rewriteWithStringSubstitution(newSource, source, start, message);
       } else {
@@ -33,7 +33,7 @@ String rewriteMessages(String source, String sourceName,
       start = message.endPosition;
     }
   }
-  newSource.write(source.substring(start));
+  newSource.write(source.substring(start!));
   return newSource.toString();
 }
 
@@ -41,16 +41,16 @@ String rewriteMessages(String source, String sourceName,
 ///
 /// This may produce uglier source, but is more reliable.
 void rewriteRegenerating(
-    StringBuffer newSource, String source, int start, MainMessage message) {
+    StringBuffer newSource, String source, int? start, MainMessage message) {
   // TODO(alanknight): We could generate more efficient code than the
   // original here, dispatching more directly to the MessageLookup.
   newSource.write(message.toOriginalCode());
 }
 
 void rewriteWithStringSubstitution(
-    StringBuffer newSource, String source, int start, MainMessage message) {
+    StringBuffer newSource, String source, int? start, MainMessage message) {
   var originalSource =
-      source.substring(message.sourcePosition, message.endPosition);
+      source.substring(message.sourcePosition!, message.endPosition);
   var closingParen = originalSource.lastIndexOf(')');
   // This is very ugly, checking to see if name/args is already there by
   // examining the source string. But at least the failure mode should
@@ -74,7 +74,7 @@ final RegExp argsCheck = RegExp('[\\n,]\\s+args:');
 ///
 /// Report errors as coming from [sourceName]
 List<MainMessage> findMessages(String source, String sourceName,
-    [MessageExtraction extraction]) {
+    [MessageExtraction? extraction]) {
   extraction = extraction ?? MessageExtraction();
   try {
     var result = parseString(content: source);

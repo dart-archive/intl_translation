@@ -3,7 +3,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart=2.10
+
 
 /// Converts the examples parameter for Intl messages to be const.
 import 'dart:io';
@@ -47,30 +47,30 @@ void main(List<String> args) {
 /// [sourceName] in the error message.
 String rewriteMessages(String source, String sourceName) {
   var messages = findMessages(source, sourceName);
-  messages.sort((a, b) => a.sourcePosition.compareTo(b.sourcePosition));
-  var start = 0;
+  messages.sort((a, b) => a.sourcePosition!.compareTo(b.sourcePosition!));
+  int? start = 0;
   var newSource = StringBuffer();
   for (var message in messages) {
     if (message.examples != null) {
-      newSource.write(source.substring(start, message.sourcePosition));
+      newSource.write(source.substring(start!, message.sourcePosition));
       rewrite(newSource, source, start, message);
       start = message.endPosition;
     }
   }
-  newSource.write(source.substring(start));
+  newSource.write(source.substring(start!));
   return newSource.toString();
 }
 
 void rewrite(
-    StringBuffer newSource, String source, int start, MainMessage message) {
+    StringBuffer newSource, String source, int? start, MainMessage message) {
   var originalSource =
-      source.substring(message.sourcePosition, message.endPosition);
+      source.substring(message.sourcePosition!, message.endPosition);
   var examples = nonConstExamples.firstMatch(originalSource);
   if (examples == null) {
     newSource.write(originalSource);
   } else {
     var modifiedSource = originalSource.replaceFirst(
-        examples.group(1), '${examples.group(1)}const');
+        examples.group(1)!, '${examples.group(1)}const');
     newSource.write(modifiedSource);
   }
 }

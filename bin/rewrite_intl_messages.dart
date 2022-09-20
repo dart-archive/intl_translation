@@ -3,7 +3,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart=2.10
+
 
 /// A main program that imitates the action of the transformer, adding
 /// name and args parameters to Intl.message calls automatically.
@@ -18,7 +18,7 @@ import 'package:args/args.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:intl_translation/src/message_rewriter.dart';
 
-String outputFileOption = 'transformed_output.dart';
+String? outputFileOption = 'transformed_output.dart';
 
 bool useStringSubstitution = true;
 bool replace = false;
@@ -66,7 +66,7 @@ void main(List<String> args) {
       print('No changes to $outputFile');
     } else {
       print('Writing new source to $outputFile');
-      var out = File(outputFile);
+      var out = File(outputFile!);
       out.writeAsStringSync(formatter.format(newSource));
     }
   }

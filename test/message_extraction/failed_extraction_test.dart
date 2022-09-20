@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart=2.10
+
 
 @Timeout(Duration(seconds: 180))
 
@@ -26,8 +26,8 @@ const List<String> defaultFiles = [
 ];
 
 Future<void> runTestWithWarnings(
-    {bool warningsAreErrors,
-    int expectedExitCode,
+    {required bool warningsAreErrors,
+    int? expectedExitCode,
     bool embeddedPlurals = true,
     List<String> sourceFiles = defaultFiles}) async {
   void verify(ProcessResult result) {
@@ -49,7 +49,7 @@ Future<void> runTestWithWarnings(
     args.add('--no-embedded-plurals');
   }
   var files = sourceFiles.map(asTempDirPath).toList();
-  List<String> allArgs = [program, ...args, ...files];
+  List<String?> allArgs = [program, ...args, ...files];
   var callback = expectAsync1(verify);
 
   run(null, allArgs).then(callback);

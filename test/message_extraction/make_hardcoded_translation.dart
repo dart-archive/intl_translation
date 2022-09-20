@@ -3,7 +3,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart=2.10
+
 
 /// This simulates a translation process, reading the messages generated from
 /// extract_message.dart for the files sample_with_messages.dart and
@@ -154,21 +154,21 @@ Map<String, String> german = {
 };
 
 /// The output directory for translated files.
-String targetDir;
+String? targetDir;
 
 const jsonCodec = JsonCodec();
 
 /// Generate a translated json version from [originals] in [locale] looking
 /// up the translations in [translations].
 void translate(Map originals, String locale, Map translations,
-    [String filename]) {
+    [String? filename]) {
   var translated = {'_locale': locale};
   originals.forEach((name, text) {
     if (translations[name] != null) {
       translated[name] = translations[name];
     }
   });
-  var file = File(path.join(targetDir, filename ?? 'translation_$locale.arb'));
+  var file = File(path.join(targetDir!, filename ?? 'translation_$locale.arb'));
   file.writeAsStringSync(jsonCodec.encode(translated));
 }
 

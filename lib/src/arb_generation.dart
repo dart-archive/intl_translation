@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart=2.10
+
 
 import 'package:intl_translation/src/intl_message.dart';
 
@@ -12,12 +12,12 @@ import 'package:intl_translation/src/intl_message.dart';
 /// is trivial.
 String leaveTheInterpolationsInDartForm(MainMessage msg, dynamic chunk) {
   if (chunk is String) return chunk;
-  if (chunk is int) return '\$${msg.arguments[chunk]}';
+  if (chunk is int) return '\$${msg.arguments![chunk]}';
   return (chunk as Message).toCode();
 }
 
 /// Convert the [MainMessage] to a trivial JSON format.
-Map toARB(
+Map? toARB(
   MainMessage message, {
   bool supressMetadata = false,
   bool includeSourceText = false,
@@ -45,17 +45,17 @@ Map arbMetadata(MainMessage message) {
   }
   out['type'] = 'text';
   var placeholders = {};
-  for (var arg in message.arguments) {
+  for (var arg in message.arguments!) {
     addArgumentFor(message, arg, placeholders);
   }
   out['placeholders'] = placeholders;
   return out;
 }
 
-void addArgumentFor(MainMessage message, String arg, Map result) {
+void addArgumentFor(MainMessage message, String? arg, Map result) {
   var extraInfo = {};
-  if (message.examples != null && message.examples[arg] != null) {
-    extraInfo['example'] = message.examples[arg];
+  if (message.examples != null && message.examples![arg] != null) {
+    extraInfo['example'] = message.examples![arg];
   }
   result[arg] = extraInfo;
 }
@@ -65,13 +65,13 @@ void addArgumentFor(MainMessage message, String arg, Map result) {
 String icuForm(MainMessage message) =>
     message.expanded(turnInterpolationIntoICUForm);
 
-String turnInterpolationIntoICUForm(Message message, dynamic chunk,
+String? turnInterpolationIntoICUForm(Message message, dynamic chunk,
     {bool shouldEscapeICU = false}) {
   if (chunk is String) {
     return shouldEscapeICU ? escape(chunk) : chunk;
   }
-  if (chunk is int && chunk >= 0 && chunk < message.arguments.length) {
-    return '{${message.arguments[chunk]}}';
+  if (chunk is int && chunk >= 0 && chunk < message.arguments!.length) {
+    return '{${message.arguments![chunk]}}';
   }
   if (chunk is SubMessage) {
     return chunk.expanded((message, chunk) =>

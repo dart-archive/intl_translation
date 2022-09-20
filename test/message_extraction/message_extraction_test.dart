@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart=2.10
+
 
 @Timeout(Duration(seconds: 180))
 
@@ -40,7 +40,7 @@ final vmArgs = Platform.executableArguments;
 /// step if [useLocalDirectory] is true. The place we move them to is saved as
 /// [tempDir].
 String get tempDir => _tempDir ?? (_tempDir = _createTempDir());
-String _tempDir;
+String? _tempDir;
 String _createTempDir() => useLocalDirectory
     ? '.'
     : Directory.systemTemp.createTempSync('message_extraction_test').path;
@@ -51,7 +51,7 @@ bool useLocalDirectory = false;
 /// applied to all the arguments of [run]. It will ignore a string that
 /// is an absolute path or begins with "--", because some of the arguments
 /// might be command-line options.
-String asTestDirPath([String s]) {
+String? asTestDirPath([String? s]) {
   if (s == null || s.startsWith('--') || path.isAbsolute(s)) return s;
   return path.join(packageDirectory, 'test', 'message_extraction', s);
 }
@@ -60,7 +60,7 @@ String asTestDirPath([String s]) {
 /// applied to all the arguments of [run]. It will ignore a string that
 /// is an absolute path or begins with "--", because some of the arguments
 /// might be command-line options.
-String asTempDirPath([String s]) {
+String? asTempDirPath([String? s]) {
   if (s == null || s.startsWith('--') || path.isAbsolute(s)) return s;
   return path.join(tempDir, s);
 }
@@ -106,14 +106,14 @@ Future<void> copyFilesToTempDirectory() async {
   ];
 
   for (var filePath in files) {
-    var file = File(filePath);
+    var file = File(filePath!);
     if (file.existsSync()) {
       file.copySync(path.join(tempDir, path.basename(filePath)));
     }
   }
 
   // Here we copy the package config file so the test can locate packages.
-  var configFile = File.fromUri(await Isolate.packageConfig);
+  var configFile = File.fromUri((await Isolate.packageConfig)!);
   var destFile = File(path.join(tempDir, '.dart_tool', 'package_config.json'));
   if (!destFile.parent.existsSync()) {
     destFile.parent.createSync();
@@ -135,12 +135,12 @@ void deleteGeneratedFiles() {
 /// are in dir() and need to be qualified in case that's not our working
 /// directory.
 Future<ProcessResult> run(
-    ProcessResult previousResult, List<String> filenames) {
+    ProcessResult? previousResult, List<String?> filenames) {
   // If there's a failure in one of the sub-programs, print its output.
   checkResult(previousResult);
   var filesInTheRightDirectory = filenames
       .map((x) => asTempDirPath(x))
-      .map((x) => path.normalize(x))
+      .map((x) => path.normalize(x!))
       .toList();
   // Inject the script argument --output-dir in between the script and its
   // arguments.
@@ -155,7 +155,7 @@ Future<ProcessResult> run(
   return result;
 }
 
-void checkResult(ProcessResult result) {
+void checkResult(ProcessResult? result) {
   if (result != null) {
     if (result.exitCode != 0) {
       print('Error running sub-program:');
@@ -168,7 +168,7 @@ void checkResult(ProcessResult result) {
   }
 }
 
-Future<ProcessResult> extractMessages(ProcessResult previousResult) =>
+Future<ProcessResult> extractMessages(ProcessResult? previousResult) =>
     run(previousResult, [
       asTestDirPath('../../bin/extract_to_arb.dart'),
       '--suppress-warnings',

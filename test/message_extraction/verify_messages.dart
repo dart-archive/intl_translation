@@ -1,11 +1,11 @@
-// @dart=2.10
+
 
 library verify_messages;
 
 import 'print_to_list.dart';
 
 void verifyResult() {
-  Iterator<String> lineIterator;
+  late Iterator<String> lineIterator;
 
   void verify(String expected) {
     lineIterator.moveNext();

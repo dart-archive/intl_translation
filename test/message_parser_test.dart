@@ -1,4 +1,4 @@
-// @dart=2.10
+
 import 'package:intl_translation/src/intl_message.dart';
 import 'package:intl_translation/src/message_parser.dart';
 import 'package:test/test.dart';

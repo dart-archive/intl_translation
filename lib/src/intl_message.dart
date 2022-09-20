@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart=2.10
-
 // ignore_for_file: deprecated_member_use, #168
 // ignore_for_file: implementation_imports
 
@@ -54,27 +52,27 @@ abstract class Message {
   /// All [Message]s except a [MainMessage] are contained inside some parent,
   /// terminating at an Intl.message call which supplies the arguments we
   /// use for variable substitutions.
-  Message parent;
+  Message? parent;
 
   Message(this.parent);
 
   /// We find the arguments from the top-level [MainMessage] and use those to
   /// do variable substitutions. [MainMessage] overrides this to return
   /// the actual arguments.
-  List<String> get arguments => parent == null ? const [] : parent.arguments;
+  List<String?>? get arguments => parent == null ? const [] : parent!.arguments;
 
   /// We find the examples from the top-level [MainMessage] and use those
   /// when writing out variables. [MainMessage] overrides this to return
   /// the actual examples.
-  Map<String, dynamic> get examples =>
-      parent == null ? const {} : parent.examples;
+  Map<String, dynamic>? get examples =>
+      parent == null ? const {} : parent!.examples;
 
   /// The name of the top-level [MainMessage].
-  String get name => parent == null ? '<unnamed>' : parent.name;
+  String get name => parent == null ? '<unnamed>' : parent!.name;
 
   static final _evaluator = ConstantEvaluator();
 
-  String _evaluateAsString(expression) {
+  String? _evaluateAsString(expression) {
     var result = expression.accept(_evaluator);
     if (result == ConstantEvaluator.NOT_A_CONSTANT || result is! String) {
       return null;
@@ -83,7 +81,7 @@ abstract class Message {
     }
   }
 
-  Map _evaluateAsMap(expression) {
+  Map? _evaluateAsMap(expression) {
     var result = expression.accept(_evaluator);
     if (result == ConstantEvaluator.NOT_A_CONSTANT || result is! Map) {
       return null;
@@ -94,11 +92,11 @@ abstract class Message {
 
   /// Verify that the args argument matches the method parameters and
   /// isn't, e.g. passing string names instead of the argument values.
-  bool checkArgs(NamedExpression args, List<String> parameterNames) {
+  bool checkArgs(NamedExpression? args, List<String> parameterNames) {
     if (args == null) return true;
     // Detect cases where args passes invalid names, either literal strings
     // instead of identifiers, or in the wrong order, missing values, etc.
-    ListLiteral identifiers = args.childEntities.last;
+    ListLiteral identifiers = args.childEntities.last as ListLiteral;
     if (!identifiers.elements.every((each) => each is SimpleIdentifier)) {
       return false;
     }
@@ -136,14 +134,14 @@ abstract class Message {
   /// so we should not expect them to be present. The [examplesRequired]
   /// parameter indicates if we will fail if parameter examples are not provided
   /// for messages with parameters.
-  String checkValidity(MethodInvocation node, List arguments, String outerName,
-      List<FormalParameter> outerArgs,
+  String? checkValidity(MethodInvocation node, List arguments,
+      String? outerName, List<FormalParameter> outerArgs,
       {bool nameAndArgsGenerated = false, bool examplesRequired = false}) {
     // If we have parameters, we must specify args and name.
-    NamedExpression args = arguments.firstWhere(
+    NamedExpression? args = arguments.firstWhere(
         (each) => each is NamedExpression && each.name.label.name == 'args',
         orElse: () => null);
-    var parameterNames = outerArgs.map((x) => x.identifier.name).toList();
+    var parameterNames = outerArgs.map((x) => x.identifier!.name).toList();
     var hasArgs = args != null;
     var hasParameters = outerArgs.isNotEmpty;
     if (!nameAndArgsGenerated && !hasArgs && hasParameters) {
@@ -159,8 +157,8 @@ abstract class Message {
             eachArg is NamedExpression && eachArg.name.label.name == 'name',
         orElse: () => null);
     var nameExpression = messageNameArgument?.expression;
-    String messageName;
-    String givenName;
+    String? messageName;
+    String? givenName;
 
     //TODO(alanknight): If we generalize this to messages with parameters
     // this check will need to change.
@@ -250,8 +248,8 @@ abstract class Message {
   ///
   /// For a method foo in class Bar we allow either "foo" or "Bar_Foo" as the
   /// name.
-  static String classPlusMethodName(MethodInvocation node, String outerName) {
-    ClassOrMixinDeclaration classNode(AstNode n) {
+  static String? classPlusMethodName(MethodInvocation node, String? outerName) {
+    ClassOrMixinDeclaration? classNode(AstNode? n) {
       if (n == null) return null;
       if (n is ClassOrMixinDeclaration) return n;
       return classNode(n.parent);
@@ -268,18 +266,18 @@ abstract class Message {
   /// subclass. We expect to get literal Strings, variable substitutions
   /// represented by integers, things that are already MessageChunks and
   /// lists of the same.
-  static Message from(Object value, Message parent) {
+  static Message from(Object? value, Message parent) {
     if (value is String) return LiteralString(value, parent);
     if (value is int) return VariableSubstitution(value, parent);
     if (value is List) {
       if (value.length == 1) return Message.from(value[0], parent);
-      var result = CompositeMessage([], parent);
+      var result = CompositeMessage([], parent as ComplexMessage?);
       var items = value.map((x) => from(x, result)).toList();
       result.pieces.addAll(items);
       return result;
     }
     // We assume this is already a Message.
-    Message mustBeAMessage = value;
+    Message mustBeAMessage = value as Message;
     mustBeAMessage.parent = parent;
     return mustBeAMessage;
   }
@@ -290,7 +288,7 @@ abstract class Message {
 
   /// Return a JSON-storable representation of this message which can be
   /// interpolated at runtime.
-  Object toJson();
+  Object? toJson();
 
   /// Escape the string for use in generated Dart code.
   String escapeAndValidateString(String value) {
@@ -317,7 +315,7 @@ abstract class Message {
   /// Expand this string out into a printed form. The function [f] will be
   /// applied to any sub-messages, allowing this to be used to generate a form
   /// suitable for a wide variety of translation file formats.
-  String expanded([Function transform]);
+  String? expanded([Function? transform]);
 }
 
 /// Abstract class for messages with internal structure, representing the
@@ -353,8 +351,10 @@ abstract class ComplexMessage extends Message {
 class CompositeMessage extends Message {
   List<Message> pieces;
 
-  CompositeMessage.withParent(parent) : super(parent);
-  CompositeMessage(this.pieces, [ComplexMessage parent]) : super(parent) {
+  CompositeMessage.withParent(parent)
+      : pieces = const [],
+        super(parent);
+  CompositeMessage(this.pieces, [super.parent]) {
     for (var x in pieces) {
       x.parent = this;
     }
@@ -362,23 +362,23 @@ class CompositeMessage extends Message {
   @override
   String toCode() => pieces.map((each) => each.toCode()).join('');
   @override
-  List<Object> toJson() => pieces.map((each) => each.toJson()).toList();
+  List<Object?> toJson() => pieces.map((each) => each.toJson()).toList();
   @override
   String toString() => 'CompositeMessage($pieces)';
   @override
-  String expanded([Function transform = _nullTransform]) =>
-      pieces.map((chunk) => transform(this, chunk)).join('');
+  String expanded([Function? transform = _nullTransform]) =>
+      pieces.map((chunk) => transform!(this, chunk)).join('');
 }
 
 class PairMessage<T extends Message, S extends Message> extends Message {
   final T first;
   final S second;
 
-  PairMessage(this.first, this.second, [Message parent]) : super(parent);
+  PairMessage(this.first, this.second, [Message? parent]) : super(parent);
 
   @override
-  String expanded([Function transform = _nullTransform]) =>
-      [first, second].map((chunk) => transform(this, chunk)).join('');
+  String expanded([Function? transform = _nullTransform]) =>
+      [first, second].map((chunk) => transform!(this, chunk)).join('');
 
   @override
   String toCode() => [first, second].map((each) => each.toCode()).join('');
@@ -390,7 +390,7 @@ class PairMessage<T extends Message, S extends Message> extends Message {
 /// Represents a simple constant string with no dynamic elements.
 class LiteralString extends Message {
   String string;
-  LiteralString(this.string, [Message parent]) : super(parent);
+  LiteralString(this.string, [Message? parent]) : super(parent);
   @override
   String toCode() => escapeAndValidateString(string);
   @override
@@ -398,8 +398,8 @@ class LiteralString extends Message {
   @override
   String toString() => 'Literal($string)';
   @override
-  String expanded([Function transform = _nullTransform]) =>
-      transform(this, string);
+  String? expanded([Function? transform = _nullTransform]) =>
+      transform!(this, string);
 }
 
 /// Represents an interpolation of a variable value in a message. We expect
@@ -413,22 +413,22 @@ class VariableSubstitution extends Message {
   /// may have been used as all upper-case in the translation tool, so we
   /// save it separately and look it up case-insensitively once the parent
   /// (and its arguments) are definitely available.
-  VariableSubstitution.named(String name, [Message parent]) : super(parent) {
+  VariableSubstitution.named(String name, [Message? parent]) : super(parent) {
     _variableName = name;
     _variableNameUpper = name.toUpperCase();
   }
 
   /// The index in the list of parameters of the containing function.
-  int _index;
-  int get index {
+  int? _index;
+  int? get index {
     if (_index != null) return _index;
-    if (arguments.isEmpty) return null;
+    if (arguments!.isEmpty) return null;
     // We may have been given an all-uppercase version of the name, so compare
     // case-insensitive.
-    _index = arguments
-        .map((x) => x.toUpperCase())
+    _index = arguments!
+        .map((x) => x!.toUpperCase())
         .toList()
-        .indexOf(_variableNameUpper);
+        .indexOf(_variableNameUpper!);
     if (_index == -1) {
       throw ArgumentError(
           "Cannot find parameter named '$_variableNameUpper' in "
@@ -440,29 +440,29 @@ class VariableSubstitution extends Message {
 
   /// The variable name we get from parsing. This may be an all uppercase
   /// version of the Dart argument name.
-  String _variableNameUpper;
+  String? _variableNameUpper;
 
   /// The name of the variable in the parameter list of the containing function.
   /// Used when generating code for the interpolation.
-  String get variableName {
+  String? get variableName {
     return arguments != null && index != null
-        ? arguments[index]
+        ? arguments![index!]
         : _variableName;
   }
 
-  String _variableName;
+  String? _variableName;
   // Although we only allow simple variable references, we always enclose them
   // in curly braces so that there's no possibility of ambiguity with
   // surrounding text.
   @override
   String toCode() => '\${$variableName}';
   @override
-  int toJson() => index;
+  int? toJson() => index;
   @override
   String toString() => 'VariableSubstitution(${index ?? _variableName})';
   @override
-  String expanded([Function transform = _nullTransform]) =>
-      transform(this, index);
+  String? expanded([Function? transform = _nullTransform]) =>
+      transform!(this, index);
 }
 
 class MainMessage extends ComplexMessage {
@@ -474,18 +474,18 @@ class MainMessage extends ComplexMessage {
   List<Message> messagePieces = [];
 
   /// The position in the source at which this message starts.
-  int sourcePosition;
+  int? sourcePosition;
 
   /// The position in the source at which this message ends.
-  int endPosition;
+  int? endPosition;
 
   /// Optional documentation of the member that wraps the message definition.
   List<String> documentation = [];
 
   /// Verify that this looks like a correct Intl.message invocation.
   @override
-  String checkValidity(MethodInvocation node, List arguments, String outerName,
-      List<FormalParameter> outerArgs,
+  String? checkValidity(MethodInvocation node, List arguments,
+      String? outerName, List<FormalParameter> outerArgs,
       {bool nameAndArgsGenerated = false, bool examplesRequired = false}) {
     if (arguments.first is! StringLiteral) {
       return 'Intl.message messages must be string literals';
@@ -510,48 +510,48 @@ class MainMessage extends ComplexMessage {
   }
 
   /// The description provided in the Intl.message call.
-  String description;
+  String? description;
 
   /// The examples from the Intl.message call
   @override
-  Map<String, dynamic> examples;
+  Map<String, dynamic>? examples;
 
   /// A field to disambiguate two messages that might have exactly the
   /// same text. The two messages will also need different names, but
   /// this can be used by machine translation tools to distinguish them.
-  String meaning;
+  String? meaning;
 
   /// The name, which may come from the function name, from the arguments
   /// to Intl.message, or we may just re-use the message.
-  String _name;
+  String? _name;
 
   /// A placeholder for any other identifier that the translation format
   /// may want to use.
-  String id;
+  String? id;
 
   /// The arguments list from the Intl.message call.
   @override
-  List<String> arguments;
+  List<String?>? arguments;
 
   /// The locale argument from the Intl.message call
-  String locale;
+  String? locale;
 
   /// Whether extraction skip outputting this message.
   ///
   /// For example, this could be used to define messages whose purpose is known,
   /// but whose text isn't final yet and shouldn't be sent for translation.
-  bool skip = false;
+  bool? skip = false;
 
   /// When generating code, we store translations for each locale
   /// associated with the original message.
   Map<String, String> translations = {};
-  Map<String, Object> jsonTranslations = {};
+  Map<String, Object?> jsonTranslations = {};
 
   /// If the message was not given a name, we use the entire message string as
   /// the name.
   @override
   String get name => _name ?? '';
-  set name(String newName) {
+  set name(String? newName) {
     _name = newName;
   }
 
@@ -564,8 +564,8 @@ class MainMessage extends ComplexMessage {
   /// message entity.
   /// See [messagePieces].
   @override
-  String expanded([Function transform = _nullTransform]) =>
-      messagePieces.map((chunk) => transform(this, chunk)).join('');
+  String expanded([Function? transform = _nullTransform]) =>
+      messagePieces.map((chunk) => transform!(this, chunk)).join('');
 
   /// Record the translation for this message in the given locale, after
   /// suitably escaping it.
@@ -588,7 +588,7 @@ class MainMessage extends ComplexMessage {
   String toCodeForLocale(String locale, String name) {
     var out = StringBuffer()
       ..write('static $name(')
-      ..write(arguments.join(', '))
+      ..write(arguments!.join(', '))
       ..write(') => "')
       ..write(translations[locale])
       ..write('";');
@@ -596,7 +596,7 @@ class MainMessage extends ComplexMessage {
   }
 
   /// Return a JSON string representation of this message.
-  Object toJsonForLocale(String locale) {
+  Object? toJsonForLocale(String locale) {
     return jsonTranslations[locale];
   }
 
@@ -619,7 +619,7 @@ class MainMessage extends ComplexMessage {
     if (includeDesc) {
       out.write(description == null
           ? ''
-          : "desc: '${escapeAndValidateString(description)}', ");
+          : "desc: '${escapeAndValidateString(description!)}', ");
     }
     if (includeExamples) {
       // json is already mostly-escaped, but we need to handle interpolations.
@@ -628,8 +628,8 @@ class MainMessage extends ComplexMessage {
     }
     out.write(meaning == null
         ? ''
-        : "meaning: '${escapeAndValidateString(meaning)}', ");
-    out.write("args: [${arguments.join(', ')}]");
+        : "meaning: '${escapeAndValidateString(meaning!)}', ");
+    out.write("args: [${arguments!.join(', ')}]");
     out.write(')');
     return out.toString();
   }
@@ -643,7 +643,7 @@ class MainMessage extends ComplexMessage {
         description = value;
         return;
       case 'examples':
-        examples = value as Map<String, dynamic>;
+        examples = value as Map<String, dynamic>?;
         return;
       case 'name':
         name = value;
@@ -659,7 +659,7 @@ class MainMessage extends ComplexMessage {
         locale = value;
         return;
       case 'skip':
-        skip = value as bool;
+        skip = value as bool?;
         return;
       default:
         return;
@@ -718,7 +718,7 @@ abstract class SubMessage extends ComplexMessage {
   SubMessage.from(this.mainArgument, List clauses, parent) : super(parent) {
     for (var clause in clauses) {
       String key;
-      Object value;
+      Object? value;
       if (clause is List && clause[0] is String && clause.length == 2) {
         //If trying to parse a string
         key = clause[0];
@@ -741,7 +741,7 @@ abstract class SubMessage extends ComplexMessage {
 
   /// The name of the main argument, which is expected to have the value which
   /// is one of [attributeNames] and is used to decide which clause to use.
-  String mainArgument;
+  String? mainArgument;
 
   /// Return the arguments that affect this SubMessage as a map of
   /// argument names and values.
@@ -749,7 +749,8 @@ abstract class SubMessage extends ComplexMessage {
     var basicArguments = node.argumentList.arguments;
     var others = basicArguments.whereType<NamedExpression>();
     return {
-      for (var node in others) node.name.label.token.value(): node.expression,
+      for (var node in others)
+        node.name.label.token.value() as String: node.expression,
     };
   }
 
@@ -759,9 +760,9 @@ abstract class SubMessage extends ComplexMessage {
   List<String> get codeAttributeNames;
 
   @override
-  String expanded([Function transform = _nullTransform]) {
+  String expanded([Function? transform = _nullTransform]) {
     String fullMessageForClause(String key) =>
-        '$key{${transform(parent, this[key])}}';
+        '$key{${transform!(parent, this[key])}}';
     var clauses = attributeNames
         .where((key) => this[key] != null)
         .map(fullMessageForClause)
@@ -794,7 +795,7 @@ abstract class SubMessage extends ComplexMessage {
   List toJson() {
     var json = [];
     json.add(dartMessageName);
-    json.add(arguments.indexOf(mainArgument));
+    json.add(arguments!.indexOf(mainArgument));
     for (var arg in codeAttributeNames) {
       json.add(this[arg]?.toJson());
     }
@@ -812,12 +813,12 @@ class Gender extends SubMessage {
   /// clauses. Each clause is expected to be a list whose first element is a
   /// variable name and whose second element is either a [String] or
   /// a list of strings and [Message] or [VariableSubstitution].
-  Gender.from(String mainArgument, List clauses, Message parent)
+  Gender.from(String mainArgument, List clauses, Message? parent)
       : super.from(mainArgument, clauses, parent);
 
-  Message female;
-  Message male;
-  Message other;
+  Message? female;
+  Message? male;
+  Message? other;
 
   @override
   String get icuMessageName => 'select';
@@ -850,7 +851,7 @@ class Gender extends SubMessage {
   }
 
   @override
-  Message operator [](String attributeName) {
+  Message? operator [](String attributeName) {
     switch (attributeName) {
       case 'female':
         return female;
@@ -866,15 +867,15 @@ class Gender extends SubMessage {
 
 class Plural extends SubMessage {
   Plural();
-  Plural.from(String mainArgument, List clauses, Message parent)
+  Plural.from(String mainArgument, List clauses, Message? parent)
       : super.from(mainArgument, clauses, parent);
 
-  Message zero;
-  Message one;
-  Message two;
-  Message few;
-  Message many;
-  Message other;
+  Message? zero;
+  Message? one;
+  Message? two;
+  Message? few;
+  Message? many;
+  Message? other;
 
   @override
   String get icuMessageName => 'plural';
@@ -932,7 +933,7 @@ class Plural extends SubMessage {
   }
 
   @override
-  Message operator [](String attributeName) {
+  Message? operator [](String attributeName) {
     switch (attributeName) {
       case 'zero':
         return zero;
@@ -968,7 +969,7 @@ class Select extends SubMessage {
   /// clauses. Each clause is expected to be a list whose first element is a
   /// variable name and whose second element is either a String or
   /// a list of strings and [Message]s or [VariableSubstitution]s.
-  Select.from(String mainArgument, List clauses, Message parent)
+  Select.from(String mainArgument, List clauses, Message? parent)
       : super.from(mainArgument, clauses, parent);
 
   Map<String, Message> cases = <String, Message>{};
@@ -1001,7 +1002,7 @@ class Select extends SubMessage {
   }
 
   @override
-  Message operator [](String attributeName) {
+  Message? operator [](String attributeName) {
     var exact = cases[attributeName];
     return exact ?? cases['other'];
   }
@@ -1011,7 +1012,8 @@ class Select extends SubMessage {
   /// arguments used in Plural/Gender.
   @override
   Map<String, dynamic> argumentsOfInterestFor(MethodInvocation node) {
-    SetOrMapLiteral casesArgument = node.argumentList.arguments[1];
+    SetOrMapLiteral casesArgument =
+        node.argumentList.arguments[1] as SetOrMapLiteral;
     // ignore: prefer_for_elements_to_map_fromiterable
     return Map.fromIterable(
       casesArgument.elements,
@@ -1049,7 +1051,7 @@ class Select extends SubMessage {
     var args = codeAttributeNames;
     out.write(', {');
     args.fold<StringBuffer>(out,
-        (buffer, arg) => buffer..write("'$arg': '${this[arg].toCode()}', "));
+        (buffer, arg) => buffer..write("'$arg': '${this[arg]!.toCode()}', "));
     out.write('})}');
     return out.toString();
   }
@@ -1061,10 +1063,10 @@ class Select extends SubMessage {
   List toJson() {
     var json = [];
     json.add(dartMessageName);
-    json.add(arguments.indexOf(mainArgument));
+    json.add(arguments!.indexOf(mainArgument));
     var attributes = {};
     for (var arg in codeAttributeNames) {
-      attributes[arg] = this[arg].toJson();
+      attributes[arg] = this[arg]!.toJson();
     }
     json.add(attributes);
     return json;

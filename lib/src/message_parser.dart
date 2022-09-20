@@ -145,9 +145,12 @@ class _ParserUtil {
       Match? match = quotedBracketOpen.matchAsPrefix(input, at) ??
           quotedBracketClose.matchAsPrefix(input, at) ??
           doubleQuotes.matchAsPrefix(input, at);
-      return match != null
-          ? At(LiteralString(match.group(1)), match.end)
-          : null;
+      if (match != null) {
+        String? matchGroup = match.group(1);
+        if (matchGroup != null) {
+          return At(LiteralString(matchGroup), match.end);
+        }
+      }
     }
     return null;
   }
@@ -173,7 +176,10 @@ class _ParserUtil {
     if (at < input.length) {
       Match? match = nonOpenBracketRegex.matchAsPrefix(input, at);
       if (match != null) {
-        return At(LiteralString(match.group(0)), match.end);
+        String? matchGroup = match.group(0);
+        if (matchGroup != null) {
+          return At(LiteralString(matchGroup), match.end);
+        }
       }
     }
     return null;
@@ -190,7 +196,10 @@ class _ParserUtil {
     if (at < input.length) {
       Match? match = idRegex.matchAsPrefix(input, at);
       if (match != null) {
-        return At(LiteralString(match.group(1)), match.end);
+        String? matchGroup = match.group(1);
+        if (matchGroup != null) {
+          return At(LiteralString(matchGroup), match.end);
+        }
       }
     }
     return null;
