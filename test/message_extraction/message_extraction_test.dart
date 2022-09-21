@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-
-
 @Timeout(Duration(seconds: 180))
 
 library message_extraction_test;
@@ -51,8 +49,8 @@ bool useLocalDirectory = false;
 /// applied to all the arguments of [run]. It will ignore a string that
 /// is an absolute path or begins with "--", because some of the arguments
 /// might be command-line options.
-String? asTestDirPath([String? s]) {
-  if (s == null || s.startsWith('--') || path.isAbsolute(s)) return s;
+String asTestDirPath(String s) {
+  if (s.startsWith('--') || path.isAbsolute(s)) return s;
   return path.join(packageDirectory, 'test', 'message_extraction', s);
 }
 
@@ -76,12 +74,8 @@ void main() {
       'and printing', () {
     var makeSureWeVerify = expectAsync1(runAndVerify);
     return extractMessages(null)
-        .then((result) {
-          return generateTranslationFiles(result);
-        })
-        .then((result) {
-          return generateCodeFromTranslation(result);
-        })
+        .then((result) => generateTranslationFiles(result))
+        .then((result) => generateCodeFromTranslation(result))
         .then(makeSureWeVerify)
         .then(checkResult);
   });
@@ -92,7 +86,7 @@ Future<void> copyFilesToTempDirectory() async {
     return;
   }
 
-  var files = [
+  List<String> files = [
     asTestDirPath('sample_with_messages.dart'),
     asTestDirPath('part_of_sample_with_messages.dart'),
     asTestDirPath('verify_messages.dart'),
@@ -105,8 +99,8 @@ Future<void> copyFilesToTempDirectory() async {
     asTestDirPath('mock_flutter/services.dart'),
   ];
 
-  for (var filePath in files) {
-    var file = File(filePath!);
+  for (String filePath in files) {
+    File file = File(filePath);
     if (file.existsSync()) {
       file.copySync(path.join(tempDir, path.basename(filePath)));
     }
@@ -195,7 +189,6 @@ Future<ProcessResult> generateCodeFromTranslation(
       'dart_list.txt',
       '--translations-list-file',
       'arb_list.txt',
-      '--no-null-safety',
     ]);
 
 Future<ProcessResult> runAndVerify(ProcessResult previousResult) {

@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.part of sample;
 
-
-
 part of sample;
 
 class Person {
@@ -49,7 +47,7 @@ class YouveGotMessages {
       desc: 'Basic plurals');
 
   dynamic whereTheyWent(Person person, String place) =>
-      whereTheyWentMessage(person.name, person.gender!, place);
+      whereTheyWentMessage(person.name, person.gender ?? 'other', place);
 
   String whereTheyWentMessage(String name, String gender, String place) {
     return Intl.message(

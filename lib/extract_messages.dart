@@ -28,6 +28,7 @@ import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:analyzer/source/line_info.dart';
 import 'package:analyzer/src/dart/ast/constant_evaluator.dart';
 import 'package:intl_translation/src/intl_message.dart';
 
@@ -183,14 +184,10 @@ class MessageExtraction {
   String? origin;
 
   String _reportErrorLocation(AstNode node) {
-    var result = StringBuffer();
+    StringBuffer result = StringBuffer();
     if (origin != null) result.write('    from $origin');
-    var info = root.lineInfo;
-    if (info != null) {
-      var line = info.getLocation(node.offset);
-      result
-          .write('    line: ${line.lineNumber}, column: ${line.columnNumber}');
-    }
+    CharacterLocation line = root.lineInfo.getLocation(node.offset);
+    result.write('    line: ${line.lineNumber}, column: ${line.columnNumber}');
     return result.toString();
   }
 }
@@ -363,11 +360,13 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
     if (reason != null) {
       if (!extraction.suppressWarnings) {
-        var err = StringBuffer()
-          ..write('Skipping invalid Intl.message invocation\n    <$node>\n')
-          ..writeAll(
-              ['    reason: $reason\n', extraction._reportErrorLocation(node)]);
-        var errString = err.toString();
+        String errString = (StringBuffer()
+              ..write('Skipping invalid Intl.message invocation\n    <$node>\n')
+              ..writeAll([
+                '    reason: $reason\n',
+                extraction._reportErrorLocation(node)
+              ]))
+            .toString();
         extraction.warnings.add(errString);
         extraction.onMessage(errString);
       }
@@ -483,12 +482,13 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
   /// Find the message pieces from a Dart interpolated string.
   List _extractFromIntlCallWithInterpolation(
-      MainMessage message, List<AstNode> arguments) {
-    var interpolation = InterpolationVisitor(message, extraction);
-    arguments.first.accept(interpolation);
+      MainMessage message, AstNode argument) {
+    InterpolationVisitor interpolation =
+        InterpolationVisitor(message, extraction);
+    argument.accept(interpolation);
     if (interpolation.pieces.any((x) => x is Plural || x is Gender) &&
         !extraction.allowEmbeddedPluralsAndGenders) {
-      if (interpolation.pieces.any((x) => x is String && x.isNotEmpty)) {
+      if (interpolation.pieces.whereType<String>().any((x) => x.isNotEmpty)) {
         throw IntlMessageExtractionException(
             'Plural and gender expressions must be at the top level, '
             'they cannot be embedded in larger string literals.\n');
@@ -506,14 +506,14 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
       try {
         // The pieces of the message, either literal strings, or integers
         // representing the index of the argument to be substituted.
-        List extracted;
-        extracted = _extractFromIntlCallWithInterpolation(message, arguments);
+        List extracted =
+            _extractFromIntlCallWithInterpolation(message, arguments.first);
         message.addPieces(List.from(extracted));
       } on IntlMessageExtractionException catch (e) {
-        var err = StringBuffer()
-          ..writeAll(['Error ', e, '\nProcessing <', node, '>\n'])
-          ..write(extraction._reportErrorLocation(node));
-        var errString = err.toString();
+        String errString = (StringBuffer()
+              ..writeAll(['Error ', e, '\nProcessing <', node, '>\n'])
+              ..write(extraction._reportErrorLocation(node)))
+            .toString();
         extraction.onMessage(errString);
         extraction.warnings.add(errString);
         return null;
@@ -753,6 +753,6 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
 /// a name based on that and the meaning, if present.
 // NOTE: THIS LOGIC IS DUPLICATED IN intl AND THE TWO MUST MATCH.
 String? computeMessageName(String name, String? text, String? meaning) {
-  if (name != null && name != '') return name;
+  if (name != '') return name;
   return meaning == null ? text : '${text}_$meaning';
 }
