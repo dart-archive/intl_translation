@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// ignore: import_of_legacy_library_into_null_safe
+// @dart=2.10
 import 'package:intl_translation/src/intl_message.dart';
 import 'package:intl_translation/src/message_parser.dart';
 import 'package:test/test.dart';
