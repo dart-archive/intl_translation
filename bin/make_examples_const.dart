@@ -3,8 +3,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-
-
 /// Converts the examples parameter for Intl messages to be const.
 import 'dart:io';
 
@@ -47,11 +45,11 @@ void main(List<String> args) {
 /// [sourceName] in the error message.
 String rewriteMessages(String source, String sourceName) {
   var messages = findMessages(source, sourceName);
-  messages.sort((a, b) => a.sourcePosition!.compareTo(b.sourcePosition!));
+  messages.sort((a, b) => a.sourcePosition.compareTo(b.sourcePosition));
   int? start = 0;
   var newSource = StringBuffer();
   for (var message in messages) {
-    if (message.examples != null) {
+    if (message.examples.isNotEmpty) {
       newSource.write(source.substring(start!, message.sourcePosition));
       rewrite(newSource, source, start, message);
       start = message.endPosition;
@@ -64,7 +62,7 @@ String rewriteMessages(String source, String sourceName) {
 void rewrite(
     StringBuffer newSource, String source, int? start, MainMessage message) {
   var originalSource =
-      source.substring(message.sourcePosition!, message.endPosition);
+      source.substring(message.sourcePosition, message.endPosition);
   var examples = nonConstExamples.firstMatch(originalSource);
   if (examples == null) {
     newSource.write(originalSource);

@@ -23,8 +23,8 @@ String leaveTheInterpolationsInDartForm(MainMessage msg, dynamic chunk) {
 }
 
 /// Convert the [MainMessage] to a trivial JSON format.
-Map<String, dynamic> toARB(
-  MainMessage message, {
+Map<String, dynamic> toARB({
+  required MainMessage message,
   bool supressMetadata = false,
   bool includeSourceText = false,
 }) {

@@ -104,7 +104,7 @@ class Select extends SubMessage {
   /// and then a Map from the cases to the List of strings or sub-messages.
   @override
   List toJson() {
-    var json = [];
+    List json = [];
     json.add(dartMessageName);
     json.add(arguments.indexOf(mainArgument));
     var attributes = {};

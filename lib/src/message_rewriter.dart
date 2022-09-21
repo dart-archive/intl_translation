@@ -17,7 +17,7 @@ import 'package:intl_translation/visitors/message_finding_visitor.dart';
 String rewriteMessages(String source, String sourceName,
     {bool useStringSubstitution = false}) {
   var messages = findMessages(source, sourceName);
-  messages.sort((a, b) => a.sourcePosition!.compareTo(b.sourcePosition!));
+  messages.sort((a, b) => a.sourcePosition.compareTo(b.sourcePosition));
 
   int? start = 0;
   var newSource = StringBuffer();
@@ -49,7 +49,7 @@ void rewriteRegenerating(
 void rewriteWithStringSubstitution(
     StringBuffer newSource, String source, int? start, MainMessage message) {
   var originalSource =
-      source.substring(message.sourcePosition!, message.endPosition);
+      source.substring(message.sourcePosition, message.endPosition);
   var closingParen = originalSource.lastIndexOf(')');
   // This is very ugly, checking to see if name/args is already there by
   // examining the source string. But at least the failure mode should

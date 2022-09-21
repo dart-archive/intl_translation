@@ -25,21 +25,30 @@ void main(List<String> args) {
   ArgParser parser = ArgParser();
   MessageExtraction extract = MessageExtraction();
   String? locale;
+
+  /// Whether to include source_text in messages
+  bool includeSourceText = false;
+
+  /// If this is true, no translation meta data is written
+  bool suppressMetaData = false;
+
+  /// If this is true, the @@last_modified entry is not output.
+  bool suppressLastModified = false;
+
+  /// If this is true, then treat all warnings as errors.
+  bool warningsAreErrors = false;
   parser.addFlag('suppress-last-modified',
-      defaultsTo: false,
-      callback: (x) => extract = extract.copyWith(suppressLastModified: x),
+      callback: (x) => suppressLastModified = x,
       help: 'Suppress @@last_modified entry.');
   parser.addFlag('suppress-warnings',
       defaultsTo: false,
       callback: (x) => extract = extract.copyWith(suppressWarnings: x),
       help: 'Suppress printing of warnings.');
   parser.addFlag('suppress-meta-data',
-      defaultsTo: false,
-      callback: (x) => extract = extract.copyWith(suppressMetaData: x),
+      callback: (x) => suppressMetaData = x,
       help: 'Suppress writing meta information');
   parser.addFlag('warnings-are-errors',
-      defaultsTo: false,
-      callback: (x) => extract = extract.copyWith(warningsAreErrors: x),
+      callback: (x) => warningsAreErrors = x,
       help: 'Treat all warnings as errors, stop processing ');
   parser.addFlag('embedded-plurals',
       defaultsTo: true,
@@ -55,10 +64,11 @@ void main(List<String> args) {
       defaultsTo: null,
       callback: (value) => locale = value,
       help: 'Specify the locale set inside the arb file.');
-  parser.addFlag('with-source-text',
-      defaultsTo: false,
-      callback: (x) => extract = extract.copyWith(includeSourceText: x),
-      help: 'Include source_text in meta information.');
+  parser.addFlag(
+    'with-source-text',
+    callback: (x) => includeSourceText = x,
+    help: 'Include source_text in meta information.',
+  );
   parser.addOption(
     'output-dir',
     callback: (value) {
@@ -98,7 +108,7 @@ void main(List<String> args) {
   if (locale != null) {
     allMessages['@@locale'] = locale!;
   }
-  if (!extract.suppressLastModified) {
+  if (!suppressLastModified) {
     allMessages['@@last_modified'] = DateTime.now().toIso8601String();
   }
 
@@ -110,15 +120,14 @@ void main(List<String> args) {
       .map((dartFile) => extract.parseFile(File(dartFile), transformer))
       .expand((parsedFile) => parsedFile.entries)
       .map((nameToMessage) => toARB(
-            nameToMessage.value,
-            includeSourceText: extract.includeSourceText,
-            supressMetadata: extract.suppressMetaData,
+            message: nameToMessage.value,
+            includeSourceText: includeSourceText,
+            supressMetadata: suppressMetaData,
           ))
       .forEach((message) => allMessages.addAll(message));
   File file = File(path.join(targetDir, outputFilename));
-  JsonEncoder encoder = JsonEncoder.withIndent('  ');
-  file.writeAsStringSync(encoder.convert(allMessages));
-  if (extract.hasWarnings && extract.warningsAreErrors) {
+  file.writeAsStringSync(JsonEncoder.withIndent('  ').convert(allMessages));
+  if (extract.hasWarnings && warningsAreErrors) {
     exit(1);
   }
 }

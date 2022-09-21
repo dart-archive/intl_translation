@@ -44,57 +44,35 @@ final _featureSet = FeatureSet.latestLanguageVersion();
 class MessageExtraction {
   MessageExtraction({
     this.onMessage = print,
-    this.suppressLastModified = false,
     this.suppressWarnings = false,
-    this.suppressMetaData = false,
-    this.warningsAreErrors = false,
     this.allowEmbeddedPluralsAndGenders = true,
     this.examplesRequired = false,
     this.descriptionRequired = false,
-    this.includeSourceText = false,
   }) : warnings = [];
 
   MessageExtraction copyWith({
     OnMessage? onMessage,
-    bool? suppressLastModified,
     bool? suppressWarnings,
-    bool? suppressMetaData,
-    bool? warningsAreErrors,
-    List<String>? warnings,
     bool? allowEmbeddedPluralsAndGenders,
     bool? examplesRequired,
     bool? descriptionRequired,
-    bool? includeSourceText,
   }) {
     return MessageExtraction(
       onMessage: onMessage ?? this.onMessage,
-      suppressLastModified: suppressLastModified ?? this.suppressLastModified,
       suppressWarnings: suppressWarnings ?? this.suppressWarnings,
-      suppressMetaData: suppressMetaData ?? this.suppressMetaData,
-      warningsAreErrors: warningsAreErrors ?? this.warningsAreErrors,
       allowEmbeddedPluralsAndGenders:
           allowEmbeddedPluralsAndGenders ?? this.allowEmbeddedPluralsAndGenders,
       examplesRequired: examplesRequired ?? this.examplesRequired,
       descriptionRequired: descriptionRequired ?? this.descriptionRequired,
-      includeSourceText: includeSourceText ?? this.includeSourceText,
     );
   }
 
   /// What to do when a message is encountered, defaults to [print].
   final OnMessage onMessage;
 
-  /// If this is true, the @@last_modified entry is not output.
-  final bool suppressLastModified;
-
   /// If this is true, print warnings for skipped messages. Otherwise, warnings
   /// are suppressed.
   final bool suppressWarnings;
-
-  /// If this is true, no translation meta data is written
-  final bool suppressMetaData;
-
-  /// If this is true, then treat all warnings as errors.
-  final bool warningsAreErrors;
 
   /// This accumulates a list of all warnings/errors we have found. These are
   /// saved as strings right now, so all that can really be done is print and
@@ -117,9 +95,6 @@ class MessageExtraction {
   final bool examplesRequired;
 
   final bool descriptionRequired;
-
-  /// Whether to include source_text in messages
-  final bool includeSourceText;
 
   /// How messages with the same name are resolved.
   ///
