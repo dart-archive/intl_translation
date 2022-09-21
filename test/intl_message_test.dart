@@ -4,7 +4,8 @@
 
 
 
-import 'package:intl_translation/src/intl_message.dart';
+import 'package:intl_translation/src/messages/literal_string_message.dart';
+import 'package:intl_translation/src/messages/submessages/plural.dart';
 import 'package:test/test.dart';
 
 void main() {

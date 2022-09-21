@@ -7,7 +7,14 @@
 library message_parser;
 
 // ignore: import_of_legacy_library_into_null_safe
-import 'package:intl_translation/src/intl_message.dart';
+import 'package:intl_translation/src/messages/composite_message.dart';
+import 'package:intl_translation/src/messages/literal_string_message.dart';
+import 'package:intl_translation/src/messages/message.dart';
+import 'package:intl_translation/src/messages/pair_message.dart';
+import 'package:intl_translation/src/messages/submessages/gender.dart';
+import 'package:intl_translation/src/messages/submessages/plural.dart';
+import 'package:intl_translation/src/messages/submessages/select.dart';
+import 'package:intl_translation/src/messages/variable_substitution_message.dart';
 
 class MessageParser {
   final _ParserUtil _parser;

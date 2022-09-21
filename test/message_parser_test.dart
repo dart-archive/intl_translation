@@ -1,6 +1,11 @@
-
-import 'package:intl_translation/src/intl_message.dart';
 import 'package:intl_translation/src/message_parser.dart';
+import 'package:intl_translation/src/messages/composite_message.dart';
+import 'package:intl_translation/src/messages/literal_string_message.dart';
+import 'package:intl_translation/src/messages/message.dart';
+import 'package:intl_translation/src/messages/submessages/gender.dart';
+import 'package:intl_translation/src/messages/submessages/plural.dart';
+import 'package:intl_translation/src/messages/submessages/select.dart';
+import 'package:intl_translation/src/messages/variable_substitution_message.dart';
 import 'package:test/test.dart';
 
 void main() {

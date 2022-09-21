@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-
-
 /// This provides utilities for generating localized versions of
 /// messages. It does not stand alone, but expects to be given
 /// TranslatedMessage objects and generate code for a particular locale
@@ -17,9 +15,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:intl/intl.dart';
+import 'package:intl_translation/src/messages/main_message.dart';
+import 'package:intl_translation/src/messages/message.dart';
 import 'package:path/path.dart' as path;
-
-import 'src/intl_message.dart';
 
 class MessageGeneration {
   /// If the import path following package: is something else, modify the
@@ -119,8 +117,8 @@ class MessageGeneration {
         original.addTranslation(locale, each.message);
       }
     }
-    usableTranslations.sort((a, b) =>
-        a.originalMessages!.first.name.compareTo(b.originalMessages!.first.name));
+    usableTranslations.sort((a, b) => a.originalMessages!.first.name
+        .compareTo(b.originalMessages!.first.name));
 
     writeTranslations(usableTranslations, locale);
 

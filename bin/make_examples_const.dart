@@ -10,8 +10,8 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:dart_style/dart_style.dart';
-import 'package:intl_translation/src/intl_message.dart';
 import 'package:intl_translation/src/message_rewriter.dart';
+import 'package:intl_translation/src/messages/main_message.dart';
 
 void main(List<String> args) {
   var parser = ArgParser();

@@ -2,7 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:intl_translation/src/intl_message.dart';
+import 'package:intl_translation/src/messages/main_message.dart';
+import 'package:intl_translation/src/messages/message.dart';
+import 'package:intl_translation/src/messages/submessages/submessage.dart';
 
 /// This is a placeholder for transforming a parameter substitution from
 /// the translation file format into a Dart interpolation. In our case we
