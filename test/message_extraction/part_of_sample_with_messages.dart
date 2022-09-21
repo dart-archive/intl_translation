@@ -29,8 +29,9 @@ class YouveGotMessages {
     var aTrueValue = true;
     var msg = Intl.message('This method is not a lambda',
         name: 'nonLambda', desc: 'Not a lambda');
-    if (!aTrueValue) {
-      throw AssertionError('Parser should not fail with additional code.');
+    if (aTrueValue) {
+      String s = 'Parser should not fail with additional code.';
+      s.toString();
     }
     return msg;
   }

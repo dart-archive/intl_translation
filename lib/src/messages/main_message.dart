@@ -107,7 +107,7 @@ class MainMessage extends ComplexMessage {
   }
 
   /// Does this message have an assigned name.
-  bool get hasName => _name != null;
+  bool get hasNoName => _name == null;
 
   /// Return the full message, with any interpolation expressions transformed
   /// by [f] and all the results concatenated. The chunk argument to [f] may be

@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 // ignore: implementation_imports
@@ -57,7 +59,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
   /// Returns a String describing why the node is invalid, or null if no
   /// reason is found, so it's presumed valid.
-  String? checkValidity(MethodInvocation node) {
+  String? _checkValidity(MethodInvocation node) {
     if (parameters == null) {
       return 'Calls to Intl must be inside a method, field declaration or '
           'top level declaration.';
@@ -93,27 +95,26 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// encountered before seeing the Intl.message call.
   @override
   void visitMethodDeclaration(MethodDeclaration node) {
-    name = node.name.name;
-    parameters = node.parameters?.parameters ?? _emptyParameterList;
-    documentation = node.documentationComment;
+    setFields(
+      name: node.name.name,
+      parameters: node.parameters?.parameters,
+      documentation: node.documentationComment,
+    );
     super.visitMethodDeclaration(node);
-    name = null;
-    parameters = null;
-    documentation = null;
+    resetFields();
   }
 
   /// Record the parameters of the function or method declaration we last
   /// encountered before seeing the Intl.message call.
   @override
   void visitFunctionDeclaration(FunctionDeclaration node) {
-    name = node.name.name;
-    parameters =
-        node.functionExpression.parameters?.parameters ?? _emptyParameterList;
-    documentation = node.documentationComment;
+    setFields(
+      name: node.name.name,
+      parameters: node.functionExpression.parameters?.parameters,
+      documentation: node.documentationComment,
+    );
     super.visitFunctionDeclaration(node);
-    name = null;
-    parameters = null;
-    documentation = null;
+    resetFields();
   }
 
   /// Record the name of field declaration we last
@@ -122,17 +123,14 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   void visitFieldDeclaration(FieldDeclaration node) {
     // We don't support names in list declarations,
     // e.g. String first, second = Intl.message(...);
-    if (node.fields.variables.length == 1) {
-      name = node.fields.variables.first.name.name;
-    } else {
-      name = null;
-    }
-    documentation = node.documentationComment;
-    parameters = _emptyParameterList;
+    setFields(
+      name: node.fields.variables.length == 1
+          ? node.fields.variables.first.name.name
+          : null,
+      documentation: node.documentationComment,
+    );
     super.visitFieldDeclaration(node);
-    name = null;
-    parameters = null;
-    documentation = null;
+    resetFields();
   }
 
   /// Record the name of the top level variable declaration we last
@@ -141,14 +139,27 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   void visitTopLevelVariableDeclaration(TopLevelVariableDeclaration node) {
     // We don't support names in list declarations,
     // e.g. String first, second = Intl.message(...);
-    if (node.variables.variables.length == 1) {
-      name = node.variables.variables.first.name.name;
-    } else {
-      name = null;
-    }
-    parameters = _emptyParameterList;
-    documentation = node.documentationComment;
+    setFields(
+      name: node.variables.variables.length == 1
+          ? node.variables.variables.first.name.name
+          : null,
+      documentation: node.documentationComment,
+    );
     super.visitTopLevelVariableDeclaration(node);
+    resetFields();
+  }
+
+  void setFields({
+    String? name,
+    List<FormalParameter>? parameters,
+    Comment? documentation,
+  }) {
+    this.name = name;
+    this.parameters = parameters ?? _emptyParameterList;
+    this.documentation = documentation;
+  }
+
+  void resetFields() {
     name = null;
     parameters = null;
     documentation = null;
@@ -171,7 +182,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// false if we didn't, so should continue recursing.
   bool addIntlMessage(MethodInvocation node) {
     if (!looksLikeIntlMessage(node)) return false;
-    String? reason = checkValidity(node) ?? _extractMessage(node);
+    String? reason = _checkValidity(node) ?? _extractMessage(node);
     if (reason != null) {
       if (!extraction.suppressWarnings) {
         String errString = (StringBuffer()
@@ -226,18 +237,20 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
         messages[message.name] = extraction.mergeMessages!(existing, message);
       }
       // TODO(alanknight): We may want to require the descriptions to match.
-      var existingCode =
-          existing.toOriginalCode(includeDesc: false, includeExamples: false);
-      var messageCode =
-          message.toOriginalCode(includeDesc: false, includeExamples: false);
+      String existingCode = existing.toOriginalCode(
+        includeDesc: false,
+        includeExamples: false,
+      );
+      String messageCode = message.toOriginalCode(
+        includeDesc: false,
+        includeExamples: false,
+      );
       if (existingCode != messageCode) {
         return 'WARNING: Duplicate message name:\n'
             "'${message.name}' occurs more than once in ${extraction.origin}";
       }
-    } else {
-      if (!message.skip!) {
-        messages[message.name] = message;
-      }
+    } else if (!message.skip!) {
+      messages[message.name] = message;
     }
     return null;
   }
@@ -258,14 +271,13 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
       endPosition: node.end,
       arguments: parameters!.map((x) => x.identifier!.name).toList(),
     );
-    if (documentation != null) {
-      message.documentation
-          .addAll(documentation!.tokens.map((token) => token.toString()));
+    documentation?.tokens
+        .map((token) => token.toString())
+        .forEach((s) => message.documentation.add(s));
+    NodeList<Expression> arguments = node.argumentList.arguments;
+    if (extract(message, arguments) == null) {
+      return null;
     }
-    var arguments = node.argumentList.arguments;
-    MainMessage? extractionResult = extract(message, arguments);
-    if (extractionResult == null) return null;
-
     for (NamedExpression namedExpr in arguments.whereType<NamedExpression>()) {
       String name = namedExpr.name.label.name;
       Expression exp = namedExpr.expression;
@@ -277,7 +289,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     }
     // We only rewrite messages with parameters, otherwise we use the literal
     // string as the name and no arguments are necessary.
-    if (!message.hasName) {
+    if (message.hasNoName) {
       if (generateNameAndArgs && message.arguments.isNotEmpty) {
         // Always try for class_method if this is a class method and
         // generating names/args.
@@ -356,8 +368,11 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// and the parameters to the Intl.plural or Intl.gender call.
   MainMessage? messageFromDirectPluralOrGenderCall(MethodInvocation node) {
     MainMessage extractFromPluralOrGender(MainMessage message, _) {
-      var visitor =
-          PluralAndGenderVisitor(message.messagePieces, message, extraction);
+      PluralAndGenderVisitor visitor = PluralAndGenderVisitor(
+        message.messagePieces,
+        message,
+        extraction,
+      );
       node.accept(visitor);
       return message;
     }

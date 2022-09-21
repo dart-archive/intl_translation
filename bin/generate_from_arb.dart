@@ -35,15 +35,15 @@ const jsonDecoder = JsonCodec();
 
 void main(List<String> args) {
   String targetDir = '.';
-  var parser = ArgParser();
-  var extraction = MessageExtraction();
-  var generation = MessageGeneration();
+  ArgParser parser = ArgParser();
+  MessageExtraction extraction = MessageExtraction();
+  MessageGeneration generation = MessageGeneration();
   String? sourcesListFile;
   String? translationsListFile;
   bool transformer = false;
-  var useJsonFlag = false;
-  var useCodeMapFlag = false;
-  var useFlutterLocaleSplit = false;
+  bool useJsonFlag = false;
+  bool useCodeMapFlag = false;
+  bool useFlutterLocaleSplit = false;
   parser.addFlag('json', callback: (useJson) {
     useJsonFlag = useJson;
     if (useJson) {
@@ -190,18 +190,18 @@ void loadData(
   File file = File(filename);
   String src = file.readAsStringSync();
   Map<String, String> data = Map.castFrom(jsonDecoder.decode(src));
-  Object? locale = data['@@locale'] ?? data['_locale'];
+  String? locale = data['@@locale'] ?? data['_locale'];
   if (locale == null) {
     // Get the locale from the end of the file name. This assumes that the file
     // name doesn't contain any underscores except to begin the language tag
     // and to separate language from country. Otherwise we can't tell if
     // my_file_fr.arb is locale "fr" or "file_fr".
-    var name = path.basenameWithoutExtension(file.path);
+    String name = path.basenameWithoutExtension(file.path);
     locale = name.split('_').skip(1).join('_');
     print('No @@locale or _locale field found in $name, '
         "assuming '$locale' based on the file name.");
   }
-  messagesByLocale.putIfAbsent(locale as String, () => []).add(data);
+  messagesByLocale.putIfAbsent(locale, () => []).add(data);
   generation.allLocales.add(locale);
 }
 

@@ -2,9 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// ignore_for_file: deprecated_member_use, #168
-// ignore_for_file: implementation_imports
-
 /// This is for use in extracting messages from a Dart program
 /// using the Intl.message() mechanism and writing them to a file for
 /// translation. This provides only the stub of a mechanism, because it

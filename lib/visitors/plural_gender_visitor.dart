@@ -36,8 +36,9 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
     if (!looksLikePluralOrGender(node.expression)) return;
     MethodInvocation nodeMethod = node.expression as MethodInvocation;
     String? reason = checkValidity(nodeMethod);
-    if (reason != null)
+    if (reason != null) {
       throw reason; //TODO: What does throwing a string do? Is it an error or an exception?
+    }
     Message? message = messageFromMethodInvocation(nodeMethod);
     foundPluralOrGender = true;
     pieces.add(message);

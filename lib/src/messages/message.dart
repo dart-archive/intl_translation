@@ -25,8 +25,8 @@
 /// This representation isn't used at runtime. Rather, we read some format
 /// from a translation file, parse it into these objects, and they are then
 /// used to generate the code representation above.
-///
-// ignore_for_file: deprecated_member_use, #168
+// ignore_for_file: deprecated_member_use
+
 library intl_message;
 
 import 'dart:convert';
@@ -151,9 +151,8 @@ abstract class Message {
         argsNamedExps.isNotEmpty ? argsNamedExps.first : null;
     List<String> parameterNames =
         outerArgs.map((x) => x.identifier!.name).toList();
-    bool hasArgs = args != null;
     bool hasParameters = outerArgs.isNotEmpty;
-    if (!nameAndArgsGenerated && !hasArgs && hasParameters) {
+    if (!nameAndArgsGenerated && args == null && hasParameters) {
       return "The 'args' argument for Intl.message must be specified for "
           'messages with parameters. Consider using rewrite_intl_messages.dart';
     }
@@ -161,6 +160,7 @@ abstract class Message {
       return "The 'args' argument must match the message arguments,"
           ' e.g. args: $parameterNames';
     }
+
     Iterable<Expression> nameNamedExps = arguments
         .whereType<NamedExpression>()
         .where((arg) => arg.name.label.name == 'name')
@@ -173,14 +173,15 @@ abstract class Message {
     if (nameNamedExps.isEmpty) {
       if (!hasParameters) {
         // No name supplied, no parameters. Use the message as the name.
-        messageName = _evaluateAsString(arguments[0]);
-        outerName = messageName;
+        String? name = _evaluateAsString(arguments[0]);
+        messageName = name;
+        outerName = name;
       } else {
         // We have no name and parameters, but the transformer generates the
         // name.
         if (nameAndArgsGenerated) {
+          messageName = outerName;
           givenName = outerName;
-          messageName = givenName;
         } else {
           return "The 'name' argument for Intl.message must be supplied for "
               'messages with parameters. Consider using '
@@ -189,8 +190,9 @@ abstract class Message {
       }
     } else {
       // Name argument is supplied, use it.
-      givenName = _evaluateAsString(nameNamedExps.first);
-      messageName = givenName;
+      String? name = _evaluateAsString(nameNamedExps.first);
+      messageName = name;
+      givenName = name;
     }
 
     if (messageName == null) {
@@ -233,7 +235,7 @@ abstract class Message {
         if (map == null) {
           return 'Examples must be a const Map literal.';
         }
-        // if (example.constKeyword == null) { //TODO:What does this mean? Why would one check for it?
+        // if (example.constKeyword == null) { //TODO:What does this mean? Why would examples have to be const? How to do this now?
         //   return 'Examples must be const.';
         // }
       }
