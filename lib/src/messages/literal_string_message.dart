@@ -5,7 +5,7 @@ class LiteralString extends Message {
   String string;
   LiteralString(this.string, [Message? parent]) : super(parent);
   @override
-  String toCode() => escapeAndValidateString(string);
+  String toCode() => Message.escapeString(string);
   @override
   String toJson() => string;
   @override

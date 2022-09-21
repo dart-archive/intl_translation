@@ -149,9 +149,10 @@ abstract class Message {
         .where((each) => each.name.label.name == 'args');
     NamedExpression? args =
         argsNamedExps.isNotEmpty ? argsNamedExps.first : null;
-    var parameterNames = outerArgs.map((x) => x.identifier!.name).toList();
-    var hasArgs = args != null;
-    var hasParameters = outerArgs.isNotEmpty;
+    List<String> parameterNames =
+        outerArgs.map((x) => x.identifier!.name).toList();
+    bool hasArgs = args != null;
+    bool hasParameters = outerArgs.isNotEmpty;
     if (!nameAndArgsGenerated && !hasArgs && hasParameters) {
       return "The 'args' argument for Intl.message must be specified for "
           'messages with parameters. Consider using rewrite_intl_messages.dart';
@@ -300,7 +301,7 @@ abstract class Message {
   Object? toJson();
 
   /// Escape the string for use in generated Dart code.
-  String escapeAndValidateString(String value) {
+  static String escapeString(String value) {
     const Map<String, String> escapes = {
       r'\': r'\\',
       '"': r'\"',
@@ -313,12 +314,10 @@ abstract class Message {
       "'": r"\'",
       r'$': r'\$'
     };
-
-    var escaped = value.splitMapJoin(
+    return value.splitMapJoin(
       '',
       onNonMatch: (String string) => escapes[string] ?? string,
     );
-    return escaped;
   }
 
   /// Expand this string out into a printed form. The function [f] will be

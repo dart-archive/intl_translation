@@ -4,9 +4,11 @@ import 'package:intl_translation/src/messages/message.dart';
 import 'package:intl_translation/src/messages/message_extraction_exception.dart';
 
 class MainMessage extends ComplexMessage {
-  MainMessage()
-      : arguments = [], //TODO:Why is this never written to?
-        examples = {},
+  MainMessage({
+    required this.sourcePosition,
+    required this.endPosition,
+    required this.arguments,
+  })  : examples = {},
         super(null);
 
   /// All the pieces of the message. When we go to print, these will
@@ -15,10 +17,10 @@ class MainMessage extends ComplexMessage {
   List<Message> messagePieces = [];
 
   /// The position in the source at which this message starts.
-  int? sourcePosition;
+  int sourcePosition;
 
   /// The position in the source at which this message ends.
-  int? endPosition;
+  int endPosition;
 
   /// Optional documentation of the member that wraps the message definition.
   List<String> documentation = [];
@@ -152,7 +154,7 @@ class MainMessage extends ComplexMessage {
 
   String turnInterpolationBackIntoStringForm(Message message, dynamic chunk) {
     if (chunk is String) {
-      return escapeAndValidateString(chunk);
+      return Message.escapeString(chunk);
     } else if (chunk is int) {
       return r'${message.arguments[chunk]}';
     } else if (chunk is Message) {
@@ -174,7 +176,7 @@ class MainMessage extends ComplexMessage {
     if (includeDesc) {
       out.write(description == null
           ? ''
-          : "desc: '${escapeAndValidateString(description!)}', ");
+          : "desc: '${Message.escapeString(description!)}', ");
     }
     if (includeExamples) {
       // json is already mostly-escaped, but we need to handle interpolations.
@@ -183,7 +185,7 @@ class MainMessage extends ComplexMessage {
     }
     out.write(meaning == null
         ? ''
-        : "meaning: '${escapeAndValidateString(meaning!)}', ");
+        : "meaning: '${Message.escapeString(meaning!)}', ");
     out.write("args: [${arguments.join(', ')}]");
     out.write(')');
     return out.toString();

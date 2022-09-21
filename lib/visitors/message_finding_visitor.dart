@@ -8,7 +8,6 @@ import 'package:intl_translation/src/messages/message.dart';
 import 'package:intl_translation/src/messages/message_extraction_exception.dart';
 import 'package:intl_translation/src/messages/submessages/gender.dart';
 import 'package:intl_translation/src/messages/submessages/plural.dart';
-import 'package:intl_translation/src/messages/submessages/select.dart';
 import 'package:intl_translation/visitors/interpolation_visitor.dart';
 import 'package:intl_translation/visitors/plural_gender_visitor.dart';
 
@@ -87,7 +86,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
         examplesRequired: extraction.examplesRequired,
       );
     }
-    throw Exception('wrong methodname');//TODO: nicer exception
+    throw Exception('wrong methodname'); //TODO: nicer exception
   }
 
   /// Record the parameters of the function or method declaration we last
@@ -173,7 +172,6 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   bool addIntlMessage(MethodInvocation node) {
     if (!looksLikeIntlMessage(node)) return false;
     String? reason = checkValidity(node) ?? _extractMessage(node);
-
     if (reason != null) {
       if (!extraction.suppressWarnings) {
         String errString = (StringBuffer()
@@ -250,15 +248,16 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// by calling [setAttribute]. This is the common parts between
   /// [messageFromIntlMessageCall] and [messageFromDirectPluralOrGenderCall].
   MainMessage? _messageFromNode(
-      MethodInvocation node,
-      MainMessage? Function(MainMessage message, List<AstNode> arguments)
-          extract,
-      void Function(MainMessage message, String fieldName, Object? fieldValue)
-          setAttribute) {
-    var message = MainMessage();
-    message.sourcePosition = node.offset;
-    message.endPosition = node.end;
-    message.arguments = parameters!.map((x) => x.identifier!.name).toList();
+    MethodInvocation node,
+    MainMessage? Function(MainMessage message, List<AstNode> arguments) extract,
+    void Function(MainMessage message, String fieldName, Object? fieldValue)
+        setAttribute,
+  ) {
+    MainMessage message = MainMessage(
+      sourcePosition: node.offset,
+      endPosition: node.end,
+      arguments: parameters!.map((x) => x.identifier!.name).toList(),
+    );
     if (documentation != null) {
       message.documentation
           .addAll(documentation!.tokens.map((token) => token.toString()));
@@ -267,12 +266,11 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     MainMessage? extractionResult = extract(message, arguments);
     if (extractionResult == null) return null;
 
-    for (var namedArgument in arguments.whereType<NamedExpression>()) {
-      var name = namedArgument.name.label.name;
-      var exp = namedArgument.expression;
-      var evaluator = ConstantEvaluator();
-      var basicValue = exp.accept(evaluator);
-      var value = basicValue == ConstantEvaluator.NOT_A_CONSTANT
+    for (NamedExpression namedExpr in arguments.whereType<NamedExpression>()) {
+      String name = namedExpr.name.label.name;
+      Expression exp = namedExpr.expression;
+      Object? basicValue = exp.accept(ConstantEvaluator());
+      Object? value = basicValue == ConstantEvaluator.NOT_A_CONSTANT
           ? exp.toString()
           : basicValue;
       setAttribute(message, name, value);
@@ -288,9 +286,12 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
           arguments.first is AdjacentStrings) {
         // If there's no name, and the message text is a simple string, compute
         // a name based on that plus meaning, if present.
-        var simpleName = (arguments.first as StringLiteral).stringValue;
-        message.name =
-            computeMessageName(message.name, simpleName, message.meaning);
+        String? simpleName = (arguments.first as StringLiteral).stringValue;
+        message.name = computeMessageName(
+          message.name,
+          simpleName,
+          message.meaning,
+        );
       }
     }
     return message;
@@ -298,10 +299,14 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
   /// Find the message pieces from a Dart interpolated string.
   List _extractFromIntlCallWithInterpolation(
-      MainMessage message, AstNode argument) {
-    InterpolationVisitor interpolation =
-        InterpolationVisitor(message, extraction);
-    argument.accept(interpolation);
+    MainMessage message,
+    AstNode node,
+  ) {
+    InterpolationVisitor interpolation = InterpolationVisitor(
+      message,
+      extraction,
+    );
+    node.accept(interpolation);
     if (interpolation.pieces.any((x) => x is Plural || x is Gender) &&
         !extraction.allowEmbeddedPluralsAndGenders) {
       if (interpolation.pieces.whereType<String>().any((x) => x.isNotEmpty)) {
@@ -322,9 +327,11 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
       try {
         // The pieces of the message, either literal strings, or integers
         // representing the index of the argument to be substituted.
-        List extracted =
-            _extractFromIntlCallWithInterpolation(message, arguments.first);
-        message.addPieces(List.from(extracted));
+        List extracted = _extractFromIntlCallWithInterpolation(
+          message,
+          arguments.first,
+        );
+        message.addPieces(extracted.cast<Object>());
       } on MessageExtractionException catch (e) {
         String errString = (StringBuffer()
               ..writeAll(['Error ', e, '\nProcessing <', node, '>\n'])

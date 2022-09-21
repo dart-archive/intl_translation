@@ -105,8 +105,7 @@ class MessageGeneration {
     Iterable<TranslatedMessage> translations,
   ) {
     clearOutput();
-    String locale = MainMessage()
-        .escapeAndValidateString(Intl.canonicalizedLocale(basicLocale));
+    String locale = Message.escapeString(Intl.canonicalizedLocale(basicLocale));
     output.write(prologue(locale));
     // Exclude messages with no translation and translations with no matching
     // original message (e.g. if we're using some messages from a larger
@@ -149,16 +148,16 @@ class MessageGeneration {
 
     // Now write the map of names to either the direct translation or to a
     // method.
-    Iterable<String> entries = (usableTranslations
+    String names = (usableTranslations
             .expand((translation) => translation.originalMessages)
             .toSet()
             .toList()
           ..sort((a, b) => a.name.compareTo(b.name)))
-        .map((original) =>
-            "    '${original.escapeAndValidateString(original.name)}'"
-            ': ${_mapReference(original, locale)}');
+        .map((original) => "    '${Message.escapeString(original.name)}'"
+            ': ${_mapReference(original, locale)}')
+        .join(',\n');
     output
-      ..write(entries.join(',\n'))
+      ..write(names)
       ..write('\n  };\n}\n');
   }
 

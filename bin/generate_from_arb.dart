@@ -153,8 +153,7 @@ void main(List<String> args) {
   for (Map<String, MainMessage> eachMap in allMessages) {
     eachMap.forEach((k, v) => messages.putIfAbsent(k, () => []).add(v));
   }
-  Map<String, List<Map<String, String>>> messagesByLocale =
-      <String, List<Map<String, String>>>{};
+  Map<String, List<Map<String, String>>> messagesByLocale = {};
 
   // In order to group these by locale, to support multiple input files,
   // we're reading all the data eagerly, which could be a memory

@@ -19,7 +19,7 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
 
   /// A plural or gender always exists in the context of a parent message,
   /// which could in turn also be a plural or gender.
-  final ComplexMessage? parent;
+  final ComplexMessage parent;
 
   /// The pieces of the message. We are given an initial version of this
   /// from our parent and we add to it as we find additional information.
@@ -34,19 +34,18 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
   void visitInterpolationExpression(InterpolationExpression node) {
     // TODO(alanknight): Provide better errors for malformed expressions.
     if (!looksLikePluralOrGender(node.expression)) return;
-    var reason = checkValidity(node.expression as MethodInvocation);
-    if (reason != null) throw reason;
-    var message =
-        messageFromMethodInvocation(node.expression as MethodInvocation);
+    MethodInvocation nodeMethod = node.expression as MethodInvocation;
+    String? reason = checkValidity(nodeMethod);
+    if (reason != null)
+      throw reason; //TODO: What does throwing a string do? Is it an error or an exception?
+    Message? message = messageFromMethodInvocation(nodeMethod);
     foundPluralOrGender = true;
     pieces.add(message);
-    super.visitInterpolationExpression(node);
   }
 
   @override
   void visitMethodInvocation(MethodInvocation node) {
     pieces.add(messageFromMethodInvocation(node));
-    super.visitMethodInvocation(node);
   }
 
   /// Return true if [node] matches the pattern for plural or gender message.
@@ -95,13 +94,16 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
     message.parent = parent;
 
     arguments.forEach((key, Expression value) {
-      // `value` is often - or always? - an Expression.
+      // `value` is often - or always? - an Expression.//TODO: If its not, what else can have an accept method?
       try {
-        InterpolationVisitor interpolation =
-            InterpolationVisitor(message, extraction);
+        InterpolationVisitor interpolation = InterpolationVisitor(
+          message!,
+          extraction,
+        );
         value.accept(interpolation);
         // Might be null due to previous errors.
         // Continue collecting errors, but don't build message.
+        //TODO: How can this be null??
         if (message != null) {
           message![key] = interpolation.pieces;
         }
@@ -115,19 +117,19 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
         extraction.warnings.add(errString);
       }
     });
-    var mainArg = node.argumentList.arguments
+    Expression mainArg = node.argumentList.arguments
         .firstWhere((each) => each is! NamedExpression);
     if (mainArg is SimpleStringLiteral) {
       message?.mainArgument = mainArg.toString();
     } else if (mainArg is SimpleIdentifier) {
       message?.mainArgument = mainArg.name;
     } else {
-      var err = StringBuffer()
-        ..write('Error (Invalid argument to plural/gender/select, '
-            'must be simple variable reference) '
-            '\nProcessing <$node>')
-        ..write(extraction.reportErrorLocation(node));
-      var errString = err.toString();
+      String errString = (StringBuffer()
+            ..write('Error (Invalid argument to plural/gender/select, '
+                'must be simple variable reference) '
+                '\nProcessing <$node>')
+            ..write(extraction.reportErrorLocation(node)))
+          .toString();
       extraction.onMessage(errString);
       extraction.warnings.add(errString);
     }

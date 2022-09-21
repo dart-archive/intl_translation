@@ -47,7 +47,7 @@ void main(List<String> args) {
           extract = extract.copyWith(allowEmbeddedPluralsAndGenders: x),
       help: 'Allow plurals and genders to be embedded as part of a larger '
           'string, otherwise they must be at the top level.');
-  parser.addFlag('transformer',
+  parser.addFlag('transformer', //TODO: can this be removed?
       callback: (x) => transformer = x,
       help: 'Assume that the transformer is in use, so name and args '
           "don't need to be specified for messages.");
