@@ -106,15 +106,15 @@ void main(List<String> args) {
     ...args.where((x) => x.endsWith('.dart')),
     ...linesFromFile(sourcesListFile)
   ];
-  for (String arg in dartFiles) {
-    extract.parseFile(File(arg), transformer).forEach(
-          (k, v) => allMessages.addAll(
-            toARB(v,
-                includeSourceText: extract.includeSourceText,
-                supressMetadata: extract.suppressMetaData),
-          ),
-        );
-  }
+  dartFiles
+      .map((dartFile) => extract.parseFile(File(dartFile), transformer))
+      .expand((parsedFile) => parsedFile.entries)
+      .map((nameToMessage) => toARB(
+            nameToMessage.value,
+            includeSourceText: extract.includeSourceText,
+            supressMetadata: extract.suppressMetaData,
+          ))
+      .forEach((message) => allMessages.addAll(message));
   File file = File(path.join(targetDir, outputFilename));
   JsonEncoder encoder = JsonEncoder.withIndent('  ');
   file.writeAsStringSync(encoder.convert(allMessages));

@@ -73,15 +73,19 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
   /// and the parameters to the Intl.message call.
   Message? messageFromMethodInvocation(MethodInvocation node) {
     SubMessage? message;
+    Map<String, Expression> arguments;
     switch (node.methodName.name) {
       case 'gender':
         message = Gender();
+        arguments = SubMessage.argumentsOfInterestFor(node);
         break;
       case 'plural':
         message = Plural();
+        arguments = SubMessage.argumentsOfInterestFor(node);
         break;
       case 'select':
         message = Select();
+        arguments = Select.argumentsOfInterestFor(node);
         break;
       default:
         throw MessageExtractionException(
@@ -90,8 +94,7 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
     }
     message.parent = parent;
 
-    Map<String, dynamic> arguments = message.argumentsOfInterestFor(node);
-    arguments.forEach((key, value) {
+    arguments.forEach((key, Expression value) {
       // `value` is often - or always? - an Expression.
       try {
         InterpolationVisitor interpolation =

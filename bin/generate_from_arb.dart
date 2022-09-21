@@ -163,8 +163,9 @@ void main(List<String> args) {
     loadData(arg, messagesByLocale, generation);
   }
 
-  messagesByLocale.forEach((locale, data) =>
-      generateLocaleFile(locale, data, targetDir, generation, messages));
+  messagesByLocale.forEach((locale, data) {
+    generateLocaleFile(locale, data, targetDir, generation, messages);
+  });
 
   File mainImportFile = File(path.join(
       targetDir, '${generation.generatedFilePrefix}messages_all.dart'));
@@ -176,7 +177,7 @@ void main(List<String> args) {
   localesImportFile.writeAsStringSync(generation.generateLocalesImportFile());
 
   if (useFlutterLocaleSplit) {
-    var flutterImportFile = File(path.join(
+    File flutterImportFile = File(path.join(
         targetDir, '${generation.generatedFilePrefix}messages_flutter.dart'));
     flutterImportFile.writeAsStringSync(generation.generateFlutterImportFile());
   }
@@ -219,17 +220,16 @@ void generateLocaleFile(
     String targetDir,
     MessageGeneration generation,
     Map<String, List<MainMessage>> messages) {
-  List<TranslatedMessage> translations = [];
-  for (/*Map<String, String>*/ Map<String, String> jsonTranslations
-      in localeData) {
-    jsonTranslations.forEach((id, messageData) {
-      TranslatedMessage? message =
-          recreateIntlObjects(id, messageData, messages);
-      if (message != null) {
-        translations.add(message);
-      }
-    });
-  }
+  List<TranslatedMessage> translations = localeData
+      .expand((jsonTranslations) {
+        return jsonTranslations.entries.map((e) {
+          String id = e.key;
+          String messageData = e.value;
+          return recreateIntlObjects(id, messageData, messages);
+        });
+      })
+      .whereType<TranslatedMessage>()
+      .toList();
   generation.generateIndividualMessageFile(locale, translations, targetDir);
 }
 
@@ -237,31 +237,16 @@ void generateLocaleFile(
 /// things that are messages, we expect [id] not to start with "@" and
 /// [data] to be a String. For metadata we expect [id] to start with "@"
 /// and [data] to be a Map or null. For metadata we return null.
-BasicTranslatedMessage? recreateIntlObjects(
-    String id, String? data, Map<String, List<MainMessage>> messages) {
-  if (id.startsWith('@')) return null;
-  if (data == null) return null;
+TranslatedMessage? recreateIntlObjects(
+  String id,
+  String? data,
+  Map<String, List<MainMessage>> messages,
+) {
+  if (id.startsWith('@') || data == null) return null;
   MessageParser messageParser = MessageParser(data);
   Message parsed = messageParser.pluralGenderSelectParse();
   if (parsed is LiteralString && parsed.string.isEmpty) {
     parsed = messageParser.nonIcuMessageParse();
   }
-  return BasicTranslatedMessage(id, parsed, messages);
-}
-
-/// A TranslatedMessage that just uses the name as the id and knows how to look
-/// up its original messages in our [messages].
-class BasicTranslatedMessage extends TranslatedMessage {
-  final Map<String, List<MainMessage>> messages;
-  BasicTranslatedMessage(String name, translated, this.messages)
-      : super(name, translated);
-
-  @override
-  List<MainMessage>? get originalMessages => (super.originalMessages == null)
-      ? _findOriginals()
-      : super.originalMessages;
-
-  // We know that our [id] is the name of the message, which is used as the
-  //key in [messages].
-  List<MainMessage>? _findOriginals() => originalMessages = messages[id];
+  return TranslatedMessage(id, parsed, messages[id] ?? []);
 }

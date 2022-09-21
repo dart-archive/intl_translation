@@ -54,8 +54,7 @@ class Select extends SubMessage {
   /// Return the arguments that we care about for the select. In this
   /// case they will all be passed in as a Map rather than as the named
   /// arguments used in Plural/Gender.
-  @override
-  Map<String, dynamic> argumentsOfInterestFor(MethodInvocation node) {
+  static Map<String, Expression> argumentsOfInterestFor(MethodInvocation node) {
     SetOrMapLiteral casesArgument =
         node.argumentList.arguments[1] as SetOrMapLiteral;
     // ignore: prefer_for_elements_to_map_fromiterable
@@ -70,7 +69,7 @@ class Select extends SubMessage {
   // something else, in which case we convert it to a string
   // and take the portion after the period, if present.
   // This is to handle enums as select keys.
-  String _keyForm(key) {
+  static String _keyForm(key) {
     return (key is SimpleStringLiteral) ? key.value : '$key'.split('.').last;
   }
 

@@ -155,8 +155,10 @@ class MessageExtraction {
     } else {
       return {};
     }
-    MessageFindingVisitor visitor = MessageFindingVisitor(this);
-    visitor.generateNameAndArgs = transformer;
+    MessageFindingVisitor visitor = MessageFindingVisitor(
+      this,
+      generateNameAndArgs: transformer,
+    );
     root.accept(visitor);
     return visitor.messages;
   }

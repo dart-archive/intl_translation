@@ -17,7 +17,7 @@ import 'package:intl_translation/visitors/plural_gender_visitor.dart';
 /// IntlMessage objects. We have to find both the enclosing function, and
 /// the Intl.message invocation.
 class MessageFindingVisitor extends GeneralizingAstVisitor {
-  MessageFindingVisitor(this.extraction);
+  MessageFindingVisitor(this.extraction, {this.generateNameAndArgs = false});
 
   /// The message extraction in which we are running.
   final MessageExtraction extraction;
@@ -27,7 +27,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
   /// Should we generate the name and arguments from the function definition,
   /// meaning we're running in the transformer.
-  bool? generateNameAndArgs = false;
+  final bool generateNameAndArgs;
 
   // We keep track of the data from the last MethodDeclaration,
   // FunctionDeclaration or FunctionExpression that we saw on the way down,
@@ -56,21 +56,6 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     return false;
   }
 
-  Message? _expectedInstance(String type) {
-    switch (type) {
-      case 'message':
-        return MainMessage();
-      case 'plural':
-        return Plural();
-      case 'gender':
-        return Gender();
-      case 'select':
-        return Select();
-      default:
-        return null;
-    }
-  }
-
   /// Returns a String describing why the node is invalid, or null if no
   /// reason is found, so it's presumed valid.
   String? checkValidity(MethodInvocation node) {
@@ -83,15 +68,26 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
       return 'Named parameters on message functions are not supported.';
     }
     NodeList<Expression> arguments = node.argumentList.arguments;
-    Message instance = _expectedInstance(node.methodName.name)!;
-    return instance.checkValidity(
-      node,
-      arguments,
-      name,
-      parameters!,
-      nameAndArgsGenerated: generateNameAndArgs!,
-      examplesRequired: extraction.examplesRequired,
-    );
+    if (node.methodName.name == 'message') {
+      return MainMessage.checkValidity(
+        node,
+        arguments,
+        name,
+        parameters!,
+        nameAndArgsGenerated: generateNameAndArgs,
+        examplesRequired: extraction.examplesRequired,
+      );
+    } else if (['plural', 'gender', 'select'].contains(node.methodName.name)) {
+      return Message.checkValidity(
+        node,
+        arguments,
+        name,
+        parameters!,
+        nameAndArgsGenerated: generateNameAndArgs,
+        examplesRequired: extraction.examplesRequired,
+      );
+    }
+    throw Exception('wrong methodname');//TODO: nicer exception
   }
 
   /// Record the parameters of the function or method declaration we last
@@ -284,7 +280,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     // We only rewrite messages with parameters, otherwise we use the literal
     // string as the name and no arguments are necessary.
     if (!message.hasName) {
-      if (generateNameAndArgs! && message.arguments.isNotEmpty) {
+      if (generateNameAndArgs && message.arguments.isNotEmpty) {
         // Always try for class_method if this is a class method and
         // generating names/args.
         message.name = Message.classPlusMethodName(node, name) ?? name;

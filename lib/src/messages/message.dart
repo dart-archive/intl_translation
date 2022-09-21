@@ -73,7 +73,7 @@ abstract class Message {
 
   static final _evaluator = ConstantEvaluator();
 
-  String? _evaluateAsString(expression) {
+  static String? _evaluateAsString(expression) {
     var result = expression.accept(_evaluator);
     if (result == ConstantEvaluator.NOT_A_CONSTANT || result is! String) {
       return null;
@@ -82,7 +82,7 @@ abstract class Message {
     }
   }
 
-  Map? _evaluateAsMap(Expression expression) {
+  static Map? _evaluateAsMap(Expression expression) {
     var result = expression.accept(_evaluator);
     if (result == ConstantEvaluator.NOT_A_CONSTANT || result is! Map) {
       return null;
@@ -93,7 +93,7 @@ abstract class Message {
 
   /// Verify that the args argument matches the method parameters and
   /// isn't, e.g. passing string names instead of the argument values.
-  bool checkArgs(NamedExpression? args, List<String> parameterNames) {
+  static bool checkArgs(NamedExpression? args, List<String> parameterNames) {
     if (args == null) return true;
     // Detect cases where args passes invalid names, either literal strings
     // instead of identifiers, or in the wrong order, missing values, etc.
@@ -135,7 +135,7 @@ abstract class Message {
   /// so we should not expect them to be present. The [examplesRequired]
   /// parameter indicates if we will fail if parameter examples are not provided
   /// for messages with parameters.
-  String? checkValidity(
+  static String? checkValidity(
     MethodInvocation node,
     List arguments,
     String? outerName,

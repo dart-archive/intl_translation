@@ -41,7 +41,7 @@ abstract class SubMessage extends ComplexMessage {
 
   /// Return the arguments that affect this SubMessage as a map of
   /// argument names and values.
-  Map<String, dynamic> argumentsOfInterestFor(MethodInvocation node) {
+  static Map<String, Expression> argumentsOfInterestFor(MethodInvocation node) {
     var basicArguments = node.argumentList.arguments;
     var others = basicArguments.whereType<NamedExpression>();
     return {

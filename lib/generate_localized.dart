@@ -101,24 +101,26 @@ class MessageGeneration {
   /// Generate a string that containts the dart code
   /// with the [translations] in [locale].
   String contentForLocale(
-      String basicLocale, Iterable<TranslatedMessage> translations) {
+    String basicLocale,
+    Iterable<TranslatedMessage> translations,
+  ) {
     clearOutput();
-    var locale = MainMessage()
+    String locale = MainMessage()
         .escapeAndValidateString(Intl.canonicalizedLocale(basicLocale));
     output.write(prologue(locale));
     // Exclude messages with no translation and translations with no matching
     // original message (e.g. if we're using some messages from a larger
     // catalog)
-    var usableTranslations = translations
-        .where((each) => each.originalMessages != null && each.message != null)
+    List<TranslatedMessage> usableTranslations = translations
+        .where((translation) => translation.originalMessages.isNotEmpty)
         .toList();
-    for (var each in usableTranslations) {
-      for (var original in each.originalMessages!) {
-        original.addTranslation(locale, each.message);
+    for (TranslatedMessage translation in usableTranslations) {
+      for (MainMessage original in translation.originalMessages) {
+        original.addTranslation(locale, translation.message);
       }
     }
-    usableTranslations.sort((a, b) => a.originalMessages!.first.name
-        .compareTo(b.originalMessages!.first.name));
+    usableTranslations.sort((a, b) =>
+        a.originalMessages.first.name.compareTo(b.originalMessages.first.name));
 
     writeTranslations(usableTranslations, locale);
 
@@ -127,13 +129,15 @@ class MessageGeneration {
 
   /// Write out the translated forms.
   void writeTranslations(
-      Iterable<TranslatedMessage> usableTranslations, String locale) {
-    for (var translation in usableTranslations) {
+    Iterable<TranslatedMessage> usableTranslations,
+    String locale,
+  ) {
+    for (TranslatedMessage translation in usableTranslations) {
       // Some messages we generate as methods in this class. Simpler ones
       // we inline in the map from names to messages.
-      var messagesThatNeedMethods =
-          translation.originalMessages!.where(_hasArguments).toSet().toList();
-      for (var original in messagesThatNeedMethods) {
+      List<MainMessage> messagesThatNeedMethods =
+          translation.originalMessages.where(_hasArguments).toSet().toList();
+      for (MainMessage original in messagesThatNeedMethods) {
         output
           ..write('  ')
           ..write(
@@ -145,8 +149,8 @@ class MessageGeneration {
 
     // Now write the map of names to either the direct translation or to a
     // method.
-    var entries = (usableTranslations
-            .expand((translation) => translation.originalMessages!)
+    Iterable<String> entries = (usableTranslations
+            .expand((translation) => translation.originalMessages)
             .toSet()
             .toList()
           ..sort((a, b) => a.name.compareTo(b.name)))
@@ -229,7 +233,7 @@ ${releaseMode ? overrideLookup() : ''}''';
   String generateLocalesImportFile() {
     clearOutput();
     output.write(localesPrologue);
-    for (var locale in allLocales) {
+    for (String locale in allLocales) {
       var baseFile = '${generatedFilePrefix}messages_$locale.dart';
       var file = importForGeneratedFile(baseFile);
       output.write("import '$file' ");
@@ -250,8 +254,8 @@ ${releaseMode ? overrideLookup() : ''}''';
     output.write(
         '\nMessageLookupByLibrary$orNull _findExact(String localeName) {\n'
         '  switch (localeName) {\n');
-    for (var rawLocale in allLocales) {
-      var locale = Intl.canonicalizedLocale(rawLocale);
+    for (String rawLocale in allLocales) {
+      String locale = Intl.canonicalizedLocale(rawLocale);
       output.write(
           "    case '$locale':\n      return ${libraryName(locale)}.messages;\n");
     }
@@ -548,7 +552,9 @@ class JsonMessageGeneration extends DataMapMessageGeneration {
 
   @override
   void writeTranslations(
-      Iterable<TranslatedMessage> usableTranslations, String locale) {
+    Iterable<TranslatedMessage> usableTranslations,
+    String locale,
+  ) {
     output.write('''
   Map<String, dynamic>$orNull _messages;
   Map<String, dynamic> get messages => _messages ??=
@@ -556,13 +562,13 @@ class JsonMessageGeneration extends DataMapMessageGeneration {
 ''');
 
     output.write('  static final messageText = ');
-    var entries = usableTranslations
-        .expand((translation) => translation.originalMessages!);
-    var map = {};
-    for (var original in entries) {
-      map[original.name] = original.toJsonForLocale(locale);
-    }
-    var jsonEncoded = JsonEncoder().convert(map);
+    Iterable<MainMessage> messages = usableTranslations
+        .expand((translation) => translation.originalMessages);
+    Map<String, dynamic> map = {
+      for (var original in messages)
+        original.name: original.toJsonForLocale(locale)
+    };
+    String jsonEncoded = JsonEncoder().convert(map);
     output.write(_embedInLiteral(jsonEncoded));
   }
 }
@@ -582,12 +588,12 @@ import 'dart:collection';
   Map<String, dynamic> get messages => _constMessages;
 ''');
 
-    var entries = usableTranslations
-        .expand((translation) => translation.originalMessages!);
-    var map = <String, Object?>{};
-    for (var original in entries) {
-      map[original.name] = original.toJsonForLocale(locale);
-    }
+    Iterable<MainMessage> messages = usableTranslations
+        .expand((translation) => translation.originalMessages);
+    Map<String, dynamic> map = {
+      for (var original in messages)
+        original.name: original.toJsonForLocale(locale)
+    };
 
     output.write('  static const _constMessages = ');
     _writeValue(map);
@@ -596,7 +602,7 @@ import 'dart:collection';
     output.write('}');
   }
 
-  void _writeValue(Object value) {
+  void _writeValue(dynamic value) {
     if (value == null) {
       output.write('null');
       return;
@@ -611,21 +617,17 @@ import 'dart:collection';
     }
     if (value is List) {
       output.write('<Object$orNull>[');
-      var isFirst = true;
-      for (final v in value) {
-        if (isFirst) {
-          isFirst = false;
-        } else {
-          output.write(',');
-        }
-        _writeValue(v);
+      for (var i = 0; i < value.length - 1; i++) {
+        _writeValue(value[i]);
+        output.write(',');
       }
+      _writeValue(value.last);
       output.write(']');
       return;
     }
     if (value is Map) {
       output.write('<String, Object$orNull>{');
-      var isFirst = true;
+      bool isFirst = true;
       value.forEach((k, v) {
         if (isFirst) {
           isFirst = false;
@@ -689,7 +691,7 @@ import 'dart:collection';
 /// text in some way, e.g. to turn whatever format the translation uses for
 /// variables into a Dart string interpolation. Specific translation mechanisms
 /// are expected to subclass this.
-abstract class TranslatedMessage {
+class TranslatedMessage {
   /// The identifier for this message. In the simplest case, this is the name
   /// parameter from the Intl.message call,
   /// but it can be any identifier that this program and the output of the
@@ -701,15 +703,15 @@ abstract class TranslatedMessage {
 
   /// The original messages that we are a translation of. There can
   ///  be more than one original message for the same translation.
-  List<MainMessage>? originalMessages;
+  final List<MainMessage> originalMessages;
 
   /// For backward compatibility, we still have the originalMessage API.
-  MainMessage get originalMessage => originalMessages!.first;
-  set originalMessage(MainMessage m) {
-    originalMessages = [m];
-  }
+  MainMessage get originalMessage => originalMessages.first;
+  set originalMessage(MainMessage m) => originalMessages
+    ..clear()
+    ..add(m);
 
-  TranslatedMessage(this.id, this.translated);
+  TranslatedMessage(this.id, this.translated, this.originalMessages);
 
   Message get message => translated;
 
@@ -729,7 +731,7 @@ abstract class TranslatedMessage {
 String libraryName(String x) =>
     'messages_${x.replaceAll('-', '_').toLowerCase()}';
 
-bool _hasArguments(MainMessage message) => message.arguments!.isNotEmpty;
+bool _hasArguments(MainMessage message) => message.arguments.isNotEmpty;
 
 ///  Simple messages are printed directly in the map of message names to
 ///  functions as a call that returns a lambda. e.g.

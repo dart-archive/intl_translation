@@ -5,7 +5,7 @@ import 'package:intl_translation/src/messages/message_extraction_exception.dart'
 
 class MainMessage extends ComplexMessage {
   MainMessage()
-      : arguments = [],
+      : arguments = [], //TODO:Why is this never written to?
         examples = {},
         super(null);
 
@@ -24,8 +24,7 @@ class MainMessage extends ComplexMessage {
   List<String> documentation = [];
 
   /// Verify that this looks like a correct Intl.message invocation.
-  @override
-  String? checkValidity(
+  static String? checkValidity(
     MethodInvocation node,
     List arguments,
     String? outerName,
@@ -37,7 +36,7 @@ class MainMessage extends ComplexMessage {
       return 'Intl.message messages must be string literals';
     }
 
-    return super.checkValidity(
+    return Message.checkValidity(
       node,
       arguments,
       outerName,
@@ -147,7 +146,7 @@ class MainMessage extends ComplexMessage {
   }
 
   /// Return a JSON string representation of this message.
-  Object? toJsonForLocale(String locale) {
+  dynamic toJsonForLocale(String locale) {
     return jsonTranslations[locale];
   }
 

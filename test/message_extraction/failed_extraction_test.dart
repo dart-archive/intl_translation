@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-
-
 @Timeout(Duration(seconds: 180))
 
 library failed_extraction_test;
@@ -40,7 +38,7 @@ Future<void> runTestWithWarnings(
 
   await copyFilesToTempDirectory();
 
-  var program = asTestDirPath('../../bin/extract_to_arb.dart');
+  String program = asTestDirPath('../../bin/extract_to_arb.dart');
   List<String> args = ['--output-dir=$tempDir'];
   if (warningsAreErrors) {
     args.add('--warnings-are-errors');
@@ -48,9 +46,9 @@ Future<void> runTestWithWarnings(
   if (!embeddedPlurals) {
     args.add('--no-embedded-plurals');
   }
-  var files = sourceFiles.map(asTempDirPath).toList();
+  List<String?> files = sourceFiles.map(asTempDirPath).toList();
   List<String?> allArgs = [program, ...args, ...files];
-  var callback = expectAsync1(verify);
+  Func1<void, ProcessResult> callback = expectAsync1(verify);
 
   run(null, allArgs).then(callback);
 }

@@ -22,7 +22,7 @@ String rewriteMessages(String source, String sourceName,
   int? start = 0;
   var newSource = StringBuffer();
   for (var message in messages) {
-    if (message.arguments!.isNotEmpty) {
+    if (message.arguments.isNotEmpty) {
       newSource.write(source.substring(start!, message.sourcePosition));
       if (useStringSubstitution) {
         rewriteWithStringSubstitution(newSource, source, start, message);
@@ -89,8 +89,10 @@ List<MainMessage> findMessages(String source, String sourceName,
     return [];
   }
   extraction.origin = sourceName;
-  var visitor = MessageFindingVisitor(extraction);
-  visitor.generateNameAndArgs = true;
+  MessageFindingVisitor visitor = MessageFindingVisitor(
+    extraction,
+    generateNameAndArgs: true,
+  );
   extraction.root.accept(visitor);
   return visitor.messages.values.toList();
 }
