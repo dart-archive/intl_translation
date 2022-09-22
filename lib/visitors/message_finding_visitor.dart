@@ -57,8 +57,6 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     return false;
   }
 
-  /// Returns a String describing why the node is invalid, or null if no
-  /// reason is found, so it's presumed valid.
   void _checkValidity(MethodInvocation node) {
     if (parameters == null) {
       throw MessageExtractionException(
@@ -316,7 +314,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   }
 
   /// Find the message pieces from a Dart interpolated string.
-  List _extractFromIntlCallWithInterpolation(
+  List<Object> _extractFromIntlCallWithInterpolation(
     MainMessage message,
     AstNode node,
   ) {
@@ -333,7 +331,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
             'they cannot be embedded in larger string literals.\n');
       }
     }
-    return interpolation.pieces;
+    return interpolation.pieces.cast<Object>();
   }
 
   /// Create a MainMessage from [node] using the name and
@@ -345,11 +343,11 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
       try {
         // The pieces of the message, either literal strings, or integers
         // representing the index of the argument to be substituted.
-        List extracted = _extractFromIntlCallWithInterpolation(
+        List<Object> extracted = _extractFromIntlCallWithInterpolation(
           message,
           arguments.first,
         );
-        message.addPieces(extracted.cast<Object>());
+        message.addPieces(extracted);
       } on MessageExtractionException catch (e) {
         String errString = (StringBuffer()
               ..writeAll(['Error ', e, '\nProcessing <', node, '>\n'])
