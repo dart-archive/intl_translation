@@ -35,6 +35,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 // ignore: implementation_imports
 import 'package:analyzer/src/dart/ast/constant_evaluator.dart';
 import 'package:intl_translation/src/messages/literal_string_message.dart';
+import 'package:intl_translation/src/messages/message_extraction_exception.dart';
 import 'package:intl_translation/src/messages/variable_substitution_message.dart';
 
 import 'complex_message.dart';
@@ -135,7 +136,7 @@ abstract class Message {
   /// so we should not expect them to be present. The [examplesRequired]
   /// parameter indicates if we will fail if parameter examples are not provided
   /// for messages with parameters.
-  static String? checkValidity(
+  static void checkValidity(
     MethodInvocation node,
     List arguments,
     String? outerName,
@@ -153,12 +154,14 @@ abstract class Message {
         outerArgs.map((x) => x.identifier!.name).toList();
     bool hasParameters = outerArgs.isNotEmpty;
     if (!nameAndArgsGenerated && args == null && hasParameters) {
-      return "The 'args' argument for Intl.message must be specified for "
-          'messages with parameters. Consider using rewrite_intl_messages.dart';
+      throw MessageExtractionException(
+          "The 'args' argument for Intl.message must be specified for "
+          'messages with parameters. Consider using rewrite_intl_messages.dart');
     }
     if (!checkArgs(args, parameterNames)) {
-      return "The 'args' argument must match the message arguments,"
-          ' e.g. args: $parameterNames';
+      throw MessageExtractionException(
+          "The 'args' argument must match the message arguments,"
+          ' e.g. args: $parameterNames');
     }
 
     Iterable<Expression> nameNamedExps = arguments
@@ -183,9 +186,10 @@ abstract class Message {
           messageName = outerName;
           givenName = outerName;
         } else {
-          return "The 'name' argument for Intl.message must be supplied for "
+          throw MessageExtractionException(
+              "The 'name' argument for Intl.message must be supplied for "
               'messages with parameters. Consider using '
-              'rewrite_intl_messages.dart';
+              'rewrite_intl_messages.dart');
         }
       }
     } else {
@@ -196,7 +200,8 @@ abstract class Message {
     }
 
     if (messageName == null) {
-      return "The 'name' argument for Intl.message must be a string literal";
+      throw MessageExtractionException(
+          "The 'name' argument for Intl.message must be a string literal");
     }
 
     bool hasOuterName = outerName != null;
@@ -205,9 +210,10 @@ abstract class Message {
     String? classPlusMethod = Message.classPlusMethodName(node, outerName);
     bool classMatch = classPlusMethod != null && (givenName == classPlusMethod);
     if (!(hasOuterName && (simpleMatch || classMatch))) {
-      return "The 'name' argument for Intl.message must match either "
+      throw MessageExtractionException(
+          "The 'name' argument for Intl.message must match either "
           'the name of the containing function or <ClassName>_<methodName> ('
-          "was '$givenName' but must be '$outerName'  or '$classPlusMethod')";
+          "was '$givenName' but must be '$outerName'  or '$classPlusMethod')");
     }
 
     List<Expression> values = arguments
@@ -217,7 +223,8 @@ abstract class Message {
         .toList();
     for (Expression arg in values) {
       if (_evaluateAsString(arg) == null) {
-        return 'Intl.message arguments must be string literals: $arg';
+        throw MessageExtractionException(
+            'Intl.message arguments must be string literals: $arg');
       }
     }
 
@@ -227,21 +234,24 @@ abstract class Message {
           .where((each) => each.name.label.name == 'examples')
           .map((each) => each.expression);
       if (examples.isEmpty && examplesRequired) {
-        return 'Examples must be provided for messages with parameters';
+        throw MessageExtractionException(
+            'Examples must be provided for messages with parameters');
       }
       if (examples.isNotEmpty) {
         Expression example = examples.first;
         if (example is SetOrMapLiteral) {
           Map? map = _evaluateAsMap(example);
-          if (map == null) return 'Examples must be a const Map literal.';
-          if (example.constKeyword == null) return 'Examples must be const.';
+          if (map == null) {
+            throw MessageExtractionException(
+                'Examples must be a const Map literal.');
+          } else if (example.constKeyword == null) {
+            throw MessageExtractionException('Examples must be const.');
+          }
         } else {
-          return 'Examples must be a map';
+          throw MessageExtractionException('Examples must be a map');
         }
       }
     }
-
-    return null;
   }
 
   /// Verify that a constructed message is valid.

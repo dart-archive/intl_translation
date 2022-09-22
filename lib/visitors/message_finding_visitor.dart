@@ -59,18 +59,21 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
 
   /// Returns a String describing why the node is invalid, or null if no
   /// reason is found, so it's presumed valid.
-  String? _checkValidity(MethodInvocation node) {
+  void _checkValidity(MethodInvocation node) {
     if (parameters == null) {
-      return 'Calls to Intl must be inside a method, field declaration or '
-          'top level declaration.';
+      throw MessageExtractionException(
+          'Calls to Intl must be inside a method, field declaration or '
+          'top level declaration.');
     }
     // The containing function cannot have named parameters.
     if (parameters!.any((each) => each.isNamed)) {
-      return 'Named parameters on message functions are not supported.';
+      throw MessageExtractionException(
+          'Named parameters on message functions are not supported.');
     }
     NodeList<Expression> arguments = node.argumentList.arguments;
-    if (node.methodName.name == 'message') {
-      return MainMessage.checkValidity(
+    String methodName = node.methodName.name;
+    if (methodName == 'message') {
+      MainMessage.checkValidity(
         node,
         arguments,
         name,
@@ -78,17 +81,22 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
         nameAndArgsGenerated: generateNameAndArgs,
         examplesRequired: extraction.examplesRequired,
       );
-    } else if (['plural', 'gender', 'select'].contains(node.methodName.name)) {
-      return Message.checkValidity(
+    } else if (['plural', 'gender', 'select'].contains(methodName)) {
+      Message.checkValidity(
         node,
         arguments,
         name,
         parameters!,
         nameAndArgsGenerated: generateNameAndArgs,
         examplesRequired: extraction.examplesRequired,
+      );
+    } else {
+      throw ArgumentError.value(
+        methodName,
+        name,
+        'Method name must be either "message", "plural", "gender", or "select"',
       );
     }
-    throw Exception('wrong methodname'); //TODO: nicer exception
   }
 
   /// Record the parameters of the function or method declaration we last
@@ -182,13 +190,14 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   /// false if we didn't, so should continue recursing.
   bool addIntlMessage(MethodInvocation node) {
     if (!looksLikeIntlMessage(node)) return false;
-    String? reason = _checkValidity(node) ?? _extractMessage(node);
-    if (reason != null) {
+    try {
+      _extractMessage(node);
+    } on MessageExtractionException catch (e) {
       if (!extraction.suppressWarnings) {
         String errString = (StringBuffer()
               ..write('Skipping invalid Intl.message invocation\n    <$node>\n')
               ..writeAll([
-                '    reason: $reason\n',
+                '    reason: ${e.message}\n',
                 extraction.reportErrorLocation(node)
               ]))
             .toString();
@@ -201,8 +210,8 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     return true;
   }
 
-  /// Try to extract a message. On failure, return a String error message.
-  String? _extractMessage(MethodInvocation node) {
+  void _extractMessage(MethodInvocation node) {
+    _checkValidity(node);
     MainMessage? message;
     try {
       if (node.methodName.name == 'message') {
@@ -211,9 +220,11 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
         message = messageFromDirectPluralOrGenderCall(node);
       }
     } catch (e, s) {
-      return 'Unexpected exception: $e, $s';
+      throw MessageExtractionException('Unexpected exception: $e, $s');
     }
-    return message == null ? null : _validateMessage(message);
+    if (message != null) {
+      _validateMessage(message);
+    }
   }
 
   /// Perform any post-construction validations on the message and
@@ -222,18 +233,14 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   // of the same error. Refactor to consistently throw
   // IntlMessageExtractionException instead of returning strings and centralize
   // the reporting.
-  String? _validateMessage(MainMessage message) {
-    try {
-      message.validate();
-      if (extraction.descriptionRequired) {
-        message.validateDescription();
-      }
-    } on MessageExtractionException catch (e) {
-      return e.message;
+  void _validateMessage(MainMessage message) {
+    message.validate();
+    if (extraction.descriptionRequired) {
+      message.validateDescription();
     }
-    var existing = messages[message.name];
+    MainMessage? existing = messages[message.name];
     if (existing != null) {
-      if (!message.skip! && extraction.mergeMessages != null) {
+      if (!message.skip && extraction.mergeMessages != null) {
         messages[message.name] = extraction.mergeMessages!(existing, message);
       }
       // TODO(alanknight): We may want to require the descriptions to match.
@@ -246,13 +253,12 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
         includeExamples: false,
       );
       if (existingCode != messageCode) {
-        return 'WARNING: Duplicate message name:\n'
-            "'${message.name}' occurs more than once in ${extraction.origin}";
+        throw MessageExtractionException('WARNING: Duplicate message name:\n'
+            "'${message.name}' occurs more than once in ${extraction.origin}");
       }
-    } else if (!message.skip!) {
+    } else if (!message.skip) {
       messages[message.name] = message;
     }
-    return null;
   }
 
   /// Create a MainMessage from [node] using the name and

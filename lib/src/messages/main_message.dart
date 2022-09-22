@@ -26,7 +26,7 @@ class MainMessage extends ComplexMessage {
   List<String> documentation = [];
 
   /// Verify that this looks like a correct Intl.message invocation.
-  static String? checkValidity(
+  static void checkValidity(
     MethodInvocation node,
     List arguments,
     String? outerName,
@@ -35,10 +35,11 @@ class MainMessage extends ComplexMessage {
     bool examplesRequired = false,
   }) {
     if (arguments.first is! StringLiteral) {
-      return 'Intl.message messages must be string literals';
+      throw MessageExtractionException(
+          'Intl.message messages must be string literals');
     }
 
-    return Message.checkValidity(
+    Message.checkValidity(
       node,
       arguments,
       outerName,
@@ -91,7 +92,7 @@ class MainMessage extends ComplexMessage {
   ///
   /// For example, this could be used to define messages whose purpose is known,
   /// but whose text isn't final yet and shouldn't be sent for translation.
-  bool? skip = false;
+  bool skip = false;
 
   /// When generating code, we store translations for each locale
   /// associated with the original message.
@@ -216,7 +217,7 @@ class MainMessage extends ComplexMessage {
         locale = value;
         return;
       case 'skip':
-        skip = value as bool?;
+        skip = value as bool;
         return;
       default:
         return;
