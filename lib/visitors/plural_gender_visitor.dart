@@ -72,7 +72,7 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
   /// parameters of the last function/method declaration we encountered
   /// and the parameters to the Intl.message call.
   Message? messageFromMethodInvocation(MethodInvocation node) {
-    SubMessage? message;
+    SubMessage message;
     Map<String, Expression> arguments;
     switch (node.methodName.name) {
       case 'gender':
@@ -94,26 +94,23 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
     }
     message.parent = parent;
 
+    bool buildNotJustCollectErrors = true;
     arguments.forEach((key, Expression value) {
-      // `value` is often - or always? - an Expression.//TODO: If its not, what else can have an accept method?
       try {
         InterpolationVisitor interpolation = InterpolationVisitor(
-          message!,
+          message,
           extraction,
         );
         value.accept(interpolation);
-        // Might be null due to previous errors.
-        // Continue collecting errors, but don't build message.
-        //TODO: How can this be null??
-        if (message != null) {
-          message![key] = interpolation.pieces;
+        if (buildNotJustCollectErrors) {
+          message[key] = interpolation.pieces;
         }
       } on MessageExtractionException catch (e) {
-        message = null;
-        StringBuffer err = StringBuffer()
-          ..writeAll(['Error ', e, '\nProcessing <', node, '>'])
-          ..write(extraction.reportErrorLocation(node));
-        String errString = err.toString();
+        buildNotJustCollectErrors = false;
+        String errString = (StringBuffer()
+              ..writeAll(['Error ', e, '\nProcessing <', node, '>'])
+              ..write(extraction.reportErrorLocation(node)))
+            .toString();
         extraction.onMessage(errString);
         extraction.warnings.add(errString);
       }
@@ -121,9 +118,9 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
     Expression mainArg = node.argumentList.arguments
         .firstWhere((each) => each is! NamedExpression);
     if (mainArg is SimpleStringLiteral) {
-      message?.mainArgument = mainArg.toString();
+      message.mainArgument = mainArg.toString();
     } else if (mainArg is SimpleIdentifier) {
-      message?.mainArgument = mainArg.name;
+      message.mainArgument = mainArg.name;
     } else {
       String errString = (StringBuffer()
             ..write('Error (Invalid argument to plural/gender/select, '
