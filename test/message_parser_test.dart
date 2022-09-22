@@ -1,3 +1,8 @@
+// Copyright (c) 2022, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+// @dart=2.10
 import 'package:intl_translation/src/message_parser.dart';
 import 'package:intl_translation/src/messages/composite_message.dart';
 import 'package:intl_translation/src/messages/literal_string_message.dart';

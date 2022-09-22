@@ -6,7 +6,6 @@
 /// messages. See extract_to_arb.dart and make_hardcoded_translation.dart.
 library message_parser;
 
-// ignore: import_of_legacy_library_into_null_safe
 import 'package:intl_translation/src/messages/composite_message.dart';
 import 'package:intl_translation/src/messages/literal_string_message.dart';
 import 'package:intl_translation/src/messages/message.dart';
