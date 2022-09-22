@@ -1,3 +1,6 @@
+## 0.18.0
+  * Migrate to null safety.
+
 ## 0.17.11-dev
   * Add support for Flutter locale split.
   * Allow null safe code when parsing.
