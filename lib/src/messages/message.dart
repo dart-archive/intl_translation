@@ -231,13 +231,13 @@ abstract class Message {
       }
       if (examples.isNotEmpty) {
         Expression example = examples.first;
-        Map? map = _evaluateAsMap(example);
-        if (map == null) {
-          return 'Examples must be a const Map literal.';
+        if (example is SetOrMapLiteral) {
+          Map? map = _evaluateAsMap(example);
+          if (map == null) return 'Examples must be a const Map literal.';
+          if (example.constKeyword == null) return 'Examples must be const.';
+        } else {
+          return 'Examples must be a map';
         }
-        // if (example.constKeyword == null) { //TODO:What does this mean? Why would examples have to be const? How to do this now?
-        //   return 'Examples must be const.';
-        // }
       }
     }
 

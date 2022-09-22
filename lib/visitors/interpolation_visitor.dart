@@ -52,7 +52,6 @@ class InterpolationVisitor extends SimpleAstVisitor {
     } else {
       lookForPluralOrGender(node);
     }
-    // Note that we never end up calling super.//TODO:Why would you? its empty...
   }
 
   void lookForPluralOrGender(InterpolationExpression node) {
