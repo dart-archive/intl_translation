@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:intl_translation/src/messages/message.dart';
+import 'message.dart';
 
 /// Represents an interpolation of a variable value in a message. We expect
 /// this to be specified as an [index] into the list of variables, or else

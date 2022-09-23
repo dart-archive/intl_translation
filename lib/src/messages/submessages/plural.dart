@@ -2,8 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:intl_translation/src/messages/message.dart';
-import 'package:intl_translation/src/messages/submessages/submessage.dart';
+import '../message.dart';
+import 'submessage.dart';
 
 class Plural extends SubMessage {
   Plural() : super.from('', [], null);

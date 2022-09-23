@@ -6,14 +6,14 @@
 /// messages. See extract_to_arb.dart and make_hardcoded_translation.dart.
 library message_parser;
 
-import 'package:intl_translation/src/messages/composite_message.dart';
-import 'package:intl_translation/src/messages/literal_string_message.dart';
-import 'package:intl_translation/src/messages/message.dart';
-import 'package:intl_translation/src/messages/pair_message.dart';
-import 'package:intl_translation/src/messages/submessages/gender.dart';
-import 'package:intl_translation/src/messages/submessages/plural.dart';
-import 'package:intl_translation/src/messages/submessages/select.dart';
-import 'package:intl_translation/src/messages/variable_substitution_message.dart';
+import 'messages/composite_message.dart';
+import 'messages/literal_string_message.dart';
+import 'messages/message.dart';
+import 'messages/pair_message.dart';
+import 'messages/submessages/gender.dart';
+import 'messages/submessages/plural.dart';
+import 'messages/submessages/select.dart';
+import 'messages/variable_substitution_message.dart';
 
 class MessageParser {
   final _ParserUtil _parser;

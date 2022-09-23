@@ -26,8 +26,9 @@ import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/source/line_info.dart';
-import 'package:intl_translation/src/messages/main_message.dart';
-import 'package:intl_translation/visitors/message_finding_visitor.dart';
+
+import 'src/messages/main_message.dart';
+import 'visitors/message_finding_visitor.dart';
 
 /// A function that takes a message and does something useful with it.
 typedef OnMessage = void Function(String message);

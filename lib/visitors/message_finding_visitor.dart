@@ -8,14 +8,15 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 // ignore: implementation_imports
 import 'package:analyzer/src/dart/ast/constant_evaluator.dart';
-import 'package:intl_translation/extract_messages.dart';
-import 'package:intl_translation/src/messages/main_message.dart';
-import 'package:intl_translation/src/messages/message.dart';
-import 'package:intl_translation/src/messages/message_extraction_exception.dart';
-import 'package:intl_translation/src/messages/submessages/gender.dart';
-import 'package:intl_translation/src/messages/submessages/plural.dart';
-import 'package:intl_translation/visitors/interpolation_visitor.dart';
-import 'package:intl_translation/visitors/plural_gender_visitor.dart';
+
+import '../extract_messages.dart';
+import '../src/messages/main_message.dart';
+import '../src/messages/message.dart';
+import '../src/messages/message_extraction_exception.dart';
+import '../src/messages/submessages/gender.dart';
+import '../src/messages/submessages/plural.dart';
+import 'interpolation_visitor.dart';
+import 'plural_gender_visitor.dart';
 
 /// This visits the program source nodes looking for Intl.message uses
 /// that conform to its pattern and then creating the corresponding

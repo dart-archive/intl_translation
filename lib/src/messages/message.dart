@@ -38,12 +38,12 @@ import 'dart:convert';
 import 'package:analyzer/dart/ast/ast.dart';
 // ignore: implementation_imports
 import 'package:analyzer/src/dart/ast/constant_evaluator.dart';
-import 'package:intl_translation/src/messages/literal_string_message.dart';
-import 'package:intl_translation/src/messages/message_extraction_exception.dart';
-import 'package:intl_translation/src/messages/variable_substitution_message.dart';
 
 import 'complex_message.dart';
 import 'composite_message.dart';
+import 'literal_string_message.dart';
+import 'message_extraction_exception.dart';
+import 'variable_substitution_message.dart';
 
 const jsonEncoder = JsonCodec();
 

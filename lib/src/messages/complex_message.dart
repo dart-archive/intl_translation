@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:intl_translation/src/messages/message.dart';
+import 'message.dart';
 
 /// Abstract class for messages with internal structure, representing the
 /// main Intl.message call, plurals, and genders.

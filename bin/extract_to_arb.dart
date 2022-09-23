@@ -56,7 +56,9 @@ void main(List<String> args) {
           extract = extract.copyWith(allowEmbeddedPluralsAndGenders: x),
       help: 'Allow plurals and genders to be embedded as part of a larger '
           'string, otherwise they must be at the top level.');
-  parser.addFlag('transformer', //TODO: can this be removed?
+  //TODO(mosuem): All references to the transformer can be removed, but this
+  // should happen in a separate PR to help with testing.
+  parser.addFlag('transformer',
       callback: (x) => transformer = x,
       help: 'Assume that the transformer is in use, so name and args '
           "don't need to be specified for messages.");
@@ -104,7 +106,7 @@ void main(List<String> args) {
     print(parser.usage);
     exit(0);
   }
-  Map<String, dynamic> allMessages = {};
+  var allMessages = <String, dynamic>{};
   if (locale != null) {
     allMessages['@@locale'] = locale!;
   }
@@ -112,7 +114,7 @@ void main(List<String> args) {
     allMessages['@@last_modified'] = DateTime.now().toIso8601String();
   }
 
-  List<String> dartFiles = [
+  var dartFiles = <String>[
     ...args.where((x) => x.endsWith('.dart')),
     ...linesFromFile(sourcesListFile)
   ];
@@ -125,7 +127,7 @@ void main(List<String> args) {
             supressMetadata: suppressMetaData,
           ))
       .forEach((message) => allMessages.addAll(message));
-  File file = File(path.join(targetDir, outputFilename));
+  var file = File(path.join(targetDir, outputFilename));
   file.writeAsStringSync(JsonEncoder.withIndent('  ').convert(allMessages));
   if (extract.hasWarnings && warningsAreErrors) {
     exit(1);

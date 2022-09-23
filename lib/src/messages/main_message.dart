@@ -3,9 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:intl_translation/src/messages/complex_message.dart';
-import 'package:intl_translation/src/messages/message.dart';
-import 'package:intl_translation/src/messages/message_extraction_exception.dart';
+import 'complex_message.dart';
+import 'message.dart';
+import 'message_extraction_exception.dart';
 
 class MainMessage extends ComplexMessage {
   MainMessage({

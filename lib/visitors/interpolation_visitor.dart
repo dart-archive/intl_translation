@@ -4,11 +4,12 @@
 
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
-import 'package:intl_translation/extract_messages.dart';
-import 'package:intl_translation/src/messages/complex_message.dart';
-import 'package:intl_translation/src/messages/message.dart';
-import 'package:intl_translation/src/messages/message_extraction_exception.dart';
-import 'package:intl_translation/visitors/plural_gender_visitor.dart';
+
+import '../extract_messages.dart';
+import '../src/messages/complex_message.dart';
+import '../src/messages/message.dart';
+import '../src/messages/message_extraction_exception.dart';
+import 'plural_gender_visitor.dart';
 
 /// Given an interpolation, find all of its chunks, validate that they are only
 /// simple variable substitutions or else Intl.plural/gender calls,

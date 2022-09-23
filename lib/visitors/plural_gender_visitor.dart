@@ -4,15 +4,16 @@
 
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
-import 'package:intl_translation/extract_messages.dart';
-import 'package:intl_translation/src/messages/complex_message.dart';
-import 'package:intl_translation/src/messages/message.dart';
-import 'package:intl_translation/src/messages/message_extraction_exception.dart';
-import 'package:intl_translation/src/messages/submessages/gender.dart';
-import 'package:intl_translation/src/messages/submessages/plural.dart';
-import 'package:intl_translation/src/messages/submessages/select.dart';
-import 'package:intl_translation/src/messages/submessages/submessage.dart';
-import 'package:intl_translation/visitors/interpolation_visitor.dart';
+
+import '../extract_messages.dart';
+import '../src/messages/complex_message.dart';
+import '../src/messages/message.dart';
+import '../src/messages/message_extraction_exception.dart';
+import '../src/messages/submessages/gender.dart';
+import '../src/messages/submessages/plural.dart';
+import '../src/messages/submessages/select.dart';
+import '../src/messages/submessages/submessage.dart';
+import 'interpolation_visitor.dart';
 
 /// A visitor to extract information from Intl.plural/gender sends. Note that
 /// this is a SimpleAstVisitor, so it doesn't automatically recurse. So this

@@ -2,8 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:intl_translation/src/messages/message.dart';
-import 'package:intl_translation/src/messages/submessages/submessage.dart';
+import '../message.dart';
+import 'submessage.dart';
 
 /// Represents a message send of [Intl.gender] inside a message that is to
 /// be internationalized. This corresponds to an ICU message syntax "select"

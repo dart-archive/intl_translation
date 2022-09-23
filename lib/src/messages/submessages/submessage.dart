@@ -3,11 +3,11 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:intl_translation/src/messages/complex_message.dart';
-import 'package:intl_translation/src/messages/composite_message.dart';
-import 'package:intl_translation/src/messages/literal_string_message.dart';
-import 'package:intl_translation/src/messages/message.dart';
-import 'package:intl_translation/src/messages/pair_message.dart';
+import '../complex_message.dart';
+import '../composite_message.dart';
+import '../literal_string_message.dart';
+import '../message.dart';
+import '../pair_message.dart';
 
 /// An abstract class to represent sub-sections of a message, primarily
 /// plurals and genders.

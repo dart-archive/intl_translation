@@ -3,9 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:intl_translation/src/messages/message.dart';
-import 'package:intl_translation/src/messages/message_extraction_exception.dart';
-import 'package:intl_translation/src/messages/submessages/submessage.dart';
+import '../message.dart';
+import '../message_extraction_exception.dart';
+import 'submessage.dart';
 
 /// Represents a message send of [Intl.select] inside a message that is to
 /// be internationalized. This corresponds to an ICU message syntax "select"
