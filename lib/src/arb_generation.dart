@@ -28,7 +28,7 @@ Map<String, dynamic> toARB({
   bool supressMetadata = false,
   bool includeSourceText = false,
 }) {
-  Map<String, dynamic> out = {};
+  var out = <String, dynamic>{};
   if (message.messagePieces.isEmpty) return out;
 
   // Return a version of the message string with with ICU parameters
@@ -37,7 +37,7 @@ Map<String, dynamic> toARB({
       .expanded((msg, chunk) => turnInterpolationIntoICUForm(msg, chunk));
 
   if (!supressMetadata) {
-    Map<String, dynamic> arbMetadataForMessage = arbMetadata(message);
+    var arbMetadataForMessage = arbMetadata(message);
     out['@${message.name}'] = arbMetadataForMessage;
     if (includeSourceText) {
       arbMetadataForMessage['source_text'] = out[message.name];
@@ -47,14 +47,14 @@ Map<String, dynamic> toARB({
 }
 
 Map<String, dynamic> arbMetadata(MainMessage message) {
-  Map<String, dynamic> out = {};
-  String? desc = message.description;
+  var out = <String, dynamic>{};
+  var desc = message.description;
   if (desc != null) {
     out['description'] = desc;
   }
   out['type'] = 'text';
-  Map<String, dynamic> placeholders = {};
-  for (String arg in message.arguments) {
+  var placeholders = <String, dynamic>{};
+  for (var arg in message.arguments) {
     addArgumentFor(message, arg, placeholders);
   }
   out['placeholders'] = placeholders;
@@ -66,7 +66,7 @@ void addArgumentFor(
   String arg,
   Map<String, dynamic> result,
 ) {
-  Map<String, dynamic> extraInfo = {};
+  var extraInfo = <String, dynamic>{};
   if (message.examples[arg] != null) {
     extraInfo['example'] = message.examples[arg];
   }

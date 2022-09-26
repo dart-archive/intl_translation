@@ -39,12 +39,12 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
   void visitInterpolationExpression(InterpolationExpression node) {
     // TODO(alanknight): Provide better errors for malformed expressions.
     if (!looksLikePluralOrGender(node.expression)) return;
-    MethodInvocation nodeMethod = node.expression as MethodInvocation;
-    String? reason = checkValidity(nodeMethod);
+    var nodeMethod = node.expression as MethodInvocation;
+    var reason = checkValidity(nodeMethod);
     if (reason != null) {
       throw reason;
     }
-    Message? message = messageFromMethodInvocation(nodeMethod);
+    var message = messageFromMethodInvocation(nodeMethod);
     foundPluralOrGender = true;
     pieces.add(message);
   }
@@ -62,7 +62,7 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
       return false;
     }
     if (node.target is! SimpleIdentifier) return false;
-    SimpleIdentifier target = node.target as SimpleIdentifier;
+    var target = node.target as SimpleIdentifier;
     return target.token.toString() == 'Intl';
   }
 
@@ -99,10 +99,10 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
     }
     message.parent = parent;
 
-    bool buildNotJustCollectErrors = true;
+    var buildNotJustCollectErrors = true;
     arguments.forEach((key, Expression value) {
       try {
-        InterpolationVisitor interpolation = InterpolationVisitor(
+        var interpolation = InterpolationVisitor(
           message,
           extraction,
         );
@@ -112,7 +112,7 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
         }
       } on MessageExtractionException catch (e) {
         buildNotJustCollectErrors = false;
-        String errString = (StringBuffer()
+        var errString = (StringBuffer()
               ..writeAll(['Error ', e, '\nProcessing <', node, '>'])
               ..write(extraction.reportErrorLocation(node)))
             .toString();
@@ -120,14 +120,14 @@ class PluralAndGenderVisitor extends SimpleAstVisitor<void> {
         extraction.warnings.add(errString);
       }
     });
-    Expression mainArg = node.argumentList.arguments
+    var mainArg = node.argumentList.arguments
         .firstWhere((each) => each is! NamedExpression);
     if (mainArg is SimpleStringLiteral) {
       message.mainArgument = mainArg.toString();
     } else if (mainArg is SimpleIdentifier) {
       message.mainArgument = mainArg.name;
     } else {
-      String errString = (StringBuffer()
+      var errString = (StringBuffer()
             ..write('Error (Invalid argument to plural/gender/select, '
                 'must be simple variable reference) '
                 '\nProcessing <$node>')

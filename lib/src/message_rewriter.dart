@@ -90,7 +90,7 @@ List<MainMessage> findMessages(String source, String sourceName,
     return [];
   }
   extraction.origin = sourceName;
-  MessageFindingVisitor visitor = MessageFindingVisitor(
+  var visitor = MessageFindingVisitor(
     extraction,
     generateNameAndArgs: true,
   );

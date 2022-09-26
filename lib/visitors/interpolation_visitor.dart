@@ -60,7 +60,7 @@ class InterpolationVisitor extends SimpleAstVisitor {
   }
 
   void lookForPluralOrGender(InterpolationExpression node) {
-    PluralAndGenderVisitor visitor = PluralAndGenderVisitor(
+    var visitor = PluralAndGenderVisitor(
       pieces,
       message as ComplexMessage,
       extraction,
@@ -75,7 +75,7 @@ class InterpolationVisitor extends SimpleAstVisitor {
   }
 
   void handleSimpleInterpolation(InterpolationExpression node) {
-    int index = arguments.indexOf(node.expression.toString());
+    var index = arguments.indexOf(node.expression.toString());
     if (index == -1) {
       throw MessageExtractionException(
           'Cannot find argument ${node.expression}');

@@ -18,25 +18,25 @@ import 'package:intl_translation/src/directory_utils.dart';
 import 'package:path/path.dart' as path;
 
 void main(List<String> args) {
-  String targetDir = '.';
-  String outputFilename = 'intl_messages.arb';
+  var targetDir = '.';
+  var outputFilename = 'intl_messages.arb';
   String? sourcesListFile;
-  bool transformer = false;
-  ArgParser parser = ArgParser();
-  MessageExtraction extract = MessageExtraction();
+  var transformer = false;
+  var parser = ArgParser();
+  var extract = MessageExtraction();
   String? locale;
 
   /// Whether to include source_text in messages
-  bool includeSourceText = false;
+  var includeSourceText = false;
 
   /// If this is true, no translation meta data is written
-  bool suppressMetaData = false;
+  var suppressMetaData = false;
 
   /// If this is true, the @@last_modified entry is not output.
-  bool suppressLastModified = false;
+  var suppressLastModified = false;
 
   /// If this is true, then treat all warnings as errors.
-  bool warningsAreErrors = false;
+  var warningsAreErrors = false;
   parser.addFlag('suppress-last-modified',
       callback: (x) => suppressLastModified = x,
       help: 'Suppress @@last_modified entry.');

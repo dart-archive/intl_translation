@@ -106,16 +106,16 @@ class MessageGeneration {
     Iterable<TranslatedMessage> translations,
   ) {
     clearOutput();
-    String locale = Message.escapeString(Intl.canonicalizedLocale(basicLocale));
+    var locale = Message.escapeString(Intl.canonicalizedLocale(basicLocale));
     output.write(prologue(locale));
     // Exclude messages with no translation and translations with no matching
     // original message (e.g. if we're using some messages from a larger
     // catalog)
-    List<TranslatedMessage> usableTranslations = translations
+    var usableTranslations = translations
         .where((translation) => translation.originalMessages.isNotEmpty)
         .toList();
-    for (TranslatedMessage translation in usableTranslations) {
-      for (MainMessage original in translation.originalMessages) {
+    for (var translation in usableTranslations) {
+      for (var original in translation.originalMessages) {
         original.addTranslation(locale, translation.message);
       }
     }
@@ -132,12 +132,12 @@ class MessageGeneration {
     Iterable<TranslatedMessage> usableTranslations,
     String locale,
   ) {
-    for (TranslatedMessage translation in usableTranslations) {
+    for (var translation in usableTranslations) {
       // Some messages we generate as methods in this class. Simpler ones
       // we inline in the map from names to messages.
-      List<MainMessage> messagesThatNeedMethods =
+      var messagesThatNeedMethods =
           translation.originalMessages.where(_hasArguments).toSet().toList();
-      for (MainMessage original in messagesThatNeedMethods) {
+      for (var original in messagesThatNeedMethods) {
         output
           ..write('  ')
           ..write(
@@ -149,7 +149,7 @@ class MessageGeneration {
 
     // Now write the map of names to either the direct translation or to a
     // method.
-    String names = (usableTranslations
+    var names = (usableTranslations
             .expand((translation) => translation.originalMessages)
             .toSet()
             .toList()
@@ -233,7 +233,7 @@ ${releaseMode ? overrideLookup() : ''}''';
   String generateLocalesImportFile() {
     clearOutput();
     output.write(localesPrologue);
-    for (String locale in allLocales) {
+    for (var locale in allLocales) {
       var baseFile = '${generatedFilePrefix}messages_$locale.dart';
       var file = importForGeneratedFile(baseFile);
       output.write("import '$file' ");
@@ -254,8 +254,8 @@ ${releaseMode ? overrideLookup() : ''}''';
     output.write(
         '\nMessageLookupByLibrary$orNull _findExact(String localeName) {\n'
         '  switch (localeName) {\n');
-    for (String rawLocale in allLocales) {
-      String locale = Intl.canonicalizedLocale(rawLocale);
+    for (var rawLocale in allLocales) {
+      var locale = Intl.canonicalizedLocale(rawLocale);
       output.write(
           "    case '$locale':\n      return ${libraryName(locale)}.messages;\n");
     }
@@ -562,13 +562,13 @@ class JsonMessageGeneration extends DataMapMessageGeneration {
 ''');
 
     output.write('  static final messageText = ');
-    Iterable<MainMessage> messages = usableTranslations
+    var messages = usableTranslations
         .expand((translation) => translation.originalMessages);
-    Map<String, dynamic> map = {
+    var map = <String, dynamic>{
       for (var original in messages)
         original.name: original.toJsonForLocale(locale)
     };
-    String jsonEncoded = JsonEncoder().convert(map);
+    var jsonEncoded = JsonEncoder().convert(map);
     output.write(_embedInLiteral(jsonEncoded));
   }
 }
@@ -588,9 +588,9 @@ import 'dart:collection';
   Map<String, dynamic> get messages => _constMessages;
 ''');
 
-    Iterable<MainMessage> messages = usableTranslations
+    var messages = usableTranslations
         .expand((translation) => translation.originalMessages);
-    Map<String, dynamic> map = {
+    var map = <String, dynamic>{
       for (var original in messages)
         original.name: original.toJsonForLocale(locale)
     };
@@ -627,7 +627,7 @@ import 'dart:collection';
     }
     if (value is Map) {
       output.write('<String, Object$orNull>{');
-      bool isFirst = true;
+      var isFirst = true;
       value.forEach((k, v) {
         if (isFirst) {
           isFirst = false;

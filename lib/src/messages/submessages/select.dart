@@ -59,8 +59,7 @@ class Select extends SubMessage {
   /// case they will all be passed in as a Map rather than as the named
   /// arguments used in Plural/Gender.
   static Map<String, Expression> argumentsOfInterestFor(MethodInvocation node) {
-    SetOrMapLiteral casesArgument =
-        node.argumentList.arguments[1] as SetOrMapLiteral;
+    var casesArgument = node.argumentList.arguments[1] as SetOrMapLiteral;
     // ignore: prefer_for_elements_to_map_fromiterable
     return Map.fromIterable(
       casesArgument.elements,
@@ -108,7 +107,7 @@ class Select extends SubMessage {
   /// and then a Map from the cases to the List of strings or sub-messages.
   @override
   List toJson() {
-    List json = [];
+    var json = [];
     json.add(dartMessageName);
     json.add(arguments.indexOf(mainArgument));
     var attributes = {};

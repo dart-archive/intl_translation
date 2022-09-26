@@ -28,22 +28,21 @@ import 'package:intl_translation/src/directory_utils.dart';
 import 'package:intl_translation/src/message_parser.dart';
 import 'package:intl_translation/src/messages/literal_string_message.dart';
 import 'package:intl_translation/src/messages/main_message.dart';
-import 'package:intl_translation/src/messages/message.dart';
 import 'package:path/path.dart' as path;
 
 const jsonDecoder = JsonCodec();
 
 void main(List<String> args) {
-  String targetDir = '.';
-  ArgParser parser = ArgParser();
-  MessageExtraction extraction = MessageExtraction();
-  MessageGeneration generation = MessageGeneration();
+  var targetDir = '.';
+  var parser = ArgParser();
+  var extraction = MessageExtraction();
+  var generation = MessageGeneration();
   String? sourcesListFile;
   String? translationsListFile;
-  bool transformer = false;
-  bool useJsonFlag = false;
-  bool useCodeMapFlag = false;
-  bool useFlutterLocaleSplit = false;
+  var transformer = false;
+  var useJsonFlag = false;
+  var useCodeMapFlag = false;
+  var useFlutterLocaleSplit = false;
   parser.addFlag('json', callback: (useJson) {
     useJsonFlag = useJson;
     if (useJson) {
@@ -110,11 +109,11 @@ void main(List<String> args) {
           "don't need to be specified for messages.");
 
   parser.parse(args);
-  List<String> dartFiles = [
+  var dartFiles = <String>[
     ...args.where((x) => x.endsWith('dart')),
     ...linesFromFile(sourcesListFile)
   ];
-  List<String> jsonFiles = [
+  var jsonFiles = <String>[
     ...args.where((x) => x.endsWith('.arb')),
     ...linesFromFile(translationsListFile)
   ];
@@ -144,21 +143,21 @@ void main(List<String> args) {
   // for real projects we could provide a command-line flag to indicate which
   // sort of automated name we're using.
   extraction = extraction.copyWith(suppressWarnings: true);
-  Iterable<Map<String, MainMessage>> allMessages =
+  var allMessages =
       dartFiles.map((each) => extraction.parseFile(File(each), transformer));
 
   /// Keeps track of all the messages we have processed so far, keyed by message
   /// name.
-  Map<String, List<MainMessage>> messages = {};
-  for (Map<String, MainMessage> eachMap in allMessages) {
+  var messages = <String, List<MainMessage>>{};
+  for (var eachMap in allMessages) {
     eachMap.forEach((k, v) => messages.putIfAbsent(k, () => []).add(v));
   }
-  Map<String, List<Map<String, String>>> messagesByLocale = {};
+  var messagesByLocale = <String, List<Map<String, String>>>{};
 
   // In order to group these by locale, to support multiple input files,
   // we're reading all the data eagerly, which could be a memory
   // issue for very large projects.
-  for (String arg in jsonFiles) {
+  for (var arg in jsonFiles) {
     loadData(arg, messagesByLocale, generation);
   }
 
@@ -166,17 +165,17 @@ void main(List<String> args) {
     generateLocaleFile(locale, data, targetDir, generation, messages);
   });
 
-  File mainImportFile = File(path.join(
+  var mainImportFile = File(path.join(
       targetDir, '${generation.generatedFilePrefix}messages_all.dart'));
   mainImportFile.writeAsStringSync(
       generation.generateMainImportFile(flutter: useFlutterLocaleSplit));
 
-  File localesImportFile = File(path.join(
+  var localesImportFile = File(path.join(
       targetDir, '${generation.generatedFilePrefix}messages_all_locales.dart'));
   localesImportFile.writeAsStringSync(generation.generateLocalesImportFile());
 
   if (useFlutterLocaleSplit) {
-    File flutterImportFile = File(path.join(
+    var flutterImportFile = File(path.join(
         targetDir, '${generation.generatedFilePrefix}messages_flutter.dart'));
     flutterImportFile.writeAsStringSync(generation.generateFlutterImportFile());
   }
@@ -187,16 +186,17 @@ void loadData(
   Map<String, List<Map<String, String>>> messagesByLocale,
   MessageGeneration generation,
 ) {
-  File file = File(filename);
-  String src = file.readAsStringSync();
-  Map<String, String> data = Map.castFrom(jsonDecoder.decode(src));
-  String? locale = data['@@locale'] ?? data['_locale'];
+  var file = File(filename);
+  var src = file.readAsStringSync();
+  var data =
+      Map.castFrom<dynamic, dynamic, String, String>(jsonDecoder.decode(src));
+  var locale = data['@@locale'] ?? data['_locale'];
   if (locale == null) {
     // Get the locale from the end of the file name. This assumes that the file
     // name doesn't contain any underscores except to begin the language tag
     // and to separate language from country. Otherwise we can't tell if
     // my_file_fr.arb is locale "fr" or "file_fr".
-    String name = path.basenameWithoutExtension(file.path);
+    var name = path.basenameWithoutExtension(file.path);
     locale = name.split('_').skip(1).join('_');
     print('No @@locale or _locale field found in $name, '
         "assuming '$locale' based on the file name.");
@@ -219,11 +219,11 @@ void generateLocaleFile(
     String targetDir,
     MessageGeneration generation,
     Map<String, List<MainMessage>> messages) {
-  List<TranslatedMessage> translations = localeData
+  var translations = localeData
       .expand((jsonTranslations) {
         return jsonTranslations.entries.map((e) {
-          String id = e.key;
-          String messageData = e.value;
+          var id = e.key;
+          var messageData = e.value;
           return recreateIntlObjects(id, messageData, messages);
         });
       })
@@ -242,8 +242,8 @@ TranslatedMessage? recreateIntlObjects(
   Map<String, List<MainMessage>> messages,
 ) {
   if (id.startsWith('@') || data == null) return null;
-  MessageParser messageParser = MessageParser(data);
-  Message parsed = messageParser.pluralGenderSelectParse();
+  var messageParser = MessageParser(data);
+  var parsed = messageParser.pluralGenderSelectParse();
   if (parsed is LiteralString && parsed.string.isEmpty) {
     parsed = messageParser.nonIcuMessageParse();
   }

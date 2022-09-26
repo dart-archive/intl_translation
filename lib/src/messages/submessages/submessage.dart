@@ -26,7 +26,7 @@ abstract class SubMessage extends ComplexMessage {
       } else if (clause is PairMessage<LiteralString, Message>) {
         //If trying to parse a message
         key = clause.first.string;
-        Message second = clause.second;
+        var second = clause.second;
         value = second is CompositeMessage ? second.pieces : [second];
       } else {
         throw Exception(

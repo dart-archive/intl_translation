@@ -102,7 +102,7 @@ abstract class Message {
     if (args == null) return true;
     // Detect cases where args passes invalid names, either literal strings
     // instead of identifiers, or in the wrong order, missing values, etc.
-    ListLiteral identifiers = args.childEntities.last as ListLiteral;
+    var identifiers = args.childEntities.last as ListLiteral;
     if (!identifiers.elements.every((each) => each is SimpleIdentifier)) {
       return false;
     }
@@ -149,14 +149,12 @@ abstract class Message {
     bool examplesRequired = false,
   }) {
     // If we have parameters, we must specify args and name.
-    Iterable<NamedExpression> argsNamedExps = arguments
+    var argsNamedExps = arguments
         .whereType<NamedExpression>()
         .where((each) => each.name.label.name == 'args');
-    NamedExpression? args =
-        argsNamedExps.isNotEmpty ? argsNamedExps.first : null;
-    List<String> parameterNames =
-        outerArgs.map((x) => x.identifier!.name).toList();
-    bool hasParameters = outerArgs.isNotEmpty;
+    var args = argsNamedExps.isNotEmpty ? argsNamedExps.first : null;
+    var parameterNames = outerArgs.map((x) => x.identifier!.name).toList();
+    var hasParameters = outerArgs.isNotEmpty;
     if (!nameAndArgsGenerated && args == null && hasParameters) {
       throw MessageExtractionException(
           "The 'args' argument for Intl.message must be specified for "
@@ -168,7 +166,7 @@ abstract class Message {
           ' e.g. args: $parameterNames');
     }
 
-    Iterable<Expression> nameNamedExps = arguments
+    var nameNamedExps = arguments
         .whereType<NamedExpression>()
         .where((arg) => arg.name.label.name == 'name')
         .map((e) => e.expression);
@@ -180,7 +178,7 @@ abstract class Message {
     if (nameNamedExps.isEmpty) {
       if (!hasParameters) {
         // No name supplied, no parameters. Use the message as the name.
-        String? name = _evaluateAsString(arguments[0]);
+        var name = _evaluateAsString(arguments[0]);
         messageName = name;
         outerName = name;
       } else {
@@ -198,7 +196,7 @@ abstract class Message {
       }
     } else {
       // Name argument is supplied, use it.
-      String? name = _evaluateAsString(nameNamedExps.first);
+      var name = _evaluateAsString(nameNamedExps.first);
       messageName = name;
       givenName = name;
     }
@@ -208,11 +206,11 @@ abstract class Message {
           "The 'name' argument for Intl.message must be a string literal");
     }
 
-    bool hasOuterName = outerName != null;
-    bool simpleMatch = outerName == givenName || givenName == null;
+    var hasOuterName = outerName != null;
+    var simpleMatch = outerName == givenName || givenName == null;
 
-    String? classPlusMethod = Message.classPlusMethodName(node, outerName);
-    bool classMatch = classPlusMethod != null && (givenName == classPlusMethod);
+    var classPlusMethod = Message.classPlusMethodName(node, outerName);
+    var classMatch = classPlusMethod != null && (givenName == classPlusMethod);
     if (!(hasOuterName && (simpleMatch || classMatch))) {
       throw MessageExtractionException(
           "The 'name' argument for Intl.message must match either "
@@ -220,12 +218,12 @@ abstract class Message {
           "was '$givenName' but must be '$outerName'  or '$classPlusMethod')");
     }
 
-    List<Expression> values = arguments
+    var values = arguments
         .whereType<NamedExpression>()
         .where((each) => ['desc', 'name'].contains(each.name.label.name))
         .map((each) => each.expression)
         .toList();
-    for (Expression arg in values) {
+    for (var arg in values) {
       if (_evaluateAsString(arg) == null) {
         throw MessageExtractionException(
             'Intl.message arguments must be string literals: $arg');
@@ -233,7 +231,7 @@ abstract class Message {
     }
 
     if (hasParameters) {
-      Iterable<Expression> examples = arguments
+      var examples = arguments
           .whereType<NamedExpression>()
           .where((each) => each.name.label.name == 'examples')
           .map((each) => each.expression);
@@ -242,9 +240,9 @@ abstract class Message {
             'Examples must be provided for messages with parameters');
       }
       if (examples.isNotEmpty) {
-        Expression example = examples.first;
+        var example = examples.first;
         if (example is SetOrMapLiteral) {
-          Map? map = _evaluateAsMap(example);
+          var map = _evaluateAsMap(example);
           if (map == null) {
             throw MessageExtractionException(
                 'Examples must be a const Map literal.');
@@ -303,7 +301,7 @@ abstract class Message {
       return result;
     }
     // We assume this is already a Message.
-    Message mustBeAMessage = value as Message;
+    var mustBeAMessage = value as Message;
     mustBeAMessage.parent = parent;
     return mustBeAMessage;
   }
@@ -318,7 +316,7 @@ abstract class Message {
 
   /// Escape the string for use in generated Dart code.
   static String escapeString(String value) {
-    const Map<String, String> escapes = {
+    const escapes = <String, String>{
       r'\': r'\\',
       '"': r'\"',
       '\b': r'\b',

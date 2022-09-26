@@ -22,10 +22,8 @@ library extract_messages;
 import 'dart:io';
 
 import 'package:analyzer/dart/analysis/features.dart';
-import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/source/line_info.dart';
 
 import 'src/messages/main_message.dart';
 import 'visitors/message_finding_visitor.dart';
@@ -105,7 +103,7 @@ class MessageExtraction {
   /// If [transformer] is true, assume the transformer will supply any "name"
   /// and "args" parameters required in Intl.message calls.
   Map<String, MainMessage> parseFile(File file, [bool transformer = false]) {
-    String contents = file.readAsStringSync();
+    var contents = file.readAsStringSync();
     return parseContent(contents, file.path, transformer);
   }
 
@@ -120,7 +118,7 @@ class MessageExtraction {
     String filepath,
     bool transformer,
   ) {
-    String contents = fileContent;
+    var contents = fileContent;
     origin = filepath;
     // Optimization to avoid parsing files we're sure don't contain any messages.
     if (contents.contains('Intl.')) {
@@ -128,7 +126,7 @@ class MessageExtraction {
     } else {
       return {};
     }
-    MessageFindingVisitor visitor = MessageFindingVisitor(
+    var visitor = MessageFindingVisitor(
       this,
       generateNameAndArgs: transformer,
     );
@@ -137,7 +135,7 @@ class MessageExtraction {
   }
 
   CompilationUnit _parseCompilationUnit(String contents, String origin) {
-    ParseStringResult result = parseString(
+    var result = parseString(
       content: contents,
       featureSet: _featureSet,
       throwIfDiagnostics: false,
@@ -162,9 +160,9 @@ class MessageExtraction {
   String? origin;
 
   String reportErrorLocation(AstNode node) {
-    StringBuffer result = StringBuffer();
+    var result = StringBuffer();
     if (origin != null) result.write('    from $origin');
-    CharacterLocation line = root.lineInfo.getLocation(node.offset);
+    var line = root.lineInfo.getLocation(node.offset);
     result.write('    line: ${line.lineNumber}, column: ${line.columnNumber}');
     return result.toString();
   }
