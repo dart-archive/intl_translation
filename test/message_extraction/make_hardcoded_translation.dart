@@ -3,8 +3,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-
-
 /// This simulates a translation process, reading the messages generated from
 /// extract_message.dart for the files sample_with_messages.dart and
 /// part_of_sample_with_messages.dart and writing out hard-coded translations

@@ -1,5 +1,3 @@
-
-
 library verify_messages;
 
 import 'print_to_list.dart';

@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-
-
 /// Tests initializing the fr_FR locale when we only have fr available.
 ///
 /// This is not actually related to the two components testing, but it's

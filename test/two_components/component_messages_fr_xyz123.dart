@@ -14,18 +14,19 @@ import 'package:intl/message_lookup_by_library.dart';
 
 final messages = MessageLookup();
 
-typedef String? MessageIfAbsent(
-    String? messageStr, List<Object>? args);
+typedef String? MessageIfAbsent(String? messageStr, List<Object>? args);
 
 class MessageLookup extends MessageLookupByLibrary {
   @override
   String get localeName => 'fr_xyz123';
 
   @override
-  final Map<String, dynamic> messages = _notInlinedMessages(_notInlinedMessages);
+  final Map<String, dynamic> messages =
+      _notInlinedMessages(_notInlinedMessages);
 
   static Map<String, dynamic> _notInlinedMessages(_) => {
-      'Hello from component': MessageLookupByLibrary.simpleMessage('Bonjour du composant'),
-    '_message2': MessageLookupByLibrary.simpleMessage('Locale explicite')
-  };
+        'Hello from component':
+            MessageLookupByLibrary.simpleMessage('Bonjour du composant'),
+        '_message2': MessageLookupByLibrary.simpleMessage('Locale explicite')
+      };
 }
