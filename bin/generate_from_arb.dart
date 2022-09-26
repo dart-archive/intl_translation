@@ -142,6 +142,7 @@ void main(List<String> args) {
   // text. The intent is to deprecate the transformer, but if this is an issue
   // for real projects we could provide a command-line flag to indicate which
   // sort of automated name we're using.
+  //TODO(mosuem):Why is the supress-warnings flag ignored?
   extraction = extraction.copyWith(suppressWarnings: true);
   var allMessages =
       dartFiles.map((each) => extraction.parseFile(File(each), transformer));
