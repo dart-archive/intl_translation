@@ -12,7 +12,7 @@ import 'failed_extraction_test.dart';
 
 void main() {
   test('Expect failure because of embedded plural with text before it', () {
-    List<String> files = ['embedded_plural_text_before.dart'];
+    var files = <String>['embedded_plural_text_before.dart'];
     runTestWithWarnings(
         warningsAreErrors: true,
         expectedExitCode: 1,

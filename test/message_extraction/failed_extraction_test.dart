@@ -38,19 +38,17 @@ Future<void> runTestWithWarnings(
 
   await copyFilesToTempDirectory();
 
-  String program = asTestDirPath('../../bin/extract_to_arb.dart');
-  List<String> args = ['--output-dir=$tempDir'];
+  var program = asTestDirPath('../../bin/extract_to_arb.dart');
+  var args = <String>['--output-dir=$tempDir'];
   if (warningsAreErrors) {
     args.add('--warnings-are-errors');
   }
   if (!embeddedPlurals) {
     args.add('--no-embedded-plurals');
   }
-  List<String?> files = sourceFiles.map(asTempDirPath).toList();
-  List<String?> allArgs = [program, ...args, ...files];
-  Func1<void, ProcessResult> callback = expectAsync1(verify);
+  var files = sourceFiles.map(asTempDirPath).toList();
+  var allArgs = <String?>[program, ...args, ...files];
+  var callback = expectAsync1(verify);
 
   run(null, allArgs).then(callback);
 }
-
-typedef ThenArgument = dynamic Function(ProcessResult _);

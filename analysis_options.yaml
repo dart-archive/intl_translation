@@ -15,6 +15,8 @@ linter:
     - prefer_single_quotes
     - sort_pub_dependencies
     - type_annotate_public_apis
+    - omit_local_variable_types
+    - prefer_relative_imports
 
     # This is currently challenging for this package.
     # - avoid_dynamic_calls

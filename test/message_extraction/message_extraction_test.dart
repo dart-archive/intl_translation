@@ -86,7 +86,7 @@ Future<void> copyFilesToTempDirectory() async {
     return;
   }
 
-  List<String> files = [
+  var files = <String>[
     asTestDirPath('sample_with_messages.dart'),
     asTestDirPath('part_of_sample_with_messages.dart'),
     asTestDirPath('verify_messages.dart'),
@@ -99,8 +99,8 @@ Future<void> copyFilesToTempDirectory() async {
     asTestDirPath('mock_flutter/services.dart'),
   ];
 
-  for (String filePath in files) {
-    File file = File(filePath);
+  for (var filePath in files) {
+    var file = File(filePath);
     if (file.existsSync()) {
       file.copySync(path.join(tempDir, path.basename(filePath)));
     }
@@ -138,7 +138,7 @@ Future<ProcessResult> run(
       .toList();
   // Inject the script argument --output-dir in between the script and its
   // arguments.
-  List<String> args = [
+  var args = <String>[
     ...vmArgs,
     filesInTheRightDirectory.first,
     '--output-dir=$tempDir',

@@ -30,7 +30,7 @@ class YouveGotMessages {
     var msg = Intl.message('This method is not a lambda',
         name: 'nonLambda', desc: 'Not a lambda');
     if (aTrueValue) {
-      String s = 'Parser should not fail with additional code.';
+      var s = 'Parser should not fail with additional code.';
       s.toString();
     }
     return msg;
