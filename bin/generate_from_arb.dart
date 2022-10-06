@@ -209,7 +209,7 @@ void loadData(String filename, Map<String, List<Map>> messagesByLocale,
 void generateLocaleFile(String locale, List<Map> localeData, String targetDir,
     MessageGeneration generation) {
   List<TranslatedMessage> translations = [];
-  for (/*Map<String, String>*/ Map jsonTranslations in localeData) {
+  for (/*Map<String, String>*/ var jsonTranslations in localeData) {
     jsonTranslations.forEach((id, messageData) {
       TranslatedMessage message = recreateIntlObjects(id, messageData);
       if (message != null) {

@@ -4,7 +4,6 @@
 
 // @dart=2.10
 
-// ignore_for_file: deprecated_member_use, #168
 // ignore_for_file: implementation_imports
 
 /// This provides classes to represent the internal structure of the
@@ -143,7 +142,7 @@ abstract class Message {
     NamedExpression args = arguments.firstWhere(
         (each) => each is NamedExpression && each.name.label.name == 'args',
         orElse: () => null);
-    var parameterNames = outerArgs.map((x) => x.identifier.name).toList();
+    var parameterNames = outerArgs.map((x) => x.name.lexeme).toList();
     var hasArgs = args != null;
     var hasParameters = outerArgs.isNotEmpty;
     if (!nameAndArgsGenerated && !hasArgs && hasParameters) {
@@ -251,16 +250,18 @@ abstract class Message {
   /// For a method foo in class Bar we allow either "foo" or "Bar_Foo" as the
   /// name.
   static String classPlusMethodName(MethodInvocation node, String outerName) {
-    ClassOrMixinDeclaration classNode(AstNode n) {
-      if (n == null) return null;
-      if (n is ClassOrMixinDeclaration) return n;
-      return classNode(n.parent);
+    String name;
+    for (AstNode parent = node; parent != null; parent = parent.parent) {
+      if (parent is ClassDeclaration) {
+        name = parent.name2.lexeme;
+        break;
+      } else if (parent is MixinDeclaration) {
+        name = parent.name2.lexeme;
+        break;
+      }
     }
 
-    var classDeclaration = classNode(node);
-    return classDeclaration == null
-        ? null
-        : '${classDeclaration.name.token}_$outerName';
+    return name == null ? null : '${name}_$outerName';
   }
 
   /// Turn a value, typically read from a translation file or created out of an
@@ -370,6 +371,7 @@ class CompositeMessage extends Message {
       pieces.map((chunk) => transform(this, chunk)).join('');
 }
 
+/// A pair of two messages, similar to [CompositeMessage].
 class PairMessage<T extends Message, S extends Message> extends Message {
   final T first;
   final S second;
@@ -720,11 +722,11 @@ abstract class SubMessage extends ComplexMessage {
       String key;
       Object value;
       if (clause is List && clause[0] is String && clause.length == 2) {
-        //If trying to parse a string
+        // If trying to parse a string
         key = clause[0];
         value = (clause[1] is List) ? clause[1] : [(clause[1])];
       } else if (clause is PairMessage<LiteralString, Message>) {
-        //If trying to parse a message
+        // If trying to parse a message
         key = clause.first.string;
         Message second = clause.second;
         value = second is CompositeMessage ? second.pieces : [second];
