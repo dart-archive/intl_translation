@@ -22,14 +22,13 @@
 /// Plural, but also has a name, list of arguments, and a description.
 /// The Plural has three different clauses. The `zero` clause is
 /// a LiteralString containing 'Is zero plural?'. The `other` clause is a
-/// CompositeMessage containing three pieces, a LiteralString for
+/// CompositeMessage containing three pieces, a LiteralString forparameterNames
 /// 'This is plural (', a VariableSubstitution for `num`. amd a LiteralString
 /// for '.)'.
 ///
 /// This representation isn't used at runtime. Rather, we read some format
 /// from a translation file, parse it into these objects, and they are then
 /// used to generate the code representation above.
-// ignore_for_file: deprecated_member_use
 
 library intl_message;
 
@@ -153,7 +152,7 @@ abstract class Message {
         .whereType<NamedExpression>()
         .where((each) => each.name.label.name == 'args');
     var args = argsNamedExps.isNotEmpty ? argsNamedExps.first : null;
-    var parameterNames = outerArgs.map((x) => x.identifier!.name).toList();
+    var parameterNames = outerArgs.map((x) => x.name!.lexeme).toList();
     var hasParameters = outerArgs.isNotEmpty;
     if (!nameAndArgsGenerated && args == null && hasParameters) {
       throw MessageExtractionException(
@@ -273,16 +272,17 @@ abstract class Message {
   /// For a method foo in class Bar we allow either "foo" or "Bar_Foo" as the
   /// name.
   static String? classPlusMethodName(MethodInvocation node, String? outerName) {
-    ClassOrMixinDeclaration? classNode(AstNode? n) {
-      if (n == null) return null;
-      if (n is ClassOrMixinDeclaration) return n;
-      return classNode(n.parent);
+    String? name;
+    for (AstNode? parent = node; parent != null; parent = parent.parent) {
+      if (parent is ClassDeclaration ||
+          parent is MixinDeclaration ||
+          parent is EnumDeclaration) {
+        name = (parent as NamedCompilationUnitMember).name2.lexeme;
+        break;
+      }
     }
 
-    var classDeclaration = classNode(node);
-    return classDeclaration == null
-        ? null
-        : '${classDeclaration.name.token}_$outerName';
+    return name == null ? null : '${name}_$outerName';
   }
 
   /// Turn a value, typically read from a translation file or created out of an

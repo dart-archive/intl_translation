@@ -19,7 +19,7 @@ jobs:
         # Windows.
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest, macos-latest]
-        sdk: [2.17.0, stable, dev]
+        sdk: [2.18.0, stable, dev]
 
     name: build on ${{ matrix.os }} for ${{ matrix.sdk }}
 

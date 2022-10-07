@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// ignore_for_file: deprecated_member_use
-
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 // ignore: implementation_imports
@@ -107,7 +105,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   @override
   void visitMethodDeclaration(MethodDeclaration node) {
     setFields(
-      name: node.name.name,
+      name: node.name2.lexeme,
       parameters: node.parameters?.parameters,
       documentation: node.documentationComment,
     );
@@ -120,7 +118,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   @override
   void visitFunctionDeclaration(FunctionDeclaration node) {
     setFields(
-      name: node.name.name,
+      name: node.name2.lexeme,
       parameters: node.functionExpression.parameters?.parameters,
       documentation: node.documentationComment,
     );
@@ -136,7 +134,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     // e.g. String first, second = Intl.message(...);
     setFields(
       name: node.fields.variables.length == 1
-          ? node.fields.variables.first.name.name
+          ? node.fields.variables.first.name2.lexeme
           : null,
       documentation: node.documentationComment,
     );
@@ -152,7 +150,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     // e.g. String first, second = Intl.message(...);
     setFields(
       name: node.variables.variables.length == 1
-          ? node.variables.variables.first.name.name
+          ? node.variables.variables.first.name2.lexeme
           : null,
       documentation: node.documentationComment,
     );
@@ -278,7 +276,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     var message = MainMessage(
       sourcePosition: node.offset,
       endPosition: node.end,
-      arguments: parameters!.map((x) => x.identifier!.name).toList(),
+      arguments: parameters!.map((x) => x.name!.lexeme).toList(),
     );
     documentation?.tokens
         .map((token) => token.toString())
