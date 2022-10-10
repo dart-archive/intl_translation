@@ -1,5 +1,3 @@
-// @dart=2.10
-
 import 'dart:async';
 import 'dart:convert';
 
@@ -14,7 +12,7 @@ class SystemChannels {
 class MethodChannel {
   const MethodChannel();
 
-  Future<String> invokeMethod(String method, [dynamic arguments]) async {
+  Future<String?> invokeMethod(String method, [dynamic arguments]) async {
     var locale = arguments['locale'];
     if (locale == null) {
       return null;
@@ -31,7 +29,7 @@ class MethodChannel {
 }
 
 class AssetBundle {
-  Future<String> loadString(String key, {bool cache = true}) async {
+  Future<String?> loadString(String key, {bool cache = true}) async {
     // We only have two locales in the test.
     if (key.contains('fr')) {
       return jsonEncode(fr.MessageLookup().messages);

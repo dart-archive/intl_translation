@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart=2.10
-
 @Timeout(Duration(seconds: 180))
 
 library embedded_plural_text_after_test;
@@ -14,7 +12,7 @@ import 'failed_extraction_test.dart';
 
 void main() {
   test('Expect failure because of embedded plural with text after it', () {
-    List<String> specialFiles = ['embedded_plural_text_after.dart'];
+    var specialFiles = <String>['embedded_plural_text_after.dart'];
     runTestWithWarnings(
         warningsAreErrors: true,
         expectedExitCode: 1,

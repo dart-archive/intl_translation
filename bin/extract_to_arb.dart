@@ -3,8 +3,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart=2.10
-
 /// This script uses the extract_messages.dart library to find the Intl.message
 /// calls in the target dart files and produces ARB format output. See
 /// https://code.google.com/p/arb/wiki/ApplicationResourceBundleSpecification
@@ -20,36 +18,47 @@ import 'package:intl_translation/src/directory_utils.dart';
 import 'package:path/path.dart' as path;
 
 void main(List<String> args) {
-  String targetDir;
-  String outputFilename;
-  String sourcesListFile;
-  bool transformer;
+  var targetDir = '.';
+  var outputFilename = 'intl_messages.arb';
+  String? sourcesListFile;
+  var transformer = false;
   var parser = ArgParser();
-  var extraction = MessageExtraction();
-  String locale;
+  var extract = MessageExtraction();
+  String? locale;
+
+  /// Whether to include source_text in messages
+  var includeSourceText = false;
+
+  /// If this is true, no translation meta data is written
+  var suppressMetaData = false;
+
+  /// If this is true, the @@last_modified entry is not output.
+  var suppressLastModified = false;
+
+  /// If this is true, then treat all warnings as errors.
+  var warningsAreErrors = false;
   parser.addFlag('suppress-last-modified',
-      defaultsTo: false,
-      callback: (x) => extraction.suppressLastModified = x,
+      callback: (x) => suppressLastModified = x,
       help: 'Suppress @@last_modified entry.');
   parser.addFlag('suppress-warnings',
       defaultsTo: false,
-      callback: (x) => extraction.suppressWarnings = x,
+      callback: (x) => extract = extract.copyWith(suppressWarnings: x),
       help: 'Suppress printing of warnings.');
   parser.addFlag('suppress-meta-data',
-      defaultsTo: false,
-      callback: (x) => extraction.suppressMetaData = x,
+      callback: (x) => suppressMetaData = x,
       help: 'Suppress writing meta information');
   parser.addFlag('warnings-are-errors',
-      defaultsTo: false,
-      callback: (x) => extraction.warningsAreErrors = x,
+      callback: (x) => warningsAreErrors = x,
       help: 'Treat all warnings as errors, stop processing ');
   parser.addFlag('embedded-plurals',
       defaultsTo: true,
-      callback: (x) => extraction.allowEmbeddedPluralsAndGenders = x,
+      callback: (x) =>
+          extract = extract.copyWith(allowEmbeddedPluralsAndGenders: x),
       help: 'Allow plurals and genders to be embedded as part of a larger '
           'string, otherwise they must be at the top level.');
+  //TODO(mosuem): All references to the transformer can be removed, but this
+  // should happen in a separate PR to help with testing.
   parser.addFlag('transformer',
-      defaultsTo: false,
       callback: (x) => transformer = x,
       help: 'Assume that the transformer is in use, so name and args '
           "don't need to be specified for messages.");
@@ -57,27 +66,38 @@ void main(List<String> args) {
       defaultsTo: null,
       callback: (value) => locale = value,
       help: 'Specify the locale set inside the arb file.');
-  parser.addFlag('with-source-text',
-      defaultsTo: false,
-      callback: (x) => extraction.includeSourceText = x,
-      help: 'Include source_text in meta information.');
-  parser.addOption('output-dir',
-      defaultsTo: '.',
-      callback: (value) => targetDir = value,
-      help: 'Specify the output directory.');
-  parser.addOption('output-file',
-      defaultsTo: 'intl_messages.arb',
-      callback: (value) => outputFilename = value,
-      help: 'Specify the output file.');
-  parser.addOption('sources-list-file',
-      callback: (value) => sourcesListFile = value,
-      help: 'A file that lists the Dart files to read, one per line.'
-          'The paths in the file can be absolute or relative to the '
-          'location of this file.');
-  parser.addFlag('require_descriptions',
-      defaultsTo: false,
-      help: "Fail for messages that don't have a description.",
-      callback: (val) => extraction.descriptionRequired = val);
+  parser.addFlag(
+    'with-source-text',
+    callback: (x) => includeSourceText = x,
+    help: 'Include source_text in meta information.',
+  );
+  parser.addOption(
+    'output-dir',
+    callback: (value) {
+      if (value != null) targetDir = value;
+    },
+    help: 'Specify the output directory.',
+  );
+  parser.addOption(
+    'output-file',
+    callback: (value) {
+      if (value != null) outputFilename = value;
+    },
+    help: 'Specify the output file.',
+  );
+  parser.addOption(
+    'sources-list-file',
+    callback: (value) => sourcesListFile = value,
+    help: 'A file that lists the Dart files to read, one per line.'
+        'The paths in the file can be absolute or relative to the '
+        'location of this file.',
+  );
+  parser.addFlag(
+    'require_descriptions',
+    defaultsTo: false,
+    help: "Fail for messages that don't have a description.",
+    callback: (val) => extract = extract.copyWith(descriptionRequired: val),
+  );
 
   parser.parse(args);
   if (args.isEmpty) {
@@ -86,30 +106,30 @@ void main(List<String> args) {
     print(parser.usage);
     exit(0);
   }
-  var allMessages = {};
+  var allMessages = <String, dynamic>{};
   if (locale != null) {
-    allMessages['@@locale'] = locale;
+    allMessages['@@locale'] = locale!;
   }
-  if (!extraction.suppressLastModified) {
+  if (!suppressLastModified) {
     allMessages['@@last_modified'] = DateTime.now().toIso8601String();
   }
 
-  var dartFiles = args.where((x) => x.endsWith('.dart')).toList();
-  dartFiles.addAll(linesFromFile(sourcesListFile));
-  for (var arg in dartFiles) {
-    var messages = extraction.parseFile(File(arg), transformer);
-    messages.forEach(
-      (k, v) => allMessages.addAll(
-        toARB(v,
-            includeSourceText: extraction.includeSourceText,
-            supressMetadata: extraction.suppressMetaData),
-      ),
-    );
-  }
+  var dartFiles = <String>[
+    ...args.where((x) => x.endsWith('.dart')),
+    ...linesFromFile(sourcesListFile)
+  ];
+  dartFiles
+      .map((dartFile) => extract.parseFile(File(dartFile), transformer))
+      .expand((parsedFile) => parsedFile.entries)
+      .map((nameToMessage) => toARB(
+            message: nameToMessage.value,
+            includeSourceText: includeSourceText,
+            supressMetadata: suppressMetaData,
+          ))
+      .forEach((message) => allMessages.addAll(message));
   var file = File(path.join(targetDir, outputFilename));
-  var encoder = JsonEncoder.withIndent('  ');
-  file.writeAsStringSync(encoder.convert(allMessages));
-  if (extraction.hasWarnings && extraction.warningsAreErrors) {
+  file.writeAsStringSync(JsonEncoder.withIndent('  ').convert(allMessages));
+  if (extract.hasWarnings && warningsAreErrors) {
     exit(1);
   }
 }

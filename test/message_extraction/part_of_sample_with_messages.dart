@@ -2,13 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.part of sample;
 
-// @dart=2.10
-
 part of sample;
 
 class Person {
   String name;
-  String gender;
+  String? gender;
   Person(this.name, this.gender);
 }
 
@@ -31,8 +29,9 @@ class YouveGotMessages {
     var aTrueValue = true;
     var msg = Intl.message('This method is not a lambda',
         name: 'nonLambda', desc: 'Not a lambda');
-    if (!aTrueValue) {
-      throw AssertionError('Parser should not fail with additional code.');
+    if (aTrueValue) {
+      var s = 'Parser should not fail with additional code.';
+      s.toString();
     }
     return msg;
   }
@@ -49,7 +48,7 @@ class YouveGotMessages {
       desc: 'Basic plurals');
 
   dynamic whereTheyWent(Person person, String place) =>
-      whereTheyWentMessage(person.name, person.gender, place);
+      whereTheyWentMessage(person.name, person.gender ?? 'other', place);
 
   String whereTheyWentMessage(String name, String gender, String place) {
     return Intl.message(

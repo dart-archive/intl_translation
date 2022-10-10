@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart=2.10
-
 /// This provides utilities for generating localized versions of
 /// messages. It does not stand alone, but expects to be given
 /// TranslatedMessage objects and generate code for a particular locale
@@ -19,7 +17,8 @@ import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
 
-import 'src/intl_message.dart';
+import 'src/messages/main_message.dart';
+import 'src/messages/message.dart';
 
 class MessageGeneration {
   /// If the import path following package: is something else, modify the
@@ -31,7 +30,7 @@ class MessageGeneration {
   /// [flutterImportPath] variable to change the import directives in the
   /// generated code. This is useful to mock out Flutter during tests since
   /// package:flutter cannot be imported from Dart VM.
-  String flutterImportPath = 'package:flutter';
+  String? flutterImportPath = 'package:flutter';
 
   /// If the path to the generated files is something other than the current
   /// directory, update the [generatedImportPath] variable to change the import
@@ -50,7 +49,7 @@ class MessageGeneration {
 
   /// If we have more than one set of messages to generate in a particular
   /// directory we may want to prefix some to distinguish them.
-  String generatedFilePrefix = '';
+  String? generatedFilePrefix = '';
 
   /// Should we use deferred loading for the generated libraries.
   bool useDeferredLoading = true;
@@ -62,13 +61,13 @@ class MessageGeneration {
   ///
   /// In release mode, a missing translation is an error. In debug mode, it
   /// falls back to the original string.
-  String codegenMode;
+  String? codegenMode;
 
   /// What is the path to the package for which we are generating.
   ///
   /// The exact format of this string depends on the generation mechanism,
   /// so it's left undefined.
-  String package;
+  String? package;
 
   bool get releaseMode => codegenMode == 'release';
 
@@ -103,20 +102,21 @@ class MessageGeneration {
   /// Generate a string that containts the dart code
   /// with the [translations] in [locale].
   String contentForLocale(
-      String basicLocale, Iterable<TranslatedMessage> translations) {
+    String basicLocale,
+    Iterable<TranslatedMessage> translations,
+  ) {
     clearOutput();
-    var locale = MainMessage()
-        .escapeAndValidateString(Intl.canonicalizedLocale(basicLocale));
+    var locale = Message.escapeString(Intl.canonicalizedLocale(basicLocale));
     output.write(prologue(locale));
     // Exclude messages with no translation and translations with no matching
     // original message (e.g. if we're using some messages from a larger
     // catalog)
     var usableTranslations = translations
-        .where((each) => each.originalMessages != null && each.message != null)
+        .where((translation) => translation.originalMessages.isNotEmpty)
         .toList();
-    for (var each in usableTranslations) {
-      for (var original in each.originalMessages) {
-        original.addTranslation(locale, each.message);
+    for (var translation in usableTranslations) {
+      for (var original in translation.originalMessages) {
+        original.addTranslation(locale, translation.message);
       }
     }
     usableTranslations.sort((a, b) =>
@@ -129,7 +129,9 @@ class MessageGeneration {
 
   /// Write out the translated forms.
   void writeTranslations(
-      Iterable<TranslatedMessage> usableTranslations, String locale) {
+    Iterable<TranslatedMessage> usableTranslations,
+    String locale,
+  ) {
     for (var translation in usableTranslations) {
       // Some messages we generate as methods in this class. Simpler ones
       // we inline in the map from names to messages.
@@ -147,16 +149,16 @@ class MessageGeneration {
 
     // Now write the map of names to either the direct translation or to a
     // method.
-    var entries = (usableTranslations
+    var names = (usableTranslations
             .expand((translation) => translation.originalMessages)
             .toSet()
             .toList()
           ..sort((a, b) => a.name.compareTo(b.name)))
-        .map((original) =>
-            "    '${original.escapeAndValidateString(original.name)}'"
-            ': ${_mapReference(original, locale)}');
+        .map((original) => "    '${Message.escapeString(original.name)}'"
+            ': ${_mapReference(original, locale)}')
+        .join(',\n');
     output
-      ..write(entries.join(',\n'))
+      ..write(names)
       ..write('\n  };\n}\n');
   }
 
@@ -550,7 +552,9 @@ class JsonMessageGeneration extends DataMapMessageGeneration {
 
   @override
   void writeTranslations(
-      Iterable<TranslatedMessage> usableTranslations, String locale) {
+    Iterable<TranslatedMessage> usableTranslations,
+    String locale,
+  ) {
     output.write('''
   Map<String, dynamic>$orNull _messages;
   Map<String, dynamic> get messages => _messages ??=
@@ -558,12 +562,12 @@ class JsonMessageGeneration extends DataMapMessageGeneration {
 ''');
 
     output.write('  static final messageText = ');
-    var entries = usableTranslations
+    var messages = usableTranslations
         .expand((translation) => translation.originalMessages);
-    var map = {};
-    for (var original in entries) {
-      map[original.name] = original.toJsonForLocale(locale);
-    }
+    var map = <String, dynamic>{
+      for (var original in messages)
+        original.name: original.toJsonForLocale(locale)
+    };
     var jsonEncoded = JsonEncoder().convert(map);
     output.write(_embedInLiteral(jsonEncoded));
   }
@@ -584,12 +588,12 @@ import 'dart:collection';
   Map<String, dynamic> get messages => _constMessages;
 ''');
 
-    var entries = usableTranslations
+    var messages = usableTranslations
         .expand((translation) => translation.originalMessages);
-    var map = <String, Object>{};
-    for (var original in entries) {
-      map[original.name] = original.toJsonForLocale(locale);
-    }
+    var map = <String, dynamic>{
+      for (var original in messages)
+        original.name: original.toJsonForLocale(locale)
+    };
 
     output.write('  static const _constMessages = ');
     _writeValue(map);
@@ -598,7 +602,7 @@ import 'dart:collection';
     output.write('}');
   }
 
-  void _writeValue(Object value) {
+  void _writeValue(dynamic value) {
     if (value == null) {
       output.write('null');
       return;
@@ -613,15 +617,11 @@ import 'dart:collection';
     }
     if (value is List) {
       output.write('<Object$orNull>[');
-      var isFirst = true;
-      for (final v in value) {
-        if (isFirst) {
-          isFirst = false;
-        } else {
-          output.write(',');
-        }
-        _writeValue(v);
+      for (var i = 0; i < value.length - 1; i++) {
+        _writeValue(value[i]);
+        output.write(',');
       }
+      _writeValue(value.last);
       output.write(']');
       return;
     }
@@ -691,7 +691,7 @@ import 'dart:collection';
 /// text in some way, e.g. to turn whatever format the translation uses for
 /// variables into a Dart string interpolation. Specific translation mechanisms
 /// are expected to subclass this.
-abstract class TranslatedMessage {
+class TranslatedMessage {
   /// The identifier for this message. In the simplest case, this is the name
   /// parameter from the Intl.message call,
   /// but it can be any identifier that this program and the output of the
@@ -703,15 +703,15 @@ abstract class TranslatedMessage {
 
   /// The original messages that we are a translation of. There can
   ///  be more than one original message for the same translation.
-  List<MainMessage> originalMessages;
+  final List<MainMessage> originalMessages;
 
   /// For backward compatibility, we still have the originalMessage API.
   MainMessage get originalMessage => originalMessages.first;
-  set originalMessage(MainMessage m) {
-    originalMessages = [m];
-  }
+  set originalMessage(MainMessage m) => originalMessages
+    ..clear()
+    ..add(m);
 
-  TranslatedMessage(this.id, this.translated);
+  TranslatedMessage(this.id, this.translated, this.originalMessages);
 
   Message get message => translated;
 

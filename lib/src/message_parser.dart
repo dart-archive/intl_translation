@@ -6,8 +6,14 @@
 /// messages. See extract_to_arb.dart and make_hardcoded_translation.dart.
 library message_parser;
 
-// ignore: import_of_legacy_library_into_null_safe
-import 'package:intl_translation/src/intl_message.dart';
+import 'messages/composite_message.dart';
+import 'messages/literal_string_message.dart';
+import 'messages/message.dart';
+import 'messages/pair_message.dart';
+import 'messages/submessages/gender.dart';
+import 'messages/submessages/plural.dart';
+import 'messages/submessages/select.dart';
+import 'messages/variable_substitution_message.dart';
 
 class MessageParser {
   final _ParserUtil _parser;
@@ -78,11 +84,11 @@ class _ParserUtil {
     At? Function(int s) callable,
     int at,
   ) {
-    int newAt = -1;
-    List<At> results = [];
+    var newAt = -1;
+    var results = <At>[];
     while (newAt != at) {
       newAt = at;
-      At? parser = callable(newAt);
+      var parser = callable(newAt);
       if (parser != null) {
         at = parser.at;
         results.add(parser);
@@ -99,11 +105,11 @@ class _ParserUtil {
     List<At? Function(int s)> callables,
     int at,
   ) {
-    int newAt = at;
-    List<At> resParser = [];
-    for (int i = 0; i < callables.length; i++) {
+    var newAt = at;
+    var resParser = <At>[];
+    for (var i = 0; i < callables.length; i++) {
       var callable = callables[i];
-      At? parser = callable.call(newAt);
+      var parser = callable.call(newAt);
       if (parser != null) {
         resParser.add(parser);
         newAt = parser.at;
@@ -142,18 +148,21 @@ class _ParserUtil {
 
   At<LiteralString>? icuEscapedText(int at) {
     if (at < input.length) {
-      Match? match = quotedBracketOpen.matchAsPrefix(input, at) ??
+      var match = quotedBracketOpen.matchAsPrefix(input, at) ??
           quotedBracketClose.matchAsPrefix(input, at) ??
           doubleQuotes.matchAsPrefix(input, at);
-      return match != null
-          ? At(LiteralString(match.group(1)), match.end)
-          : null;
+      if (match != null) {
+        var matchGroup = match.group(1);
+        if (matchGroup != null) {
+          return At(LiteralString(matchGroup), match.end);
+        }
+      }
     }
     return null;
   }
 
   At<LiteralString>? icuText(int at) {
-    Match? match = nonICURegex.matchAsPrefix(input, at);
+    var match = nonICURegex.matchAsPrefix(input, at);
     return at < input.length && match != null
         ? At(LiteralString(input[at]), at + 1)
         : null;
@@ -171,16 +180,19 @@ class _ParserUtil {
 
   At<LiteralString>? nonIcuMessageText(int at) {
     if (at < input.length) {
-      Match? match = nonOpenBracketRegex.matchAsPrefix(input, at);
+      var match = nonOpenBracketRegex.matchAsPrefix(input, at);
       if (match != null) {
-        return At(LiteralString(match.group(0)), match.end);
+        var matchGroup = match.group(0);
+        if (matchGroup != null) {
+          return At(LiteralString(matchGroup), match.end);
+        }
       }
     }
     return null;
   }
 
   At<LiteralString>? number(int at) {
-    Match? match = numberRegex.matchAsPrefix(input, at);
+    var match = numberRegex.matchAsPrefix(input, at);
     return match != null && match.group(1) != null
         ? At(LiteralString(int.parse(match.group(1)!).toString()), match.end)
         : null;
@@ -188,16 +200,19 @@ class _ParserUtil {
 
   At<LiteralString>? id(int at) {
     if (at < input.length) {
-      Match? match = idRegex.matchAsPrefix(input, at);
+      var match = idRegex.matchAsPrefix(input, at);
       if (match != null) {
-        return At(LiteralString(match.group(1)), match.end);
+        var matchGroup = match.group(1);
+        if (matchGroup != null) {
+          return At(LiteralString(matchGroup), match.end);
+        }
       }
     }
     return null;
   }
 
   At<LiteralString>? comma(int at) {
-    Match? match = commaWithWhitespace.matchAsPrefix(input, at);
+    var match = commaWithWhitespace.matchAsPrefix(input, at);
     return at < input.length && match != null
         ? At(LiteralString(','), match.end)
         : null;
@@ -226,8 +241,8 @@ class _ParserUtil {
       ],
       at,
     )?.mapResult((compMsg) {
-      LiteralString pluralKeyword = compMsg.pieces[1] as LiteralString;
-      Message interiorText = compMsg.pieces[3];
+      var pluralKeyword = compMsg.pieces[1] as LiteralString;
+      var interiorText = compMsg.pieces[3];
       return PairMessage<LiteralString, Message>(pluralKeyword, interiorText);
     });
   }
@@ -243,8 +258,8 @@ class _ParserUtil {
       ],
       at,
     )?.mapResult((compMsg) {
-      LiteralString preface = compMsg.pieces[0] as LiteralString;
-      CompositeMessage pluralClause = compMsg.pieces[3] as CompositeMessage;
+      var preface = compMsg.pieces[0] as LiteralString;
+      var pluralClause = compMsg.pieces[3] as CompositeMessage;
       return Plural.from(preface.string, pluralClause.pieces, null);
     });
   }
@@ -265,8 +280,8 @@ class _ParserUtil {
         ],
         s1,
       )?.mapResult((compMsg) {
-        LiteralString genderKeyword = compMsg.pieces[1] as LiteralString;
-        Message interiorText = compMsg.pieces[3];
+        var genderKeyword = compMsg.pieces[1] as LiteralString;
+        var interiorText = compMsg.pieces[3];
         return PairMessage(genderKeyword, interiorText);
       }),
       at,
@@ -284,8 +299,8 @@ class _ParserUtil {
       ],
       at,
     )?.mapResult((compMsg) {
-      LiteralString preface = compMsg.pieces[0] as LiteralString;
-      CompositeMessage genderClause = (compMsg.pieces[3] as CompositeMessage);
+      var preface = compMsg.pieces[0] as LiteralString;
+      var genderClause = (compMsg.pieces[3] as CompositeMessage);
       return Gender.from(preface.string, genderClause.pieces, null);
     });
   }
@@ -303,8 +318,8 @@ class _ParserUtil {
         ],
         s1,
       )?.mapResult((compMsg) {
-        LiteralString id = compMsg.pieces[0] as LiteralString;
-        Message interiorText = compMsg.pieces[2];
+        var id = compMsg.pieces[0] as LiteralString;
+        var interiorText = compMsg.pieces[2];
         return PairMessage(id, interiorText);
       }),
       at,
@@ -322,8 +337,8 @@ class _ParserUtil {
       ],
       at,
     )?.mapResult((compMsg) {
-      LiteralString preface = compMsg.pieces[0] as LiteralString;
-      CompositeMessage selectClause = compMsg.pieces[3] as CompositeMessage;
+      var preface = compMsg.pieces[0] as LiteralString;
+      var selectClause = compMsg.pieces[3] as CompositeMessage;
       return Select.from(preface.string, selectClause.pieces, null);
     });
   }
@@ -354,7 +369,7 @@ class _ParserUtil {
       ],
       at,
     )?.mapResult((compMsg) {
-      LiteralString id = (compMsg.pieces[1] as LiteralString);
+      var id = (compMsg.pieces[1] as LiteralString);
       return VariableSubstitution.named(id.string);
     });
   }

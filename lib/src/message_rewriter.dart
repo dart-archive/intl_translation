@@ -2,13 +2,13 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart=2.10
-
 /// Code to rewrite Intl.message calls adding the name and args parameters
 /// automatically, primarily used by the transformer.
 import 'package:analyzer/dart/analysis/utilities.dart';
-import 'package:intl_translation/extract_messages.dart';
-import 'package:intl_translation/src/intl_message.dart';
+
+import '../extract_messages.dart';
+import '../visitors/message_finding_visitor.dart';
+import 'messages/main_message.dart';
 
 /// Rewrite all Intl.message/plural/etc. calls in [source], adding "name"
 /// and "args" parameters if they are not provided.
@@ -20,11 +20,11 @@ String rewriteMessages(String source, String sourceName,
   var messages = findMessages(source, sourceName);
   messages.sort((a, b) => a.sourcePosition.compareTo(b.sourcePosition));
 
-  var start = 0;
+  int? start = 0;
   var newSource = StringBuffer();
   for (var message in messages) {
     if (message.arguments.isNotEmpty) {
-      newSource.write(source.substring(start, message.sourcePosition));
+      newSource.write(source.substring(start!, message.sourcePosition));
       if (useStringSubstitution) {
         rewriteWithStringSubstitution(newSource, source, start, message);
       } else {
@@ -33,7 +33,7 @@ String rewriteMessages(String source, String sourceName,
       start = message.endPosition;
     }
   }
-  newSource.write(source.substring(start));
+  newSource.write(source.substring(start!));
   return newSource.toString();
 }
 
@@ -41,14 +41,14 @@ String rewriteMessages(String source, String sourceName,
 ///
 /// This may produce uglier source, but is more reliable.
 void rewriteRegenerating(
-    StringBuffer newSource, String source, int start, MainMessage message) {
+    StringBuffer newSource, String source, int? start, MainMessage message) {
   // TODO(alanknight): We could generate more efficient code than the
   // original here, dispatching more directly to the MessageLookup.
   newSource.write(message.toOriginalCode());
 }
 
 void rewriteWithStringSubstitution(
-    StringBuffer newSource, String source, int start, MainMessage message) {
+    StringBuffer newSource, String source, int? start, MainMessage message) {
   var originalSource =
       source.substring(message.sourcePosition, message.endPosition);
   var closingParen = originalSource.lastIndexOf(')');
@@ -74,7 +74,7 @@ final RegExp argsCheck = RegExp('[\\n,]\\s+args:');
 ///
 /// Report errors as coming from [sourceName]
 List<MainMessage> findMessages(String source, String sourceName,
-    [MessageExtraction extraction]) {
+    [MessageExtraction? extraction]) {
   extraction = extraction ?? MessageExtraction();
   try {
     var result = parseString(content: source);
@@ -90,8 +90,10 @@ List<MainMessage> findMessages(String source, String sourceName,
     return [];
   }
   extraction.origin = sourceName;
-  var visitor = MessageFindingVisitor(extraction);
-  visitor.generateNameAndArgs = true;
+  var visitor = MessageFindingVisitor(
+    extraction,
+    generateNameAndArgs: true,
+  );
   extraction.root.accept(visitor);
   return visitor.messages.values.toList();
 }

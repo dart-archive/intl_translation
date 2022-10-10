@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart=2.10
-
 /// A component which should have its own separate messages, with their own
 /// translations.
 import 'package:intl/intl.dart';

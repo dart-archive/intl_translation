@@ -2,8 +2,6 @@
 // This is a library that looks up messages for specific locales by
 // delegating to the appropriate library.
 
-// @dart=2.10
-
 import 'package:intl/intl.dart';
 import 'package:intl/message_lookup_by_library.dart';
 // ignore: implementation_imports
@@ -17,7 +15,7 @@ Map<String, LibraryLoader> _deferredLibraries = {
   'fr_xyz123': () => messages_fr_xyz123.loadLibrary(),
 };
 
-MessageLookupByLibrary _findExact(localeName) {
+MessageLookupByLibrary? _findExact(localeName) {
   switch (localeName) {
     case 'fr_xyz123':
       return messages_fr_xyz123.messages;
@@ -49,7 +47,7 @@ bool _messagesExistFor(String locale) {
   }
 }
 
-MessageLookupByLibrary _findGeneratedMessagesFor(locale) {
+MessageLookupByLibrary? _findGeneratedMessagesFor(locale) {
   var actualLocale =
       Intl.verifiedLocale(locale, _messagesExistFor, onFailure: (_) => null);
   if (actualLocale == null) return null;
