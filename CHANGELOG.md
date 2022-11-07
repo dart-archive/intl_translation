@@ -1,6 +1,13 @@
-## 0.17.10+2
+## 0.17.11-dev
+  * Add support for Flutter locale split.
   * Allow null safe code when parsing.
-
+  * Update analyzer dependency.
+  * Upgrade to `package:lints/recommended.yaml`.
+  * Initial null safety conversion.
+  * Remove petit_parser dependency.
+  * Address analyzer deprecations, see [#168](https://github.com/dart-lang/intl_translation/issues/168).
+  * Migrate to null safety.
+  
 ## 0.17.10+1
   * Generate code that passes analysis with `implicit-casts: false`.
   * Allow use of `MessageExtraction` and `MessageGeneration` without `File`.
