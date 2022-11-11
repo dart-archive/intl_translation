@@ -188,10 +188,9 @@ void loadData(
   MessageGeneration generation,
 ) {
   var file = File(filename);
-  var src = file.readAsStringSync();
-  var data =
-      Map.castFrom<dynamic, dynamic, String, String>(jsonDecoder.decode(src));
-  var locale = data['@@locale'] ?? data['_locale'];
+  var arbFileContents = file.readAsStringSync();
+  Map<String, dynamic> parsedArb = jsonDecoder.decode(arbFileContents);
+  String? locale = parsedArb['@@locale'] ?? parsedArb['_locale'];
   if (locale == null) {
     // Get the locale from the end of the file name. This assumes that the file
     // name doesn't contain any underscores except to begin the language tag
@@ -202,7 +201,12 @@ void loadData(
     print('No @@locale or _locale field found in $name, '
         "assuming '$locale' based on the file name.");
   }
-  messagesByLocale.putIfAbsent(locale, () => []).add(data);
+  // Remove all metadata from the map
+  parsedArb.remove('_locale');
+  parsedArb.removeWhere((key, _) => key.startsWith('@'));
+
+  var messages = Map.castFrom<dynamic, dynamic, String, String>(parsedArb);
+  messagesByLocale.putIfAbsent(locale, () => []).add(messages);
   generation.allLocales.add(locale);
 }
 
@@ -242,7 +246,6 @@ TranslatedMessage? recreateIntlObjects(
   String data,
   Map<String, List<MainMessage>> messages,
 ) {
-  if (id.startsWith('@')) return null;
   var messageParser = MessageParser(data);
   var parsed = messageParser.pluralGenderSelectParse();
   if (parsed is LiteralString && parsed.string.isEmpty) {
