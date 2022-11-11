@@ -243,6 +243,7 @@ TranslatedMessage? recreateIntlObjects(
   Map<String, List<MainMessage>> messages,
 ) {
   if (id.startsWith('@') || data == null) return null;
+  var id2 = id;
   var messageParser = MessageParser(data);
   var parsed = messageParser.pluralGenderSelectParse();
   if (parsed is LiteralString && parsed.string.isEmpty) {
