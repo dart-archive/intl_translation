@@ -95,12 +95,12 @@ void main(List<String> args) {
       help: 'What mode to run the code generator in. Either release or debug.');
   parser.addOption('sources-list-file',
       callback: (value) => sourcesListFile = value,
-      help: 'A file that lists the Dart files to read, one per line.'
+      help: 'A file that lists the Dart files to read, one per line. '
           'The paths in the file can be absolute or relative to the '
           'location of this file.');
   parser.addOption('translations-list-file',
       callback: (value) => translationsListFile = value,
-      help: 'A file that lists the translation files to process, one per line.'
+      help: 'A file that lists the translation files to process, one per line. '
           'The paths in the file can be absolute or relative to the '
           'location of this file.');
   parser.addFlag('transformer',
@@ -144,8 +144,9 @@ void main(List<String> args) {
   // sort of automated name we're using.
   //TODO(mosuem):Why is the suppress-warnings flag ignored?
   extraction.suppressWarnings = true;
-  var allMessages =
-      dartFiles.map((each) => extraction.parseFile(File(each), transformer));
+  var allMessages = dartFiles
+      .map((each) => extraction.parseFile(File(each), transformer))
+      .toList();
 
   /// Keeps track of all the messages we have processed so far, keyed by message
   /// name.
@@ -153,18 +154,19 @@ void main(List<String> args) {
   for (var eachMap in allMessages) {
     eachMap.forEach((k, v) => messages.putIfAbsent(k, () => []).add(v));
   }
-  var messagesByLocale = <String, List<Map<String, String>>>{};
+  var messagesByLocale = <String, List<Map<String, dynamic>>>{};
 
   // In order to group these by locale, to support multiple input files,
   // we're reading all the data eagerly, which could be a memory
   // issue for very large projects.
-  for (var arg in jsonFiles) {
-    loadData(arg, messagesByLocale, generation);
+  for (var file in jsonFiles) {
+    loadLocaleData(file, messagesByLocale, generation);
   }
 
-  messagesByLocale.forEach((locale, data) {
-    generateLocaleFile(locale, data, targetDir, generation, messages);
-  });
+  for (var locale in messagesByLocale.keys) {
+    generateLocaleFile(
+        locale, messagesByLocale[locale]!, targetDir, generation, messages);
+  }
 
   var mainImportFile = File(path.join(
       targetDir, '${generation.generatedFilePrefix}messages_all.dart'));
@@ -182,15 +184,14 @@ void main(List<String> args) {
   }
 }
 
-void loadData(
+void loadLocaleData(
   String filename,
-  Map<String, List<Map<String, String>>> messagesByLocale,
+  Map<String, List<Map<String, dynamic>>> messagesByLocale,
   MessageGeneration generation,
 ) {
   var file = File(filename);
   var src = file.readAsStringSync();
-  var data =
-      Map.castFrom<dynamic, dynamic, String, String>(jsonDecoder.decode(src));
+  var data = jsonDecoder.decode(src) as Map<String, dynamic>;
   var locale = data['@@locale'] ?? data['_locale'];
   if (locale == null) {
     // Get the locale from the end of the file name. This assumes that the file
@@ -208,29 +209,31 @@ void loadData(
 
 /// Create the file of generated code for a particular locale.
 ///
-/// We read the ARB
-/// data and create [BasicTranslatedMessage] instances from everything,
-/// excluding only the special _locale attribute that we use to indicate the
-/// locale. If that attribute is missing, we try to get the locale from the
-/// last section of the file name. Each ARB file produces a Map of message
-/// translations, and there can be multiple such maps in [localeData].
+/// We read the ARB data and create [BasicTranslatedMessage] instances from
+/// everything, excluding only the special _locale attribute that we use to
+/// indicate the locale. If that attribute is missing, we try to get the locale
+/// from the last section of the file name. Each ARB file produces a Map of
+/// message translations, and there can be multiple such maps in [localeData].
 void generateLocaleFile(
-    String locale,
-    List<Map<String, String>> localeData,
-    String targetDir,
-    MessageGeneration generation,
-    Map<String, List<MainMessage>> messages) {
-  var translations = localeData
-      .expand((jsonTranslations) {
-        return jsonTranslations.entries.map((e) {
-          var id = e.key;
-          var messageData = e.value;
-          return recreateIntlObjects(id, messageData, messages);
-        });
-      })
-      .whereType<TranslatedMessage>()
-      .toList();
-  generation.generateIndividualMessageFile(locale, translations, targetDir);
+  String locale,
+  List<Map<String, dynamic>> localeData,
+  String targetDir,
+  MessageGeneration generation,
+  Map<String, List<MainMessage>> messages,
+) {
+  var translations = <TranslatedMessage?>[];
+
+  for (var data in localeData) {
+    for (var key in data.keys) {
+      if (key.startsWith('@')) continue;
+
+      var messageData = data[key]! as String;
+      translations.add(recreateIntlObjects(key, messageData, messages));
+    }
+  }
+
+  generation.generateIndividualMessageFile(
+      locale, translations.whereType<TranslatedMessage>().toList(), targetDir);
 }
 
 /// Regenerate the original IntlMessage objects from the given [data]. For
