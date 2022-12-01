@@ -26,16 +26,19 @@ void main(List<String> args) {
   var extract = MessageExtraction();
   String? locale;
 
-  /// Whether to include source_text in messages
+  // Whether to include source_text in messages
   var includeSourceText = false;
 
-  /// If this is true, no translation meta data is written
+  // If this is true, no translation meta data is written
   var suppressMetaData = false;
 
-  /// If this is true, the @@last_modified entry is not output.
+  // If this is true, the @@last_modified entry is not output.
   var suppressLastModified = false;
 
-  /// If this is true, then treat all warnings as errors.
+  parser.addFlag('help',
+      abbr: 'h', negatable: false, help: 'Print this usage information.');
+
+  // If this is true, then treat all warnings as errors.
   parser.addFlag('suppress-last-modified',
       callback: (x) => suppressLastModified = x,
       help: 'Suppress @@last_modified entry.');
@@ -97,13 +100,17 @@ void main(List<String> args) {
     callback: (val) => extract.descriptionRequired = val,
   );
 
-  parser.parse(args);
-  if (args.isEmpty) {
-    print('Accepts Dart files and produces $outputFilename');
-    print('Usage: extract_to_arb [options] [files.dart]');
+  var argResults = parser.parse(args);
+  var showHelp = (argResults['help'] as bool?) ?? false;
+  if (args.isEmpty || showHelp) {
+    print('Accepts Dart source files and produce $outputFilename as output.');
+    print('');
+    print('Usage: extract_to_arb [options] <files.dart>');
+    print('');
     print(parser.usage);
     exit(0);
   }
+
   var allMessages = <String, dynamic>{};
   if (locale != null) {
     allMessages['@@locale'] = locale!;
