@@ -105,7 +105,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   @override
   void visitMethodDeclaration(MethodDeclaration node) {
     setFields(
-      name: node.name2.lexeme,
+      name: node.name.lexeme,
       parameters: node.parameters?.parameters,
       documentation: node.documentationComment,
     );
@@ -118,7 +118,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
   @override
   void visitFunctionDeclaration(FunctionDeclaration node) {
     setFields(
-      name: node.name2.lexeme,
+      name: node.name.lexeme,
       parameters: node.functionExpression.parameters?.parameters,
       documentation: node.documentationComment,
     );
@@ -134,7 +134,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     // e.g. String first, second = Intl.message(...);
     setFields(
       name: node.fields.variables.length == 1
-          ? node.fields.variables.first.name2.lexeme
+          ? node.fields.variables.first.name.lexeme
           : null,
       documentation: node.documentationComment,
     );
@@ -150,7 +150,7 @@ class MessageFindingVisitor extends GeneralizingAstVisitor {
     // e.g. String first, second = Intl.message(...);
     setFields(
       name: node.variables.variables.length == 1
-          ? node.variables.variables.first.name2.lexeme
+          ? node.variables.variables.first.name.lexeme
           : null,
       documentation: node.documentationComment,
     );

@@ -277,7 +277,7 @@ abstract class Message {
       if (parent is ClassDeclaration ||
           parent is MixinDeclaration ||
           parent is EnumDeclaration) {
-        name = (parent as NamedCompilationUnitMember).name2.lexeme;
+        name = (parent as NamedCompilationUnitMember).name.lexeme;
         break;
       }
     }
