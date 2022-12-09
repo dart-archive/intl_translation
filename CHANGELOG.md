@@ -1,4 +1,4 @@
-## 0.17.11-dev
+## 0.18.0
   * Add support for Flutter locale split.
   * Allow null safe code when parsing.
   * Update analyzer dependency.

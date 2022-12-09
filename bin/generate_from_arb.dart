@@ -43,6 +43,8 @@ void main(List<String> args) {
   var useJsonFlag = false;
   var useCodeMapFlag = false;
   var useFlutterLocaleSplit = false;
+  parser.addFlag('help',
+      abbr: 'h', negatable: false, help: 'Print this usage information.');
   parser.addFlag('json', callback: (useJson) {
     useJsonFlag = useJson;
     if (useJson) {
@@ -95,12 +97,12 @@ void main(List<String> args) {
       help: 'What mode to run the code generator in. Either release or debug.');
   parser.addOption('sources-list-file',
       callback: (value) => sourcesListFile = value,
-      help: 'A file that lists the Dart files to read, one per line.'
+      help: 'A file that lists the Dart files to read, one per line. '
           'The paths in the file can be absolute or relative to the '
           'location of this file.');
   parser.addOption('translations-list-file',
       callback: (value) => translationsListFile = value,
-      help: 'A file that lists the translation files to process, one per line.'
+      help: 'A file that lists the translation files to process, one per line. '
           'The paths in the file can be absolute or relative to the '
           'location of this file.');
   parser.addFlag('transformer',
@@ -108,7 +110,7 @@ void main(List<String> args) {
       help: 'Assume that the transformer is in use, so name and args '
           "don't need to be specified for messages.");
 
-  parser.parse(args);
+  var argResults = parser.parse(args);
   var dartFiles = <String>[
     ...args.where((x) => x.endsWith('dart')),
     ...linesFromFile(sourcesListFile)
@@ -117,10 +119,12 @@ void main(List<String> args) {
     ...args.where((x) => x.endsWith('.arb')),
     ...linesFromFile(translationsListFile)
   ];
-  if (dartFiles.isEmpty || jsonFiles.isEmpty) {
+  var showHelp = (argResults['help'] as bool?) ?? false;
+  if (dartFiles.isEmpty || jsonFiles.isEmpty || showHelp) {
     print('Usage: generate_from_arb [options]'
         ' file1.dart file2.dart ...'
         ' translation1_<languageTag>.arb translation2.arb ...');
+    print('');
     print(parser.usage);
     exit(0);
   }

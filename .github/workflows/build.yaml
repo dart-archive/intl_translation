@@ -32,12 +32,17 @@ jobs:
       - name: dart pub get
         run: dart pub get
 
-      # TODO(devoncarew): Re-enable this after more refactoring of the repo.
-      # - name: dart format
-      #   run: dart format --output=none --set-exit-if-changed .
+      - name: dart format
+        run: dart format --output=none --set-exit-if-changed bin/ lib/ test/
 
       - name: dart analyze
         run: dart analyze --fatal-infos
 
       - name: dart test
         run: dart test
+
+      # Ensure the example code is up-to-date with the generator.
+      - name: validate example/
+        run: |
+          (cd example; make)
+          git diff --exit-code example
