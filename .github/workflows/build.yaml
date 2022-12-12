@@ -1,0 +1,48 @@
+name: Dart
+
+on:
+  schedule:
+    # “At 00:00 (UTC) on Sunday.”
+    - cron: '0 0 * * 0'
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # TODO(devoncarew): Re-enable; there are currently 9 failing tests on
+        # Windows.
+        # os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
+        sdk: [2.18.0, stable, dev]
+
+    name: build on ${{ matrix.os }} for ${{ matrix.sdk }}
+
+    steps:
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        with:
+          sdk: ${{ matrix.sdk }}
+
+      - name: dart pub get
+        run: dart pub get
+
+      - name: dart format
+        run: dart format --output=none --set-exit-if-changed bin/ lib/ test/
+
+      - name: dart analyze
+        run: dart analyze --fatal-infos
+
+      - name: dart test
+        run: dart test
+
+      # Ensure the example code is up-to-date with the generator.
+      - name: validate example/
+        run: |
+          (cd example; make)
+          git diff --exit-code example

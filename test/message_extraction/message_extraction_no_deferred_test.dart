@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@Timeout(const Duration(seconds: 180))
+@Timeout(Duration(seconds: 180))
 
 /// A test for message extraction and code generation not using deferred
 /// loading for the generated code.
@@ -10,9 +10,9 @@ library message_extraction_no_deferred_test;
 
 import 'package:test/test.dart';
 
-import 'message_extraction_test.dart' as mainTest;
+import 'message_extraction_test.dart' as main_test;
 
-main() {
-  mainTest.useDeferredLoading = false;
-  mainTest.main();
+void main() {
+  main_test.useDeferredLoading = false;
+  main_test.main();
 }

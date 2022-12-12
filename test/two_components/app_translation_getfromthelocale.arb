@@ -1,5 +1,4 @@
 {
   "@@locale": "fr",
-  "Hello from application": "Bonjour de l'application",
-  "@Hello from application": null
+  "Hello from application": "Bonjour de l'application"
 }
