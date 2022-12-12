@@ -33,7 +33,7 @@ jobs:
         run: dart pub get
 
       - name: dart format
-        run: dart format --output=none --set-exit-if-changed bin/ lib/ test/
+        run: dart format --output=none --set-exit-if-changed bin/ lib/
 
       - name: dart analyze
         run: dart analyze --fatal-infos
