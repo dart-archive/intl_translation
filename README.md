@@ -20,7 +20,7 @@ dart run intl_translation:extract_to_arb --output-dir=target/directory \
 
 This supports wildcards. For example, to extract messages from a series of files in path `lib/**/*.dart`, you can run
 ```dart
-pub run intl_translation:extract_to_arb --output-dir=target/directory
+dart run intl_translation:extract_to_arb --output-dir=target/directory
       lib/**/*.dart
 ```
 
