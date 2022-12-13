@@ -4,7 +4,7 @@
 // function name.
 
 // Ignore issues from any lints in this file.
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, unused_import
 
 import 'package:intl/intl.dart';
 import 'package:intl/message_lookup_by_library.dart';

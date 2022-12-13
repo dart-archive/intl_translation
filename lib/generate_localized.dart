@@ -186,7 +186,7 @@ class MessageGeneration {
 // function name.
 $languageTag
 // Ignore issues from any lints in this file.
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, unused_import
 
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
@@ -268,7 +268,7 @@ ${releaseMode ? overrideLookup() : ''}''';
 // delegating to the appropriate library.
 $languageTag
 // Ignore issues from any lints in this file.
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, unused_import
 
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
