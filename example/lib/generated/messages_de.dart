@@ -3,11 +3,8 @@
 // messages from the main program should be duplicated here with the same
 // function name.
 
-// Ignore issues from commonly used lints in this file.
-// ignore_for_file:unnecessary_brace_in_string_interps
-// ignore_for_file:prefer_single_quotes,comment_references, directives_ordering
-// ignore_for_file:annotate_overrides,prefer_generic_function_type_aliases
-// ignore_for_file:unused_import, file_names
+// Ignore issues from any lints in this file.
+// ignore_for_file: type=lint
 
 import 'package:intl/intl.dart';
 import 'package:intl/message_lookup_by_library.dart';
