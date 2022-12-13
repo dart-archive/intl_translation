@@ -18,4 +18,4 @@ assignees: ''
 Any `.arb` file contents or Dart code which could help in reproducing the bug?
 
 **System info**
-<The output of `dart pub deps --style compact` in you project>
+<The output of `dart pub deps --style compact` in your project>
