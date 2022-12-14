@@ -243,7 +243,7 @@ typedef MessageIfAbsent = String Function(String$orNull message, List<Object>$or
     output.write('\n');
     output.writeln('typedef LibraryLoader = Future<dynamic> Function();');
     output.writeln();
-    output.write('final Map<String, LibraryLoader> _deferredLibraries = {\n');
+    output.writeln('final Map<String, LibraryLoader> _deferredLibraries = {');
     for (var rawLocale in allLocales) {
       var locale = Intl.canonicalizedLocale(rawLocale);
       var loadOperation = (useDeferredLoading)
