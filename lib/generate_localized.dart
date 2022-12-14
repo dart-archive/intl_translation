@@ -238,7 +238,7 @@ typedef MessageIfAbsent = String Function(String$orNull message, List<Object>$or
       var file = importForGeneratedFile(baseFile);
       output.write("import '$file' ");
       if (useDeferredLoading) output.write('deferred ');
-      output.write('as ${libraryName(locale)};\n');
+      output.writeln('as ${libraryName(locale)};');
     }
     output.writeln();
     output.writeln('typedef LibraryLoader = Future<dynamic> Function();');
