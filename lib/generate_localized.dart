@@ -240,7 +240,7 @@ typedef MessageIfAbsent = String Function(String$orNull message, List<Object>$or
       if (useDeferredLoading) output.write('deferred ');
       output.write('as ${libraryName(locale)};\n');
     }
-    output.write('\n');
+    output.writeln();
     output.writeln('typedef LibraryLoader = Future<dynamic> Function();');
     output.writeln();
     output.writeln('final Map<String, LibraryLoader> _deferredLibraries = {');
