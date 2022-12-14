@@ -3,11 +3,7 @@
 // This is a library that looks up messages for specific locales by delegating
 // to the appropriate library.
 
-// ignore_for_file: argument_type_not_assignable
-// ignore_for_file: file_names
-// ignore_for_file: implementation_imports
-// ignore_for_file: invalid_assignment
-// ignore_for_file: unnecessary_brace_in_string_interps
+// ignore_for_file: type=lint, unused_import
 
 import 'package:intl/intl.dart';
 import 'package:intl/message_lookup_by_library.dart';

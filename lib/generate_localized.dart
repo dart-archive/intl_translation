@@ -185,12 +185,7 @@ class MessageGeneration {
 // This is a library that provides messages for a $locale locale. All the messages
 // from the main program should be duplicated here with the same function name.
 $languageTag
-// ignore_for_file: directives_ordering
-// ignore_for_file: file_names
-// ignore_for_file: invalid_assignment
-// ignore_for_file: prefer_single_quotes
-// ignore_for_file: unnecessary_brace_in_string_interps
-// ignore_for_file: unused_import
+// ignore_for_file: type=lint, unused_import
 
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
@@ -272,11 +267,7 @@ typedef MessageIfAbsent = String Function(String$orNull message, List<Object>$or
 // This is a library that looks up messages for specific locales by delegating
 // to the appropriate library.
 $languageTag
-// ignore_for_file: argument_type_not_assignable
-// ignore_for_file: file_names
-// ignore_for_file: implementation_imports
-// ignore_for_file: invalid_assignment
-// ignore_for_file: unnecessary_brace_in_string_interps
+// ignore_for_file: type=lint, unused_import
 
 import 'package:$intlImportPath/intl.dart';
 import 'package:$intlImportPath/message_lookup_by_library.dart';
