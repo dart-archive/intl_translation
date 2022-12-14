@@ -219,7 +219,7 @@ ${releaseMode ? overrideLookup() : ''}''';
 ''';
 
   String lookupTypedef() => '''
-typedef MessageIfAbsent = String Function(String$orNull message, List<Object>$orNull args);
+typedef MessageIfAbsent = String$orNull Function(String$orNull message, List<Object>$orNull args);
 ''';
 
   /// This section generates the messages_all_locales.dart file based on the
