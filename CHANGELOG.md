@@ -1,3 +1,7 @@
+## 0.18.1-dev
+  * Update analyzer dependency to `5.2.0`.
+  * Address analyzer deprecations.
+
 ## 0.18.0
   * Add support for Flutter locale split.
   * Allow null safe code when parsing.
