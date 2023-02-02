@@ -13,6 +13,13 @@ import 'package:intl_translation/src/messages/variable_substitution_message.dart
 import 'package:test/test.dart';
 
 void main() {
+  test('String with escaped bracket', () {
+    testEscaping("te'{st'}", 'te{st}');
+    testEscaping('te{st}', 'te{');
+    testEscaping("tes''t", 'tes\'t');
+    testEscaping("t'e'''{st'}", 't\'e\'{st}');
+  });
+
   test('Gender', () {
     var input =
         '''{gender_of_host, select, female {test} male {test2} other {test3}}''';
@@ -122,4 +129,8 @@ void main() {
     );
     expect(parsedMessage.toCode(), expectedMessage.toCode());
   });
+}
+
+void testEscaping(String actual, String expected) {
+  expect(MessageParser(actual).nonIcuMessageParse().toCode(), expected);
 }
