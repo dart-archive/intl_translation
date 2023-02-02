@@ -57,7 +57,8 @@ class _ParserUtil {
   static final RegExp numberRegex = RegExp(r'\s*([0-9]+)\s*');
   static final RegExp nonICURegex = RegExp(r'[^\{\}\<]');
   static final RegExp idRegex = RegExp(r'\s*([a-zA-Z][a-zA-Z_0-9]*)\s*');
-  static final RegExp nonOpenBracketRegex = RegExp(r'[^\{]+');
+  static final RegExp nonOpenBracketRegex =
+      RegExp("^.+?(?:[^']{|(?<!')(?:'')+{|\$)");
   static final RegExp commaWithWhitespace = RegExp(r'\s*(,)\s*');
   static final List<String> pluralKeywords = [
     '=0',
@@ -143,8 +144,18 @@ class _ParserUtil {
       ? At(LiteralString(input), RegExp(r'\s*').matchAsPrefix(input, at)!.end)
       : At(LiteralString(''), at);
 
-  At<LiteralString>? openCurly(int at) => matchString(at, '{');
-  At<LiteralString>? closeCurly(int at) => matchString(at, '}');
+  Pattern matchUnescaped(String curly) => RegExp("(?:^|''|[^'])($curly)");
+
+  At<LiteralString>? matchUnescapedCurly(String curly, int at) {
+    var match = matchUnescaped(curly).matchAsPrefix(input.substring(at));
+    return match != null
+        ? At(LiteralString(curly, null), at + match[1]!.length)
+        : null;
+  }
+
+  At<LiteralString>? openCurly(int at) => matchUnescapedCurly('{', at);
+
+  At<LiteralString>? closeCurly(int at) => matchUnescapedCurly('}', at);
 
   At<LiteralString>? icuEscapedText(int at) {
     if (at < input.length) {

@@ -316,6 +316,25 @@ abstract class Message {
 
   /// Escape the string for use in generated Dart code.
   static String escapeString(String value) {
+    const quote = 39; // Character '
+    const controlCharacters = [39, 123, 125]; // Characters ', {, }
+
+    var sb = StringBuffer();
+    var nextIsEscaped = false;
+    var characters = value.runes.toList();
+    for (var i = 0; i < characters.length; i++) {
+      if (!nextIsEscaped &&
+          characters[i] == quote &&
+          i + 1 < characters.length &&
+          controlCharacters.contains(characters[i + 1])) {
+        nextIsEscaped = true;
+      } else {
+        nextIsEscaped = false;
+        sb.write(String.fromCharCode(characters[i]));
+      }
+    }
+    value = sb.toString();
+
     const escapes = <String, String>{
       r'\': r'\\',
       '"': r'\"',
@@ -325,13 +344,13 @@ abstract class Message {
       '\r': r'\r',
       '\t': r'\t',
       '\v': r'\v',
-      "'": r"\'",
       r'$': r'\$'
     };
-    return value.splitMapJoin(
+    value = value.splitMapJoin(
       '',
       onNonMatch: (String string) => escapes[string] ?? string,
     );
+    return value;
   }
 
   /// Expand this string out into a printed form. The function [f] will be
