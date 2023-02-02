@@ -99,5 +99,5 @@ String turnInterpolationIntoICUForm(
 }
 
 String escape(String s) {
-  return s.replaceAll("'", "''").replaceAll('{', "'{'").replaceAll('}', "'}'");
+  return s.replaceAll("'", "''").replaceAll('{', "'{").replaceAll('}', "'}");
 }
