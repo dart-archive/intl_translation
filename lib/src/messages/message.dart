@@ -316,7 +316,7 @@ abstract class Message {
 
   /// Escape the string for use in generated Dart code.
   static String escapeString(String value) {
-    value = escapeBracketsAndQuotes(value);
+    var escapedBrackets = escapeBracketsAndQuotes(value);
 
     const escapes = <String, String>{
       r'\': r'\\',
@@ -330,11 +330,10 @@ abstract class Message {
       '\'': r"\'",
       r'$': r'\$'
     };
-    value = value.splitMapJoin(
+    return escapedBrackets.splitMapJoin(
       '',
       onNonMatch: (String string) => escapes[string] ?? string,
     );
-    return value;
   }
 
   static String escapeBracketsAndQuotes(String value) {
