@@ -318,13 +318,13 @@ abstract class Message {
   static String escapeString(String value) {
     const quote = 39; // Character '
     const controlCharacters = [39, 123, 125]; // Characters '{}
-    print('For value $value');
     var sb = StringBuffer();
     var nextIsEscaped = false;
     var characters = value.runes.toList();
     for (var i = 0; i < characters.length; i++) {
+      var isQuote = characters[i] == quote;
       if (!nextIsEscaped &&
-          characters[i] == quote &&
+          isQuote &&
           i + 1 < characters.length &&
           controlCharacters.contains(characters[i + 1])) {
         nextIsEscaped = true;
@@ -334,7 +334,6 @@ abstract class Message {
       }
     }
     value = sb.toString();
-    print('Now value $value');
 
     const escapes = <String, String>{
       r'\': r'\\',
@@ -345,13 +344,13 @@ abstract class Message {
       '\r': r'\r',
       '\t': r'\t',
       '\v': r'\v',
+      '\'': r"\'",
       r'$': r'\$'
     };
     value = value.splitMapJoin(
       '',
       onNonMatch: (String string) => escapes[string] ?? string,
     );
-    print('And value $value');
     return value;
   }
 
