@@ -14,7 +14,11 @@ import 'package:test/test.dart';
 
 void main() {
   test('String with escaped bracket', () {
+    testEscaping(r"interessant (fr): '<>{}= +-_$()&^%$#@!~`'",
+        r"interessant (fr): \'<>{}= +-_\$()&^%\$#@!~`\'");
+    testEscaping('Escapes: \n\r\f\b\t\v.', r'Escapes: \n\r\f\b\t\v.');
     testEscaping("te'{st'}", 'te{st}');
+    testEscaping('{st}', r'${st}');
     testEscaping('te\${st}', r'te\$${st}');
     testEscaping('te{st}', r'te${st}');
     testEscaping("tes''t", "tes\\'t");

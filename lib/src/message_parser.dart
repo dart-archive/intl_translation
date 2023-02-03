@@ -57,8 +57,6 @@ class _ParserUtil {
   static final RegExp numberRegex = RegExp(r'\s*([0-9]+)\s*');
   static final RegExp nonICURegex = RegExp(r'[^\{\}\<]');
   static final RegExp idRegex = RegExp(r'\s*([a-zA-Z][a-zA-Z_0-9]*)\s*');
-  static final RegExp nonOpenBracketRegex =
-      RegExp(r"(^.+?(?:[^']|(?<!')(?:'')+))(?:{|$)");
   static final RegExp commaWithWhitespace = RegExp(r'\s*(,)\s*');
   static final List<String> pluralKeywords = [
     '=0',
@@ -191,15 +189,38 @@ class _ParserUtil {
 
   At<LiteralString>? nonIcuMessageText(int at) {
     if (at < input.length) {
-      var match = nonOpenBracketRegex.matchAsPrefix(input, at);
-      if (match != null) {
-        var matchGroup = match.group(1);
-        if (matchGroup != null) {
-          return At(LiteralString(matchGroup), match.start + matchGroup.length);
-        }
+      var inputAt = input.substring(at);
+      var indexOf = indexOfUnescapedOpenBracket(inputAt);
+      String matched;
+      if (indexOf == 0) {
+        return null;
+      } else if (indexOf == -1) {
+        matched = inputAt;
+      } else {
+        matched = inputAt.substring(0, indexOf);
       }
+      return At(LiteralString(matched), at + matched.length);
     }
     return null;
+  }
+
+  int indexOfUnescapedOpenBracket(String inputAt) {
+    const quote = 39; // Character '
+    const openBracket = 123; // Character {
+    final characters = inputAt.runes.toList();
+    var nextIsEscaped = false;
+    for (var i = 0; i < characters.length; i++) {
+      var isQuote = characters[i] == quote;
+      if (!nextIsEscaped && isQuote && i + 1 < characters.length) {
+        nextIsEscaped = true;
+      } else {
+        if (!nextIsEscaped && characters[i] == openBracket) {
+          return i;
+        }
+        nextIsEscaped = false;
+      }
+    }
+    return -1;
   }
 
   At<LiteralString>? number(int at) {

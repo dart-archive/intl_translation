@@ -316,6 +316,28 @@ abstract class Message {
 
   /// Escape the string for use in generated Dart code.
   static String escapeString(String value) {
+    value = escapeBracketsAndQuotes(value);
+
+    const escapes = <String, String>{
+      r'\': r'\\',
+      '"': r'\"',
+      '\b': r'\b',
+      '\f': r'\f',
+      '\n': r'\n',
+      '\r': r'\r',
+      '\t': r'\t',
+      '\v': r'\v',
+      '\'': r"\'",
+      r'$': r'\$'
+    };
+    value = value.splitMapJoin(
+      '',
+      onNonMatch: (String string) => escapes[string] ?? string,
+    );
+    return value;
+  }
+
+  static String escapeBracketsAndQuotes(String value) {
     const quote = 39; // Character '
     const controlCharacters = [39, 123, 125]; // Characters '{}
     var sb = StringBuffer();
@@ -334,23 +356,6 @@ abstract class Message {
       }
     }
     value = sb.toString();
-
-    const escapes = <String, String>{
-      r'\': r'\\',
-      '"': r'\"',
-      '\b': r'\b',
-      '\f': r'\f',
-      '\n': r'\n',
-      '\r': r'\r',
-      '\t': r'\t',
-      '\v': r'\v',
-      '\'': r"\'",
-      r'$': r'\$'
-    };
-    value = value.splitMapJoin(
-      '',
-      onNonMatch: (String string) => escapes[string] ?? string,
-    );
     return value;
   }
 
