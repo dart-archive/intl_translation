@@ -15,7 +15,8 @@ import 'package:test/test.dart';
 void main() {
   test('String with escaped bracket', () {
     testEscaping("te'{st'}", 'te{st}');
-    testEscaping('te{st}', 'te{');
+    testEscaping('te\${st}', 'te\${st}');
+    testEscaping('te{st}', r'te${st}');
     testEscaping("tes''t", 'tes\'t');
     testEscaping("t'e'''{st'}", 't\'e\'{st}');
   });

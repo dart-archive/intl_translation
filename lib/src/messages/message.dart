@@ -317,8 +317,8 @@ abstract class Message {
   /// Escape the string for use in generated Dart code.
   static String escapeString(String value) {
     const quote = 39; // Character '
-    const controlCharacters = [39, 123, 125]; // Characters ', {, }
-
+    const controlCharacters = [39, 123, 125]; // Characters '{}
+    print('For value $value');
     var sb = StringBuffer();
     var nextIsEscaped = false;
     var characters = value.runes.toList();
@@ -334,6 +334,7 @@ abstract class Message {
       }
     }
     value = sb.toString();
+    print('Now value $value');
 
     const escapes = <String, String>{
       r'\': r'\\',
@@ -350,6 +351,7 @@ abstract class Message {
       '',
       onNonMatch: (String string) => escapes[string] ?? string,
     );
+    print('And value $value');
     return value;
   }
 

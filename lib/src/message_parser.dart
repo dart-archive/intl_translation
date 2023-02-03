@@ -58,7 +58,7 @@ class _ParserUtil {
   static final RegExp nonICURegex = RegExp(r'[^\{\}\<]');
   static final RegExp idRegex = RegExp(r'\s*([a-zA-Z][a-zA-Z_0-9]*)\s*');
   static final RegExp nonOpenBracketRegex =
-      RegExp("^.+?(?:[^']{|(?<!')(?:'')+{|\$)");
+      RegExp(r"(^.+?(?:[^']|(?<!')(?:'')+))(?:{|$)");
   static final RegExp commaWithWhitespace = RegExp(r'\s*(,)\s*');
   static final List<String> pluralKeywords = [
     '=0',
@@ -193,9 +193,9 @@ class _ParserUtil {
     if (at < input.length) {
       var match = nonOpenBracketRegex.matchAsPrefix(input, at);
       if (match != null) {
-        var matchGroup = match.group(0);
+        var matchGroup = match.group(1);
         if (matchGroup != null) {
-          return At(LiteralString(matchGroup), match.end);
+          return At(LiteralString(matchGroup), match.start + matchGroup.length);
         }
       }
     }
