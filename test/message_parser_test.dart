@@ -13,12 +13,14 @@ import 'package:intl_translation/src/messages/variable_substitution_message.dart
 import 'package:test/test.dart';
 
 void main() {
-  test('String with escaped bracket', () {
+  test('Test escaping', () {
     testEscaping(r"interessant (fr): '<>{}= +-_$()&^%$#@!~`'",
         r"interessant (fr): \'<>{}= +-_\$()&^%\$#@!~`\'");
     testEscaping('Escapes: \n\r\f\b\t\v.', r'Escapes: \n\r\f\b\t\v.');
     testEscaping("te'{st'}", 'te{st}');
+    testEscaping("'{st'}te", '{st}te');
     testEscaping('{st}', r'${st}');
+    testEscaping('{st}ts', r'${st}ts');
     testEscaping('te\${st}', r'te\$${st}');
     testEscaping('te{st}', r'te${st}');
     testEscaping("tes''t", "tes\\'t");
