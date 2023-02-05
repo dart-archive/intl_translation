@@ -205,16 +205,14 @@ class _ParserUtil {
   }
 
   int indexOfUnescapedOpenBracket(String inputAt) {
-    const quote = 39; // Character '
-    const openBracket = 123; // Character {
     final characters = inputAt.runes.toList();
     var nextIsEscaped = false;
     for (var i = 0; i < characters.length; i++) {
-      var isQuote = characters[i] == quote;
+      var isQuote = characters[i] == Message.$singleQuote;
       if (!nextIsEscaped && isQuote && i + 1 < characters.length) {
         nextIsEscaped = true;
       } else {
-        if (!nextIsEscaped && characters[i] == openBracket) {
+        if (!nextIsEscaped && characters[i] == Message.$openCurlyBracket) {
           return i;
         }
         nextIsEscaped = false;

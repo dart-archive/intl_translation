@@ -336,14 +336,21 @@ abstract class Message {
     );
   }
 
+  static const int $singleQuote = 0x27;
+  static const int $openCurlyBracket = 0x7B;
+  static const int $closedCurlyBracket = 0x7D;
+
   static String escapeBracketsAndQuotes(String value) {
-    const quote = 39; // Character '
-    const controlCharacters = [39, 123, 125]; // Characters '{}
+    const controlCharacters = [
+      $singleQuote,
+      $openCurlyBracket,
+      $closedCurlyBracket,
+    ];
     var sb = StringBuffer();
     var nextIsEscaped = false;
     var characters = value.runes.toList();
     for (var i = 0; i < characters.length; i++) {
-      var isQuote = characters[i] == quote;
+      var isQuote = characters[i] == $singleQuote;
       if (!nextIsEscaped &&
           isQuote &&
           i + 1 < characters.length &&
