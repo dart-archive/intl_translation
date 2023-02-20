@@ -316,6 +316,8 @@ abstract class Message {
 
   /// Escape the string for use in generated Dart code.
   static String escapeString(String value) {
+    var escapedBrackets = escapeBracketsAndQuotes(value);
+
     const escapes = <String, String>{
       r'\': r'\\',
       '"': r'\"',
@@ -325,13 +327,42 @@ abstract class Message {
       '\r': r'\r',
       '\t': r'\t',
       '\v': r'\v',
-      "'": r"\'",
+      '\'': r"\'",
       r'$': r'\$'
     };
-    return value.splitMapJoin(
+    return escapedBrackets.splitMapJoin(
       '',
       onNonMatch: (String string) => escapes[string] ?? string,
     );
+  }
+
+  static const int $singleQuote = 0x27;
+  static const int $openCurlyBracket = 0x7B;
+  static const int $closedCurlyBracket = 0x7D;
+
+  static String escapeBracketsAndQuotes(String value) {
+    const controlCharacters = [
+      $singleQuote,
+      $openCurlyBracket,
+      $closedCurlyBracket,
+    ];
+    var sb = StringBuffer();
+    var nextIsEscaped = false;
+    var characters = value.runes.toList();
+    for (var i = 0; i < characters.length; i++) {
+      var isQuote = characters[i] == $singleQuote;
+      if (!nextIsEscaped &&
+          isQuote &&
+          i + 1 < characters.length &&
+          controlCharacters.contains(characters[i + 1])) {
+        nextIsEscaped = true;
+      } else {
+        nextIsEscaped = false;
+        sb.write(String.fromCharCode(characters[i]));
+      }
+    }
+    value = sb.toString();
+    return value;
   }
 
   /// Expand this string out into a printed form. The function [f] will be

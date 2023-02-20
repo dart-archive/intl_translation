@@ -57,7 +57,6 @@ class _ParserUtil {
   static final RegExp numberRegex = RegExp(r'\s*([0-9]+)\s*');
   static final RegExp nonICURegex = RegExp(r'[^\{\}\<]');
   static final RegExp idRegex = RegExp(r'\s*([a-zA-Z][a-zA-Z_0-9]*)\s*');
-  static final RegExp nonOpenBracketRegex = RegExp(r'[^\{]+');
   static final RegExp commaWithWhitespace = RegExp(r'\s*(,)\s*');
   static final List<String> pluralKeywords = [
     '=0',
@@ -143,8 +142,18 @@ class _ParserUtil {
       ? At(LiteralString(input), RegExp(r'\s*').matchAsPrefix(input, at)!.end)
       : At(LiteralString(''), at);
 
-  At<LiteralString>? openCurly(int at) => matchString(at, '{');
-  At<LiteralString>? closeCurly(int at) => matchString(at, '}');
+  Pattern matchUnescaped(String curly) => RegExp("(?:^|''|[^'])($curly)");
+
+  At<LiteralString>? matchUnescapedCurly(String curly, int at) {
+    var match = matchUnescaped(curly).matchAsPrefix(input.substring(at));
+    return match != null
+        ? At(LiteralString(curly, null), at + match[1]!.length)
+        : null;
+  }
+
+  At<LiteralString>? openCurly(int at) => matchUnescapedCurly('{', at);
+
+  At<LiteralString>? closeCurly(int at) => matchUnescapedCurly('}', at);
 
   At<LiteralString>? icuEscapedText(int at) {
     if (at < input.length) {
@@ -180,15 +189,36 @@ class _ParserUtil {
 
   At<LiteralString>? nonIcuMessageText(int at) {
     if (at < input.length) {
-      var match = nonOpenBracketRegex.matchAsPrefix(input, at);
-      if (match != null) {
-        var matchGroup = match.group(0);
-        if (matchGroup != null) {
-          return At(LiteralString(matchGroup), match.end);
-        }
+      var inputAt = input.substring(at);
+      var indexOf = indexOfUnescapedOpenBracket(inputAt);
+      String matched;
+      if (indexOf == 0) {
+        return null;
+      } else if (indexOf == -1) {
+        matched = inputAt;
+      } else {
+        matched = inputAt.substring(0, indexOf);
       }
+      return At(LiteralString(matched), at + matched.length);
     }
     return null;
+  }
+
+  int indexOfUnescapedOpenBracket(String inputAt) {
+    final characters = inputAt.runes.toList();
+    var nextIsEscaped = false;
+    for (var i = 0; i < characters.length; i++) {
+      var isQuote = characters[i] == Message.$singleQuote;
+      if (!nextIsEscaped && isQuote && i + 1 < characters.length) {
+        nextIsEscaped = true;
+      } else {
+        if (!nextIsEscaped && characters[i] == Message.$openCurlyBracket) {
+          return i;
+        }
+        nextIsEscaped = false;
+      }
+    }
+    return -1;
   }
 
   At<LiteralString>? number(int at) {
