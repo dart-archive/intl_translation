@@ -1,9 +1,8 @@
-## 0.18.1
+## 0.18.1-dev
   * Update analyzer dependency to `5.2.0`.
   * Address analyzer deprecations.
   * Require Dart 2.18.
   * Fix issue #182, enabling escaping of curly brackets with a single quote as per the ICU message format specs.
-  * Require `package:intl` `^0.18.0`.
 
 ## 0.18.0
   * Add support for Flutter locale split.
