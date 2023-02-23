@@ -26,7 +26,7 @@ dart run intl_translation:extract_to_arb --output-dir=target/directory
 
 This will produce a file `intl_messages.arb` with the messages from all of these
 programs. This is an [ARB][arb] format file which can be used for input to
-translation tools like [Localizely][localizely]. The resulting translations can
+translation tools like [Localizely][localizely] or [Lyrebird][lyrebird]. The resulting translations can
 be used to generate a set of libraries using the `generate_from_arb.dart`
 program.
 
@@ -58,3 +58,4 @@ data is available.
 [arb]:
   https://github.com/google/app-resource-bundle/wiki/ApplicationResourceBundleSpecification
 [localizely]: https://localizely.com/
+[lyrebird]: https://lyrebird.dev/
